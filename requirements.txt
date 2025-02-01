@@ -4,3 +4,4 @@ pymysql
 aiomysql
 python-dotenv
 audioop-lts
+pytz
