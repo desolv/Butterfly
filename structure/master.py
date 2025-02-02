@@ -1,3 +1,6 @@
+import time
+from datetime import datetime
+
 from discord.ext import commands
 
 from structure.helper import get_time
@@ -6,6 +9,10 @@ from structure.helper import get_time
 class MasterCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.uptime = datetime.now()
+
+    def get_uptime(self):
+        return self.uptime
 
     @commands.Cog.listener()
     async def on_ready(self):
