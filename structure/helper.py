@@ -20,3 +20,8 @@ def get_uptime(bot, format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/L
     return localized_start.strftime(format)
 
 
+def get_formatted_time(time, format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London"):
+    tz = pytz.timezone(timezone)
+    localized_start = tz.localize(time)
+
+    return localized_start.strftime(format)
