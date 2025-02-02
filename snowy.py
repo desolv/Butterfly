@@ -26,12 +26,13 @@ print(f"Running at Python {platform.python_version()}v, "
 
 
 async def load():
-    for extension in Path("structure").glob("*.py"):
+    for extension in Path("structure").rglob("*.py"):
         if extension.stem != "__init__":
+            ext_path = ".".join(extension.parts).replace(".py", "")
             try:
-                await bot.load_extension(f"{"structure"}.{extension.stem}")
+                await bot.load_extension(ext_path)
             except commands.NoEntryPointError:
-                print(f"Skipped loading extension '{extension.stem}' as it does not have a 'setup' function")
+                print(f"Skipped loading extension '{ext_path}' as it does not have a 'setup' function")
 
 
 async def main():
