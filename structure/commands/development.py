@@ -1,0 +1,141 @@
+from discord.ext import commands
+import platform
+import psutil
+
+from structure.helper import get_time, get_uptime
+
+
+class DevelopmentCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.is_owner()
+    @commands.command(
+        name="shutdown",
+        description="Terminate robot activity",
+        aliases=['stop'],
+        hidden=True
+    )
+    async def _shutdown(self, ctx):
+        """
+        Terminate robot activity
+        :param none:
+        """
+        await ctx.send(f"Snowy shutdown at **{get_time()}**!")
+        print(f"Snowy shutdown called by {ctx.message.author} at {get_time()}!")
+        await ctx.message.delete()
+        await self.bot.close()
+
+    @commands.is_owner()
+    @commands.command(
+        name="debug",
+        description="Displays bot runtime information.",
+        hidden=True
+    )
+    async def _debug(self, ctx):
+        """
+        Displays rebot runtime details
+        :param none:
+        """
+        latency = round(self.bot.latency * 1000, 2)
+        loaded_cogs = ", ".join(self.bot.extensions.keys()) or "None"
+
+        await ctx.send(f"- Latency -> {latency}ms\n"
+                       f"- Loaded Cogs -> {loaded_cogs}\n"
+                       f"- Running on Python {platform.python_version()}")
+
+    @commands.is_owner()
+    @commands.command(
+        name="load",
+        description="Loads a cog",
+        hidden=True
+    )
+    async def _load(self, ctx, cog: str):
+        """
+        Loads a specific cog
+        :param cog: Cog that needs to be loaded
+        """
+        try:
+            await self.bot.load_extension(f"structure.{cog}")
+            await ctx.send(f"Successfully loaded `{cog}` cog")
+        except Exception as e:
+            await ctx.send(f"Failed to load '{cog}' cog -> {e}")
+
+    @commands.is_owner()
+    @commands.command(
+        name="unload",
+        description="Unloads a cog",
+        hidden=True
+    )
+    async def _unload(self, ctx, cog: str):
+        """
+        Unloads a specific cog
+        :param cog: Cog that needs to be unloaded
+        """
+        try:
+            await self.bot.unload_extension(f"structure.{cog}")
+            await ctx.send(f"Successfully unloaded `{cog}` cog")
+        except Exception as e:
+            await ctx.send(f"Failed to unload '{cog}' cog -> {e}")
+
+    @commands.is_owner()
+    @commands.command(
+        name="reload",
+        description="Reloads a cog or all cogs",
+        hidden=True
+    )
+    async def _reload(self, ctx, cog: str = None):
+        """
+        Reloads all cogs if None
+        :param cog: Cog that needs to be reloaded
+        """
+        if cog is None:
+            reloaded_cogs = []
+            for ext in list(self.bot.extensions.keys()):
+                await self.bot.reload_extension(ext)
+                reloaded_cogs.append(ext)
+
+            await ctx.send(f"Reloaded all cogs -> {', '.join(reloaded_cogs)}")
+            await ctx.message.delete()
+            return
+
+        try:
+            await self.bot.reload_extension(f"structure.{cog}")
+            await ctx.send(f"Successfully reloaded '{cog}' cog")
+        except Exception as e:
+            await ctx.send(f"Failed to reload '{cog}' cog -> {e}")
+        await ctx.message.delete()
+
+    @commands.is_owner()
+    @commands.command(
+        name="uptime",
+        description="Shows bot uptime",
+        hidden=True
+    )
+    async def _uptime(self, ctx):
+        """
+        Displays rebot uptime since last restart
+        :param none:
+        """
+        await ctx.send(f"Snowy initialised at **{get_uptime(self.bot)}**!")
+        await ctx.message.delete()
+
+    @commands.is_owner()
+    @commands.command(
+        name="memory",
+        description="Shows rebot memory usage",
+        hidden=True
+    )
+    async def _memory(self, ctx):
+        """
+        Displays rebot current memory usage
+        :param none:
+        """
+        process = psutil.Process()
+        memory_usage = process.memory_info().rss / 1024 / 1024
+        await ctx.send(f"Snowy memory usage at **{memory_usage:.2f} MB**")
+        await ctx.message.delete()
+
+
+async def setup(bot):
+    await bot.add_cog(DevelopmentCog(bot))
