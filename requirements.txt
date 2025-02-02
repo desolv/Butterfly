@@ -5,3 +5,4 @@ aiomysql
 python-dotenv
 audioop-lts
 pytz
+psutil
