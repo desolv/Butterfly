@@ -34,7 +34,7 @@ class DevelopmentCog(commands.Cog):
     )
     async def _debug(self, ctx):
         """
-        Displays rebot runtime details
+        Displays robot runtime details
         :param none:
         """
         latency = round(self.bot.latency * 1000, 2)
@@ -109,12 +109,12 @@ class DevelopmentCog(commands.Cog):
     @commands.is_owner()
     @commands.command(
         name="uptime",
-        description="Shows bot uptime",
+        description="Shows robot uptime",
         hidden=True
     )
     async def _uptime(self, ctx):
         """
-        Displays rebot uptime since last restart
+        Displays robot uptime since last restart
         :param none:
         """
         await ctx.send(f"Snowy initialised at **{get_uptime(self.bot)}**!")
@@ -123,12 +123,12 @@ class DevelopmentCog(commands.Cog):
     @commands.is_owner()
     @commands.command(
         name="memory",
-        description="Shows rebot memory usage",
+        description="Shows robot memory usage",
         hidden=True
     )
     async def _memory(self, ctx):
         """
-        Displays rebot current memory usage
+        Displays robot current memory usage
         :param none:
         """
         process = psutil.Process()
