@@ -23,7 +23,6 @@ class DevelopmentCog(commands.Cog):
         """
         await ctx.send(f"Snowy shutdown at **{get_time()}**!")
         print(f"Snowy shutdown called by {ctx.message.author} at {get_time()}!")
-        await ctx.message.delete()
         await self.bot.close()
 
     @commands.is_owner()
@@ -39,10 +38,13 @@ class DevelopmentCog(commands.Cog):
         """
         latency = round(self.bot.latency * 1000, 2)
         loaded_cogs = ", ".join(self.bot.extensions.keys()) or "None"
+        process = psutil.Process()
+        memory_usage = process.memory_info().rss / 1024 / 1024
 
         await ctx.send(f"- Latency -> {latency}ms\n"
                        f"- Loaded Cogs -> {loaded_cogs}\n"
-                       f"- Running on Python {platform.python_version()}")
+                       f"- Running on Python {platform.python_version()}\n"
+                       f"Snowy memory usage at **{memory_usage:.2f} MB**")
 
     @commands.is_owner()
     @commands.command(
@@ -96,7 +98,6 @@ class DevelopmentCog(commands.Cog):
                 reloaded_cogs.append(ext)
 
             await ctx.send(f"Reloaded all cogs -> {', '.join(reloaded_cogs)}")
-            await ctx.message.delete()
             return
 
         try:
@@ -104,7 +105,6 @@ class DevelopmentCog(commands.Cog):
             await ctx.send(f"Successfully reloaded '{cog}' cog")
         except Exception as e:
             await ctx.send(f"Failed to reload '{cog}' cog -> {e}")
-        await ctx.message.delete()
 
     @commands.is_owner()
     @commands.command(
@@ -118,23 +118,6 @@ class DevelopmentCog(commands.Cog):
         :param none:
         """
         await ctx.send(f"Snowy initialised at **{get_uptime(self.bot)}**!")
-        await ctx.message.delete()
-
-    @commands.is_owner()
-    @commands.command(
-        name="memory",
-        description="Shows robot memory usage",
-        hidden=True
-    )
-    async def _memory(self, ctx):
-        """
-        Displays robot current memory usage
-        :param none:
-        """
-        process = psutil.Process()
-        memory_usage = process.memory_info().rss / 1024 / 1024
-        await ctx.send(f"Snowy memory usage at **{memory_usage:.2f} MB**")
-        await ctx.message.delete()
 
 
 async def setup(bot):
