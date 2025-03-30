@@ -1,5 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import pytz
+import time
 
 
 def get_time(format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London"):
@@ -25,3 +26,12 @@ def get_formatted_time(time, format: str = "%d %B %Y %H:%M %Z", timezone: str = 
     localized_start = tz.localize(time)
 
     return localized_start.strftime(format)
+
+
+def get_millis() -> int:
+    return int(time.time() * 1000)
+
+
+def convert_millis_to_formatted(ms: int, format: str, zone: str) -> str:
+    dt = datetime.fromtimestamp(ms / 1000, tz=timezone.utc)
+    return get_formatted_time(dt, format, zone)
