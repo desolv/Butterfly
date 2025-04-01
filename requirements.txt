@@ -3,7 +3,6 @@ sqlalchemy
 pymysql
 aiomysql
 python-dotenv
-audioop-lts
 pytz
 psutil
-sqlalchemy
+openai
