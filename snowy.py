@@ -10,9 +10,10 @@ from dotenv import load_dotenv
 from discord.ext import commands
 from pathlib import Path
 
+from openai import OpenAI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
-from structure.helper import get_formatted_time
+from structure.helper import get_formatted_time, load_schema_from_snowy
 
 STATE = "development"
 
@@ -21,13 +22,15 @@ load_dotenv(f"schema/.env.{STATE}")
 TOKEN = os.getenv("TOKEN")
 MYSQL = os.getenv("MYSQL")
 DEBUG = os.getenv("DEBUG")
+OPENAI = os.getenv("OPENAI")
 
-with open(f"schema/design.{STATE}.json", "r") as file:
-    schema = json.load(file)
+schema = load_schema_from_snowy(STATE)
 
 bot = commands.Bot(command_prefix=schema["command_prefix"], intents=discord.Intents.all())
-engine = create_engine(MYSQL, echo=(True if DEBUG == "True" else False))
-Base = declarative_base()
+bot.engine = create_engine(MYSQL, echo=(True if DEBUG == "True" else False))
+bot.base = declarative_base()
+bot.client = OpenAI(api_key=OPENAI)
+bot.schema = schema
 
 print(f"Snowy {STATE} Robot")
 print(f"Running at Python {platform.python_version()}v, "
@@ -35,10 +38,20 @@ print(f"Running at Python {platform.python_version()}v, "
 
 try:
     mysql_uptime = datetime.now()
-    with engine.connect() as connection:
-        print(f"Running MySQL with SQLAlchemy at {str(get_formatted_time(mysql_uptime, format="%S"))}ms\n")
+    with bot.engine.connect() as connection:
+        print(f"Running MySQL with SQLAlchemy at {str(get_formatted_time(mysql_uptime, format="%S"))}ms")
 except Exception as e:
     print(f"Failed to connect to MySQL -> {e}")
+    sys.exit(0)
+
+try:
+    test_response = bot.client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": "Ping"}]
+    )
+    print("Connected to OpenAI\n")
+except Exception as e:
+    print(f"Failed to connect to OpenAI -> {e}")
     sys.exit(0)
 
 

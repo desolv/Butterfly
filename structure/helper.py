@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 import pytz
 import time
-
+import json
+from pathlib import Path
 
 def get_time(format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London"):
     tz = pytz.timezone(timezone)
@@ -35,3 +36,13 @@ def get_millis() -> int:
 def convert_millis_to_formatted(ms: int, format: str, zone: str) -> str:
     dt = datetime.fromtimestamp(ms / 1000, tz=timezone.utc)
     return get_formatted_time(dt, format, zone)
+
+
+def load_schema_from_snowy(state: str) -> dict:
+    path = Path(f"schema/design.{state}.json")
+
+    if not path.exists():
+        raise FileNotFoundError(f"Schema file not found: {path}")
+
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
