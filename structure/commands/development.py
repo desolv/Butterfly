@@ -1,3 +1,5 @@
+import sys
+
 from discord.ext import commands
 import platform
 import psutil
@@ -24,6 +26,7 @@ class DevelopmentCog(commands.Cog):
         await ctx.send(f"Snowy shutdown at **{get_time()}**!")
         print(f"Snowy shutdown called by {ctx.message.author} at {get_time()}!")
         await self.bot.close()
+        sys.exit(0)
 
     @commands.is_owner()
     @commands.command(
