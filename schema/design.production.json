@@ -1,3 +1,4 @@
 {
-  "command_prefix": "?"
+  "command_prefix": "?",
+  "watcher_channel": 12345
 }
