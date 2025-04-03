@@ -1,4 +1,7 @@
 {
   "command_prefix": "?",
-  "watcher_channel": 12345
+  "watcher": {
+    "moderation_channel_id": 123,
+    "watching_channel_id": [123, 123]
+  }
 }

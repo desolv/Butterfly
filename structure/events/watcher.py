@@ -55,7 +55,7 @@ async def is_inappropriate_batch(client, messages: list[str]) -> str:
 class WatcherCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.monitor_channel_id = bot.schema.get("watcher_channel")
+        self.monitor_channel_id = bot.schema["watcher"]["moderation_channel_id"]
         self.client = bot.client
         self.batch_queue = []
         self.batch_loop.start()
@@ -65,7 +65,7 @@ class WatcherCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot:
+        if message.author.bot or (message.channel.id not in self.bot.schema["watcher"]["watching_channel_id"]):
             return
 
         cleaned_message, should_check = should_modify_message(message.content)
