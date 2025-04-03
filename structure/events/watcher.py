@@ -56,6 +56,8 @@ class WatcherCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.monitor_channel_id = bot.schema["watcher"]["moderation_channel_id"]
+        self.watching_channel_id = bot.schema["watcher"]["watching_channel_id"]
+        self.watching_category_id = bot.schema["watcher"]["watching_category_id"]
         self.client = bot.client
         self.batch_queue = []
         self.batch_loop.start()
@@ -65,9 +67,8 @@ class WatcherCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        watcher_config = self.bot.schema["watcher"]
-        channel_ok = message.channel.id in watcher_config["watching_channel_id"]
-        category_ok = message.channel.category.id in watcher_config["watching_category_id"]
+        channel_ok = message.channel.id in self.watching_channel_id
+        category_ok = message.channel.category.id in self.watching_category_id
 
         if message.author.bot or not (channel_ok or category_ok):
             return
