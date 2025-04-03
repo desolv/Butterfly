@@ -65,7 +65,11 @@ class WatcherCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot or (message.channel.id not in self.bot.schema["watcher"]["watching_channel_id"]):
+        watcher_config = self.bot.schema["watcher"]
+        channel_ok = message.channel.id in watcher_config["watching_channel_id"]
+        category_ok = message.channel.category.id in watcher_config["watching_category_id"]
+
+        if message.author.bot or not (channel_ok or category_ok):
             return
 
         cleaned_message, should_check = should_modify_message(message.content)

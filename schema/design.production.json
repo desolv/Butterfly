@@ -2,6 +2,7 @@
   "command_prefix": "?",
   "watcher": {
     "moderation_channel_id": 123,
-    "watching_channel_id": [123, 123]
+    "watching_channel_id": [123, 123],
+    "watching_category_id": [123]
   }
 }
