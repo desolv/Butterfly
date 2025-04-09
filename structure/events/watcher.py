@@ -80,7 +80,10 @@ class WatcherCog(commands.Cog):
             return
 
         channel_ok = message.channel.id in self.watching_channel_id
-        category_ok = message.channel.category.id in self.watching_category_id
+        category_ok = (
+                message.channel.category and
+                message.channel.category.id in self.watching_category_id
+        )
 
         if message.author.bot or not (channel_ok or category_ok):
             return
@@ -92,7 +95,7 @@ class WatcherCog(commands.Cog):
 
         self.batch_queue.append((message, cleaned_message))
 
-        if self.batch_loop_seconds <= 0 and (len(self.batch_queue) >= self.batch_loop_messages):
+        if 0 < self.batch_loop_messages <= len(self.batch_queue):
             await self.process_batch()
 
     @tasks.loop(seconds=1)
@@ -128,13 +131,7 @@ class WatcherCog(commands.Cog):
 
         for i, (msg, cleaned) in enumerate(batch):
             verdict_text = verdicts.get(i + 1, "Unknown")
-            verdict_lower = verdict_text.lower()
-            verdict_color = "\u001b[1;32m"
-
-            if verdict_lower.startswith("flagged"):
-                verdict_color = "\u001b[1;31m"
-            elif verdict_lower.startswith("unsure"):
-                verdict_color = "\u001b[1;33m"
+            verdict_color = "\u001b[1;31m" if verdict_text.lower().startswith("flagged") else "\u001b[1;32m"
 
             lines.append(f"\n\u001b[1;37mUser:\u001b[0m {msg.author}")
             lines.append(f"\u001b[1;37mChannel:\u001b[0m #{msg.channel.name}")
