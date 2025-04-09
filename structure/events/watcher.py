@@ -29,14 +29,20 @@ def parse_gpt_verdicts(raw: str) -> dict[int, str]:
 
 async def is_inappropriate_batch(client, messages: list[str]) -> str:
     prompt = (
-            "You are a Discord moderation assistant."
-            "Judge the following messages and respond in this exact format: "
-            "[1] Verdict: Safe/Flagged/Unsure - [short reason] "
-            "`Safe` - if the message is harmless. "
-            "`Flagged` - if it's extremely toxic, threatening, NSFW, slur-filled or a serious rule violation."
-            "`Unsure` - if the message lacks context or is unclear. "
-            "Ignore emojis, memes, links, and jokes unless clearly harmful. "
-            "Messages: " +
+            """
+            You are a Discord moderation assistant.
+
+            Judge the following messages and respond in this exact format:
+            [1] Verdict: Safe/Flagged - [short reason]
+            
+            Label rules:
+            - Safe = Harmless, casual, joking, sarcastic, vague, or includes links, commands, emojis, memes.
+            - Flagged = Only if the message clearly contains hate speech, violent threats, slurs, graphic NSFW content, or targeted harassment.
+            
+            Be cautious. Do not flag messages unless they are clearly harmful or rule-breaking.
+            
+            Messages:
+            """ +
             "\n".join(f"[{i + 1}] {msg}" for i, msg in enumerate(messages))
     )
 
@@ -55,9 +61,12 @@ async def is_inappropriate_batch(client, messages: list[str]) -> str:
 class WatcherCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.enabled = bot.schema["watcher"]["enabled"]
         self.monitor_channel_id = bot.schema["watcher"]["moderation_channel_id"]
         self.watching_channel_id = bot.schema["watcher"]["watching_channel_id"]
         self.watching_category_id = bot.schema["watcher"]["watching_category_id"]
+        self.batch_loop_seconds = bot.schema["watcher"]["batch"]["batch_loop_seconds"]
+        self.batch_loop_messages = bot.schema["watcher"]["batch"]["batch_loop_messages"]
         self.client = bot.client
         self.batch_queue = []
         self.batch_loop.start()
@@ -67,6 +76,9 @@ class WatcherCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        if not self.enabled:
+            return
+
         channel_ok = message.channel.id in self.watching_channel_id
         category_ok = message.channel.category.id in self.watching_category_id
 
@@ -80,12 +92,22 @@ class WatcherCog(commands.Cog):
 
         self.batch_queue.append((message, cleaned_message))
 
-        if len(self.batch_queue) >= 5:
+        if self.batch_loop_seconds <= 0 and (len(self.batch_queue) >= self.batch_loop_messages):
             await self.process_batch()
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=1)
     async def batch_loop(self):
         await self.process_batch()
+
+    @batch_loop.before_loop
+    async def before_batch_loop(self):
+        await self.bot.wait_until_ready()
+
+        if self.batch_loop_seconds <= 0:
+            self.batch_loop.cancel()
+            return
+
+        self.batch_loop.change_interval(seconds=self.batch_loop_seconds)
 
     async def process_batch(self):
         if not self.batch_queue:
