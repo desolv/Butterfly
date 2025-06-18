@@ -1,5 +1,7 @@
 import asyncio
-import json
+import nest_asyncio
+nest_asyncio.apply()
+
 import os
 import platform
 import sys
@@ -57,6 +59,9 @@ except Exception as e:
 
 async def load():
     for extension in Path("structure").rglob("*.py"):
+        if extension.stem.startswith("__") or "tables" in extension.parts:
+            continue
+
         if extension.stem != "__init__":
             ext_path = ".".join(extension.parts).replace(".py", "")
             try:

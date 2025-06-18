@@ -16,8 +16,7 @@ class MasterCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        guild_word = "guild" if len(self.bot.guilds) == 1 else "guilds"
-        print(f"Logged in as {self.bot.user} with {len(self.bot.guilds)} {guild_word} at {get_time()}\n")
+        print(f"Logged in as {self.bot.user} with {len(self.bot.guilds)} guild(s) at {get_time()}")
 
 
 async def setup(bot):
