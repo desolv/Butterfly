@@ -38,8 +38,8 @@ def convert_millis_to_formatted(ms: int, format: str, zone: str) -> str:
     return get_formatted_time(dt, format, zone)
 
 
-def load_schema_from_snowy(state: str) -> dict:
-    path = Path(f"schema/design.{state}.json")
+def load_json_data(path: str) -> dict:
+    path = Path(f"schema/{path}.json")
 
     if not path.exists():
         raise FileNotFoundError(f"Schema file not found: {path}")

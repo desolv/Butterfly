@@ -15,7 +15,7 @@ from pathlib import Path
 from openai import OpenAI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
-from structure.helper import get_formatted_time, load_schema_from_snowy
+from structure.helper import get_formatted_time, load_json_data
 
 STATE = "development"
 
@@ -26,13 +26,11 @@ MYSQL = os.getenv("MYSQL")
 DEBUG = os.getenv("DEBUG")
 OPENAI = os.getenv("OPENAI")
 
-schema = load_schema_from_snowy(STATE)
-
-bot = commands.Bot(command_prefix=schema["command_prefix"], intents=discord.Intents.all())
+design_schema = load_json_data(f"design.{STATE}")
+bot = commands.Bot(command_prefix=design_schema["command_prefix"], intents=discord.Intents.all())
 bot.engine = create_engine(MYSQL, echo=(True if DEBUG == "True" else False))
 bot.base = declarative_base()
 bot.client = OpenAI(api_key=OPENAI)
-bot.schema = schema
 
 print(f"Snowy {STATE} Robot")
 print(f"Running at Python {platform.python_version()}v, "
