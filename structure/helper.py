@@ -39,10 +39,10 @@ def convert_millis_to_formatted(ms: int, format: str, zone: str) -> str:
 
 
 def load_json_data(path: str) -> dict:
-    path = Path(f"schema/{path}.json")
+    path = Path(f"io/{path}.json")
 
     if not path.exists():
-        raise FileNotFoundError(f"Schema file not found: {path}")
+        raise FileNotFoundError(f"IO file not found: {path}")
 
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)

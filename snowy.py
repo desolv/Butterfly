@@ -17,22 +17,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
 from structure.helper import get_formatted_time, load_json_data
 
-STATE = "development"
+load_dotenv(f"io/.env")
 
-load_dotenv(f"schema/.env.{STATE}")
-
-TOKEN = os.getenv("TOKEN")
-MYSQL = os.getenv("MYSQL")
-DEBUG = os.getenv("DEBUG")
-OPENAI = os.getenv("OPENAI")
-
-design_schema = load_json_data(f"design.{STATE}")
-bot = commands.Bot(command_prefix=design_schema["command_prefix"], intents=discord.Intents.all())
-bot.engine = create_engine(MYSQL, echo=(True if DEBUG == "True" else False))
+bot = commands.Bot(command_prefix=load_json_data(f"environment")["command_prefix"], intents=discord.Intents.all())
+bot.engine = create_engine(os.getenv("MYSQL"), echo=(True if os.getenv("DEBUG") == "True" else False))
 bot.base = declarative_base()
-bot.client = OpenAI(api_key=OPENAI)
+bot.client = OpenAI(api_key=os.getenv("OPENAI"))
 
-print(f"Snowy {STATE} Robot")
+print(f"Snowy Robot")
 print(f"Running at Python {platform.python_version()}v, "
       f"Discord.py {discord.__version__}v - {platform.system()} {platform.release()} ({os.name})")
 
@@ -70,7 +62,7 @@ async def load():
 
 async def main():
     await load()
-    await bot.start(TOKEN)
+    await bot.start(os.getenv("TOKEN"))
 
 
 asyncio.run(main())

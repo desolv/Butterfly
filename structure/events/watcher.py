@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 
 from discord.ext import commands, tasks
+from structure.helper import load_json_data
 
 def should_modify_message(content: str) -> tuple[str, bool]:
     message = content.strip()
@@ -61,12 +62,13 @@ async def is_inappropriate_batch(client, messages: list[str]) -> str:
 class WatcherCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.enabled = bot.schema["watcher"]["enabled"]
-        self.monitor_channel_id = bot.schema["watcher"]["moderation_channel_id"]
-        self.watching_channel_id = bot.schema["watcher"]["watching_channel_id"]
-        self.watching_category_id = bot.schema["watcher"]["watching_category_id"]
-        self.batch_loop_seconds = bot.schema["watcher"]["batch"]["batch_loop_seconds"]
-        self.batch_loop_messages = bot.schema["watcher"]["batch"]["batch_loop_messages"]
+        environment = load_json_data(f"environment")
+        self.enabled = environment["watcher"]["enabled"]
+        self.monitor_channel_id = environment["watcher"]["moderation_channel_id"]
+        self.watching_channel_id = environment["watcher"]["watching_channel_id"]
+        self.watching_category_id = environment["watcher"]["watching_category_id"]
+        self.batch_loop_seconds = environment["watcher"]["batch"]["batch_loop_seconds"]
+        self.batch_loop_messages = environment["watcher"]["batch"]["batch_loop_messages"]
         self.client = bot.client
         self.batch_queue = []
         self.batch_loop.start()

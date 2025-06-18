@@ -1,0 +1,15 @@
+{
+  "command_prefix": "?",
+  "watcher": {
+    "enabled": true,
+    "batch": {
+      "batch_loop_seconds": 30,
+      "batch_loop_messages": 5
+    },
+    "moderation_channel_id": 1221928894043787284,
+    "watching_channel_id": [],
+    "watching_category_id": [
+      1154874898448121977
+    ]
+  }
+}
