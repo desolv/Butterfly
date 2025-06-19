@@ -1,7 +1,7 @@
 {
   "command_prefix": "?",
   "watcher": {
-    "enabled": true,
+    "enabled": false,
     "batch": {
       "batch_loop_seconds": 30,
       "batch_loop_messages": 5
