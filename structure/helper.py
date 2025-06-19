@@ -1,8 +1,12 @@
-from datetime import datetime, timezone
-import pytz
-import time
 import json
+import re
+import time
+from datetime import datetime, timedelta
+from datetime import timezone
 from pathlib import Path
+
+import pytz
+
 
 def get_time(format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London"):
     tz = pytz.timezone(timezone)
@@ -46,3 +50,22 @@ def load_json_data(path: str) -> dict:
 
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def parse_time_window(input_str: str) -> datetime:
+    match = re.match(r"(\d+)([dhm])", input_str.strip().lower())
+    if not match:
+        raise ValueError("Invalid time format. Use like '1d', '7d', or '3h'.")
+
+    value, unit = match.groups()
+    value = int(value)
+
+    now = datetime.utcnow()
+    if unit == "d":
+        return now - timedelta(days=value)
+    elif unit == "h":
+        return now - timedelta(hours=value)
+    elif unit == "m":
+        return now - timedelta(minutes=value)
+    else:
+        raise ValueError("Only 'd' (days), 'h' (hours) and 'm' (minutes) are supported.")
