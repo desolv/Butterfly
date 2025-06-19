@@ -1,37 +1,34 @@
+# -*- coding: utf-8 -*-
 import asyncio
 import nest_asyncio
 nest_asyncio.apply()
 
-import os
 import platform
 import sys
 from datetime import datetime
 
 import discord
-from dotenv import load_dotenv
 from discord.ext import commands
 from pathlib import Path
 
 from openai import OpenAI
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base
 from structure.helper import get_formatted_time, load_json_data
+from structure.repo.database import *
 
 load_dotenv(f"io/.env")
 
 bot = commands.Bot(command_prefix=load_json_data(f"environment")["command_prefix"], intents=discord.Intents.all())
-bot.engine = create_engine(os.getenv("MYSQL"), echo=(True if os.getenv("DEBUG") == "True" else False))
-bot.base = declarative_base()
 bot.client = OpenAI(api_key=os.getenv("OPENAI"))
 
-print(f"Snowy Robot")
+print(f"Paramount Robot")
 print(f"Running at Python {platform.python_version()}v, "
       f"Discord.py {discord.__version__}v - {platform.system()} {platform.release()} ({os.name})")
 
 try:
     mysql_uptime = datetime.now()
-    with bot.engine.connect() as connection:
+    with engine.connect() as connection:
         print(f"Running MySQL with SQLAlchemy at {str(get_formatted_time(mysql_uptime, format="%S"))}ms")
+    init_tables()
 except Exception as e:
     print(f"Failed to connect to MySQL -> {e}")
     sys.exit(0)
@@ -49,7 +46,7 @@ except Exception as e:
 
 async def load():
     for extension in Path("structure").rglob("*.py"):
-        if extension.stem.startswith("__") or "tables" in extension.parts:
+        if extension.stem.startswith("__") or "repo" in extension.parts:
             continue
 
         if extension.stem != "__init__":
