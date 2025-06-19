@@ -1,2 +1,2 @@
-# Snowy
-Discord robot including essential commands and functionalities
+# Paramount
+Discord robot including commands and events
