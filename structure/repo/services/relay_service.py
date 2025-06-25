@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Session
 from structure.repo.database import engine
-from structure.repo.models.logbook_model import Logbook
+from structure.repo.models.relay_model import Relay
 
-def create_logbook(discord_id: int, message: str, message_id: int, channel_id: int):
+def create_relay(discord_id: int, message: str, message_id: int, channel_id: int):
     with Session(engine) as session:
-        entry = Logbook(
+        entry = Relay(
             discord_id=discord_id,
             message=message,
             message_id=message_id,
@@ -15,22 +15,22 @@ def create_logbook(discord_id: int, message: str, message_id: int, channel_id: i
         session.refresh(entry)
         return entry
 
-def get_logbook(message_id: int) -> Logbook | None:
+def get_relay(message_id: int) -> Relay | None:
     with Session(engine) as session:
-        return session.query(Logbook).filter_by(message_id=message_id).first()
+        return session.query(Relay).filter_by(message_id=message_id).first()
 
-def delete_logbook(message_id: int) -> bool:
+def delete_relay(message_id: int) -> bool:
     with Session(engine) as session:
-        entry = session.query(Logbook).filter_by(message_id=message_id).first()
+        entry = session.query(Relay).filter_by(message_id=message_id).first()
         if entry:
             entry.mark_deleted()
             session.commit()
             return True
         return False
 
-def restore_logbook(message_id: int) -> bool:
+def restore_relay(message_id: int) -> bool:
     with Session(engine) as session:
-        entry = session.query(Logbook).filter_by(message_id=message_id).first()
+        entry = session.query(Relay).filter_by(message_id=message_id).first()
         if entry:
             entry.unmark_deleted()
             session.commit()

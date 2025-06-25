@@ -18,5 +18,5 @@ engine = create_engine(
 base = declarative_base()
 
 def init_tables():
-    from structure.repo.models.logbook_model import Logbook
+    from structure.repo.models.relay_model import Relay
     base.metadata.create_all(engine)

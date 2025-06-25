@@ -1,5 +1,5 @@
 from discord.ext import commands
-from structure.repo.services.logbook_service import create_logbook, delete_logbook
+from structure.repo.services.relay_service import create_relay, delete_relay
 
 class TrackerCog(commands.Cog):
     def __init__(self, bot):
@@ -15,7 +15,7 @@ class TrackerCog(commands.Cog):
             has_files = bool(names)
             name_string = ",".join(names) if has_files else ""
 
-            create_logbook(
+            create_relay(
                 discord_id=message.author.id,
                 message=f"{message.content[:1000]} {name_string}",
                 message_id=message.id,
@@ -27,7 +27,7 @@ class TrackerCog(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
         try:
-            delete_logbook(payload.message_id)
+            delete_relay(payload.message_id)
         except Exception as e:
             print(f"Failed to mark deleted → {e}")
 
