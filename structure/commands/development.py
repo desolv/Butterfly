@@ -1,10 +1,10 @@
+import platform
 import sys
 
-from discord.ext import commands
-import platform
 import psutil
+from discord.ext import commands
 
-from structure.helper import get_time, get_uptime
+from structure.providers.helper import get_time, get_uptime
 
 
 class DevelopmentCog(commands.Cog):
@@ -23,8 +23,8 @@ class DevelopmentCog(commands.Cog):
         Terminate robot activity
         :param none:
         """
-        await ctx.send(f"Snowy shutdown at **{get_time()}**!")
-        print(f"Snowy shutdown called by {ctx.message.author} at {get_time()}!")
+        await ctx.send(f"Paramount shutdown at **{get_time()}**!")
+        print(f"Paramount shutdown called by {ctx.message.author} at {get_time()}!")
         await self.bot.close()
         sys.exit(0)
 
@@ -47,7 +47,7 @@ class DevelopmentCog(commands.Cog):
         await ctx.send(f"- Latency -> {latency}ms\n"
                        f"- Loaded Cogs -> {loaded_cogs}\n"
                        f"- Running on Python {platform.python_version()}\n"
-                       f"Snowy memory usage at **{memory_usage:.2f} MB**")
+                       f"Paramount memory usage at **{memory_usage:.2f} MB**")
 
     @commands.is_owner()
     @commands.command(
@@ -120,7 +120,7 @@ class DevelopmentCog(commands.Cog):
         Displays robot uptime since last restart
         :param none:
         """
-        await ctx.send(f"Snowy initialised at **{get_uptime(self.bot)}**!")
+        await ctx.send(f"Paramount initialised at **{get_uptime(self.bot)}**!")
 
 
 async def setup(bot):
