@@ -1,5 +1,7 @@
 from discord.ext import commands
+
 from structure.repo.services.relay_service import create_relay, delete_relay
+
 
 class TrackerCog(commands.Cog):
     def __init__(self, bot):

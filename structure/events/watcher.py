@@ -2,7 +2,9 @@ import re
 from datetime import datetime
 
 from discord.ext import commands, tasks
-from structure.helper import load_json_data
+
+from structure.providers.helper import load_json_data
+
 
 def should_modify_message(content: str) -> tuple[str, bool]:
     message = content.strip()

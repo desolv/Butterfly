@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
+
 from structure.repo.database import engine
 from structure.repo.models.relay_model import Relay
+
 
 def create_relay(discord_id: int, message: str, message_id: int, channel_id: int):
     with Session(engine) as session:

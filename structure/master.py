@@ -1,9 +1,8 @@
-import time
 from datetime import datetime
 
 from discord.ext import commands
 
-from structure.helper import get_time
+from structure.providers.helper import get_time
 
 
 class MasterCog(commands.Cog):

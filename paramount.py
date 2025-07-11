@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import asyncio
+
 import nest_asyncio
+
 nest_asyncio.apply()
 
 import platform
@@ -12,7 +14,7 @@ from discord.ext import commands
 from pathlib import Path
 
 from openai import OpenAI
-from structure.helper import get_formatted_time, load_json_data
+from structure.providers.helper import get_formatted_time, load_json_data
 from structure.repo.database import *
 
 load_dotenv(f"io/.env")
