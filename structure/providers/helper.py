@@ -4,8 +4,10 @@ import time
 from datetime import datetime, timedelta
 from datetime import timezone
 from pathlib import Path
+from typing import List
 
 import pytz
+from discord.ext import commands
 
 
 def get_time(format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London"):
@@ -69,3 +71,21 @@ def parse_time_window(input_str: str) -> datetime:
         return now - timedelta(minutes=value)
     else:
         raise ValueError("Only 'd' (days), 'h' (hours) and 'm' (minutes) are supported.")
+
+
+def format_subcommands(bot, group_name: str) -> List[str]:
+    cmd_obj = bot.get_command(group_name)
+    if not cmd_obj or not isinstance(cmd_obj, commands.Group):
+        return []
+
+    lines: List[str] = []
+    for sub in cmd_obj.commands:
+        if sub.hidden:
+            continue
+
+        params = " ".join(f"<{name}>" for name in sub.clean_params)
+        usage = f"{sub.name} {params}".strip()
+
+        lines.append(f"`{usage}` – {sub.description or 'No description'}")
+
+    return lines
