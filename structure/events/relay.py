@@ -1,15 +1,22 @@
 from discord.ext import commands
 
+from structure.providers.helper import load_json_data
 from structure.repo.services.relay_service import create_relay, delete_relay
 
 
 class TrackerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        environment = load_json_data(f"environment")
+        self.enabled = environment["relay"]["enabled"]
+        self.ignored_users_id = environment["relay"]["ignored_users_id"]
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot:
+        if not self.enabled or message.author.bot:
+            return
+
+        if message.author.id in self.ignored_users_id:
             return
 
         try:

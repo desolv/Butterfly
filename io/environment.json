@@ -11,5 +11,11 @@
     "watching_category_id": [
       1154874898448121977
     ]
+  },
+  "relay": {
+    "enabled": false,
+    "ignored_users_id": [
+      123456
+    ]
   }
 }
