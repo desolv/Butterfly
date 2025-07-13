@@ -17,16 +17,16 @@ class RelayCog(commands.Cog):
         self.bot = bot
 
 
-    @has_roles(group="relay", sub="_default")
+    @has_roles(group="track", sub="_default")
     @commands.group(
-        name="relay",
+        name="track",
         invoke_without_command=True
     )
-    async def _relay(self, ctx):
-        lines = format_subcommands(self.bot, "relay")
+    async def _track(self, ctx):
+        lines = format_subcommands(self.bot, "track")
 
         embed = discord.Embed(
-            title="ʀᴇʟᴀʏ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
+            title="ᴛʀᴀᴄᴋ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
             description="\n".join(lines),
             color=0x393A41,
             timestamp=datetime.utcnow()
@@ -35,12 +35,12 @@ class RelayCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @has_roles(group="relay", sub="persona")
-    @_relay.command(
+    @has_roles(group="track", sub="persona")
+    @_track.command(
         name="persona",
         description="Show user message activity"
     )
-    async def _relay_persona(self, ctx, member: Member = None, time_range: str = "1d"):
+    async def _track_persona(self, ctx, member: Member = None, time_range: str = "1d"):
         try:
             since = parse_time_window(time_range)
         except ValueError as e:
@@ -82,7 +82,7 @@ class RelayCog(commands.Cog):
         top_channels = "\n".join(f"<#{cid}> - {count}" for cid, count in per_channel) or "No messages."
 
         embed = discord.Embed(
-            title=f"ʀᴇʟᴀʏ ѕᴛᴀᴛɪѕᴛɪᴄѕ ꜰᴏʀ @{member}",
+            title=f"ᴛʀᴀᴄᴋ ѕᴛᴀᴛɪѕᴛɪᴄѕ ꜰᴏʀ @{member}",
             description=
             f"**ᴍᴇѕѕᴀɢᴇѕ**: {total}\n"
             f"**ᴅᴇʟᴇᴛᴇᴅ**: {deleted} ({delete_rate:.1f}%)\n",
@@ -100,12 +100,12 @@ class RelayCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @has_roles(group="relay", sub="messages")
-    @_relay.command(
+    @has_roles(group="track", sub="messages")
+    @_track.command(
         name="messages",
         description="Show leaderboard of message activity"
     )
-    async def _relay_messages(self, ctx, time_range: str = "1d"):
+    async def _track_messages(self, ctx, time_range: str = "1d"):
         try:
             since = parse_time_window(time_range)
         except ValueError as e:
@@ -125,7 +125,7 @@ class RelayCog(commands.Cog):
 
 
         embed = discord.Embed(
-            title=f"ᴛᴏᴘ x ᴜѕᴇʀ - ʀᴇʟᴀʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ ꜰᴏʀ {time_range}",
+            title=f"ᴛᴏᴘ x ᴜѕᴇʀ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ ꜰᴏʀ {time_range}",
             color=0x393A41,
             timestamp=datetime.utcnow()
         )
@@ -138,12 +138,12 @@ class RelayCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @has_roles(group="relay", sub="channels")
-    @_relay.command(
+    @has_roles(group="track", sub="channels")
+    @_track.command(
         name="channels",
         description="Show leaderboard of message activity by channel"
     )
-    async def _relay_channels(self, ctx, time_range: str = "1d"):
+    async def _track_channels(self, ctx, time_range: str = "1d"):
         try:
             since = parse_time_window(time_range)
         except ValueError as e:
@@ -162,7 +162,7 @@ class RelayCog(commands.Cog):
             return await ctx.send("No relay channel activity in this time range.")
 
         embed = discord.Embed(
-            title=f"ᴛᴏᴘ x ᴄʜᴀɴɴᴇʟѕ - ʀᴇʟᴀʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ ꜰᴏʀ {time_range}",
+            title=f"ᴛᴏᴘ x ᴄʜᴀɴɴᴇʟѕ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ ꜰᴏʀ {time_range}",
             color=0x393A41,
             timestamp=datetime.utcnow()
         )
@@ -175,12 +175,12 @@ class RelayCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @has_roles(group="relay", sub="role")
-    @_relay.command(
+    @has_roles(group="track", sub="role")
+    @_track.command(
         name="role",
         description="Show leaderboard of message activity by role"
     )
-    async def _relay_role(self, ctx, role: discord.Role, time_range: str = "1d"):
+    async def _track_role(self, ctx, role: discord.Role, time_range: str = "1d"):
         try:
             since = parse_time_window(time_range)
         except ValueError as e:
@@ -205,7 +205,7 @@ class RelayCog(commands.Cog):
             return await ctx.send("No relay activity from that role in this time range.")
 
         embed = discord.Embed(
-            title=f"ᴛᴏᴘ @{role.name} ʀᴏʟᴇ - ʀᴇʟᴀʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ ꜰᴏʀ {time_range}",
+            title=f"ᴛᴏᴘ @{role.name} ʀᴏʟᴇ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ ꜰᴏʀ {time_range}",
             color=0x393A41,
             timestamp=datetime.utcnow()
         )

@@ -4,7 +4,7 @@ from structure.providers.helper import load_json_data
 from structure.repo.services.relay_service import create_relay, delete_relay
 
 
-class TrackerCog(commands.Cog):
+class RelayCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         environment = load_json_data(f"environment")
@@ -41,4 +41,4 @@ class TrackerCog(commands.Cog):
             print(f"Failed to mark deleted → {e}")
 
 async def setup(bot):
-    await bot.add_cog(TrackerCog(bot))
+    await bot.add_cog(RelayCog(bot))

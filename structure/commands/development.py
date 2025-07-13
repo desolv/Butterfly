@@ -7,7 +7,7 @@ from discord.ext import commands
 from structure.providers.helper import get_time, get_uptime
 
 
-class DevelopmentCog(commands.Cog):
+class DevelopmentCommandCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -124,4 +124,4 @@ class DevelopmentCog(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(DevelopmentCog(bot))
+    await bot.add_cog(DevelopmentCommandCog(bot))
