@@ -10,7 +10,8 @@
     "watching_channel_id": [],
     "watching_category_id": [
       1154874898448121977
-    ]
+    ],
+    "prompt": "You are a Discord moderation assistant. Judge the following messages and respond in this exact format: [1] Verdict: Safe/Flagged - [short reason] Label rules: Safe = Harmless, casual, joking, sarcastic, vague, or includes links, commands, emojis, memes. Flagged = Only if the message clearly contains hate speech, violent threats, slurs, graphic NSFW content, or targeted harassment. Be cautious. Do not flag messages unless they are clearly harmful or rule-breaking. Messages:"
   },
   "relay": {
     "enabled": false,

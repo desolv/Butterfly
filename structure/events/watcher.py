@@ -30,24 +30,8 @@ def parse_gpt_verdicts(raw: str) -> dict[int, str]:
     return results
 
 
-async def is_inappropriate_batch(client, messages: list[str]) -> str:
-    prompt = (
-            """
-            You are a Discord moderation assistant.
-
-            Judge the following messages and respond in this exact format:
-            [1] Verdict: Safe/Flagged - [short reason]
-            
-            Label rules:
-            - Safe = Harmless, casual, joking, sarcastic, vague, or includes links, commands, emojis, memes.
-            - Flagged = Only if the message clearly contains hate speech, violent threats, slurs, graphic NSFW content, or targeted harassment.
-            
-            Be cautious. Do not flag messages unless they are clearly harmful or rule-breaking.
-            
-            Messages:
-            """ +
-            "\n".join(f"[{i + 1}] {msg}" for i, msg in enumerate(messages))
-    )
+async def is_inappropriate_batch(client, gpt_prompt, messages: list[str]) -> str:
+    prompt = gpt_prompt +"\n".join(f"[{i + 1}] {msg}" for i, msg in enumerate(messages))
 
     try:
         response = client.chat.completions.create(
@@ -71,6 +55,7 @@ class WatcherCog(commands.Cog):
         self.watching_category_id = environment["watcher"]["watching_category_id"]
         self.batch_loop_seconds = environment["watcher"]["batch"]["batch_loop_seconds"]
         self.batch_loop_messages = environment["watcher"]["batch"]["batch_loop_messages"]
+        self.prompt = environment["watcher"]["prompt"]
         self.client = bot.client
         self.batch_queue = []
         self.batch_loop.start()
@@ -124,7 +109,7 @@ class WatcherCog(commands.Cog):
         self.batch_queue = []
         cleaned_messages = [cleaned for _, cleaned in batch]
 
-        raw_verdicts = await is_inappropriate_batch(self.client, cleaned_messages)
+        raw_verdicts = await is_inappropriate_batch(self.client, self.prompt, cleaned_messages)
         verdicts = parse_gpt_verdicts(raw_verdicts)
 
         mod_channel = self.bot.get_channel(self.monitor_channel_id)
