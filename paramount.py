@@ -37,17 +37,15 @@ except Exception as e:
     print(f"Failed to connect to MySQL -> {e}")
     sys.exit(0)
 
-if environment["watcher"]["enabled"]:
-    try:
-        test_response = bot.client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": "Ping"}]
-        )
-        print("Connected to OpenAI\n")
-    except Exception as e:
-        print(f"Failed to connect to OpenAI -> {e}")
-        sys.exit(0)
-
+try:
+    test_response = bot.client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": "Ping"}]
+    )
+    print("Connected to OpenAI\n")
+except Exception as e:
+    print(f"Failed to connect to OpenAI -> {e}")
+    sys.exit(0)
 
 async def load():
     for extension in Path("structure").rglob("*.py"):
