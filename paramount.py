@@ -19,9 +19,7 @@ from structure.repo.database import *
 
 load_dotenv(f"io/.env")
 
-environment = load_json_data(f"environment")
-
-bot = commands.Bot(command_prefix=environment["command_prefix"], intents=discord.Intents.all())
+bot = commands.Bot(command_prefix=load_json_data(f"environment")["command_prefix"], intents=discord.Intents.all())
 bot.client = OpenAI(api_key=os.getenv("OPENAI"))
 
 print(f"Paramount Robot")

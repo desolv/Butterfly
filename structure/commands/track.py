@@ -125,15 +125,14 @@ class TrackCommandCog(commands.Cog):
 
 
         embed = discord.Embed(
-            title=f"ᴛᴏᴘ x ᴜѕᴇʀ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ ꜰᴏʀ {time_range}",
+            title=f"ᴛᴏᴘ x ᴜѕᴇʀ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ - {time_range}",
             color=0x393A41,
             timestamp=datetime.utcnow()
         )
 
         for i, (persona_id, messages, deleted) in enumerate(leaderboard, start=1):
             member = ctx.guild.get_member(persona_id)
-            mention = member if member else f"{persona_id}"
-            embed.add_field(name=f"@{mention} - **{messages} ᴍᴇѕѕᴀɢᴇѕ**", value="", inline=False)
+            embed.add_field(name=" ", value=f"{member.mention} - **{messages} ᴍᴇѕѕᴀɢᴇѕ**", inline=False)
 
         await ctx.send(embed=embed)
 
@@ -162,15 +161,14 @@ class TrackCommandCog(commands.Cog):
             return await ctx.send("No relay channel activity in this time range.")
 
         embed = discord.Embed(
-            title=f"ᴛᴏᴘ x ᴄʜᴀɴɴᴇʟѕ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ ꜰᴏʀ {time_range}",
+            title=f"ᴛᴏᴘ x ᴄʜᴀɴɴᴇʟѕ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ - {time_range}",
             color=0x393A41,
             timestamp=datetime.utcnow()
         )
 
         for i, (channel_id, messages, deleted) in enumerate(leaderboard, start=1):
             channel = ctx.guild.get_channel(channel_id)
-            name = channel.name if channel else f"{channel_id}"
-            embed.add_field(name=f"#{name} - {messages} ᴍᴇѕѕᴀɢᴇѕ ᴀɴᴅ {deleted or 0} ᴅᴇʟᴇᴛᴇᴅ", value="", inline=False)
+            embed.add_field(name=" ", value=f"{channel.mention} - {messages} ᴍᴇѕѕᴀɢᴇѕ ᴀɴᴅ {deleted or 0} ᴅᴇʟᴇᴛᴇᴅ", inline=False)
 
         await ctx.send(embed=embed)
 
@@ -205,15 +203,14 @@ class TrackCommandCog(commands.Cog):
             return await ctx.send("No relay activity from that role in this time range.")
 
         embed = discord.Embed(
-            title=f"ᴛᴏᴘ @{role.name} ʀᴏʟᴇ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ ꜰᴏʀ {time_range}",
+            title=f"ᴛᴏᴘ @{role.name} ʀᴏʟᴇ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ - {time_range}",
             color=0x393A41,
             timestamp=datetime.utcnow()
         )
 
         for i, (persona_id, messages, deleted) in enumerate(leaderboard, start=1):
             member = ctx.guild.get_member(persona_id)
-            mention = member if member else f"{persona_id}"
-            embed.add_field(name=f"@{mention} - **{messages} ᴍᴇѕѕᴀɢᴇѕ**", value="", inline=False)
+            embed.add_field(name=" ",  value=f"{member.mention} - **{messages} ᴍᴇѕѕᴀɢᴇѕ**", inline=False)
 
         await ctx.send(embed=embed)
 
