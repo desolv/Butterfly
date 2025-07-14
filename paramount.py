@@ -19,7 +19,9 @@ from structure.repo.database import *
 
 load_dotenv(f"io/.env")
 
-bot = commands.Bot(command_prefix=load_json_data(f"environment")["command_prefix"], intents=discord.Intents.all())
+environment = load_json_data(f"environment")
+
+bot = commands.Bot(command_prefix=environment["command_prefix"], intents=discord.Intents.all())
 bot.client = OpenAI(api_key=os.getenv("OPENAI"))
 
 print(f"Paramount Robot")
@@ -35,15 +37,16 @@ except Exception as e:
     print(f"Failed to connect to MySQL -> {e}")
     sys.exit(0)
 
-try:
-    test_response = bot.client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": "Ping"}]
-    )
-    print("Connected to OpenAI\n")
-except Exception as e:
-    print(f"Failed to connect to OpenAI -> {e}")
-    sys.exit(0)
+if environment["watcher"]["enabled"]:
+    try:
+        test_response = bot.client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": "Ping"}]
+        )
+        print("Connected to OpenAI\n")
+    except Exception as e:
+        print(f"Failed to connect to OpenAI -> {e}")
+        sys.exit(0)
 
 
 async def load():

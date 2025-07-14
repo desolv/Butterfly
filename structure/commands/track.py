@@ -12,7 +12,7 @@ from structure.repo.database import engine
 from structure.repo.models.relay_model import Relay
 
 
-class RelayCog(commands.Cog):
+class TrackCommandCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -219,4 +219,4 @@ class RelayCog(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(RelayCog(bot))
+    await bot.add_cog(TrackCommandCog(bot))
