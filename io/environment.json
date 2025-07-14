@@ -15,7 +15,7 @@
   },
   "relay": {
     "enabled": false,
-    "ignored_users_id": [
+    "ignored_persona_id": [
       123456
     ]
   }

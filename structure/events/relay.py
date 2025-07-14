@@ -9,14 +9,14 @@ class RelayCog(commands.Cog):
         self.bot = bot
         environment = load_json_data(f"environment")
         self.enabled = environment["relay"]["enabled"]
-        self.ignored_users_id = environment["relay"]["ignored_users_id"]
+        self.ignored_persona_id = environment["relay"]["ignored_persona_id"]
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if not self.enabled or message.author.bot:
             return
 
-        if message.author.id in self.ignored_users_id:
+        if message.author.id in self.ignored_persona_id:
             return
 
         try:
