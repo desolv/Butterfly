@@ -131,8 +131,7 @@ class TrackCommandCog(commands.Cog):
         )
 
         for i, (persona_id, messages, deleted) in enumerate(leaderboard, start=1):
-            member = ctx.guild.get_member(persona_id)
-            embed.add_field(name=" ", value=f"{member.mention} - **{messages} ᴍᴇѕѕᴀɢᴇѕ**", inline=False)
+            embed.add_field(name=" ", value=f"<@{persona_id}> - **{messages} ᴍᴇѕѕᴀɢᴇѕ**", inline=False)
 
         await ctx.send(embed=embed)
 
@@ -167,8 +166,7 @@ class TrackCommandCog(commands.Cog):
         )
 
         for i, (channel_id, messages, deleted) in enumerate(leaderboard, start=1):
-            channel = ctx.guild.get_channel(channel_id)
-            embed.add_field(name=" ", value=f"{channel.mention} - {messages} ᴍᴇѕѕᴀɢᴇѕ ᴀɴᴅ {deleted or 0} ᴅᴇʟᴇᴛᴇᴅ", inline=False)
+            embed.add_field(name=" ", value=f"<#{channel_id}> - {messages} ᴍᴇѕѕᴀɢᴇѕ ᴀɴᴅ {deleted or 0} ᴅᴇʟᴇᴛᴇᴅ", inline=False)
 
         await ctx.send(embed=embed)
 
@@ -209,8 +207,7 @@ class TrackCommandCog(commands.Cog):
         )
 
         for i, (persona_id, messages, deleted) in enumerate(leaderboard, start=1):
-            member = ctx.guild.get_member(persona_id)
-            embed.add_field(name=" ",  value=f"{member.mention} - **{messages} ᴍᴇѕѕᴀɢᴇѕ**", inline=False)
+            embed.add_field(name=" ",  value=f"<@{persona_id}> - **{messages} ᴍᴇѕѕᴀɢᴇѕ**", inline=False)
 
         await ctx.send(embed=embed)
 
