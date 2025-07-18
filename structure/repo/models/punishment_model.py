@@ -24,6 +24,7 @@ class Punishment(base):
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    punishment_id = Column(String(255), nullable=False)
     user_id = Column(BigInteger, nullable=False)
     moderator_id = Column(BigInteger, nullable=False)
     type = Column(SqlEnum(PunishmentType), nullable=False)
@@ -31,6 +32,8 @@ class Punishment(base):
     created_at = Column(DateTime, default=datetime.utcnow)
     duration = Column(Integer, nullable=True)  # seconds; null = permanent
     expires_at = Column(DateTime, nullable=True)
+    removed_by = Column(BigInteger, nullable=True)
+    removed_at = Column(DateTime, nullable=True)
     active = Column(Boolean, nullable=True)
 
     def __repr__(self):

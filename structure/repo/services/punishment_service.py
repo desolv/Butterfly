@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
+from structure.providers.helper import generate_id
 from structure.repo.database import engine
 from structure.repo.models.punishment_model import Punishment, PunishmentType
 
@@ -12,6 +13,7 @@ def create_punishment(user_id: int, moderator_id: int, type: PunishmentType, rea
 
     with Session(engine) as session:
         punishment = Punishment(
+            punishment_id=generate_id(),
             user_id=user_id,
             moderator_id=moderator_id,
             type=type,
@@ -39,22 +41,13 @@ def get_active_punishments():
             Punishment.expires_at <= datetime.utcnow()
         ).all()
 
-
-def deactivate_punishment(punishment_id: int) -> bool:
+def remove_punishment(punishment_id: str, moderator_id: int) -> bool:
     with Session(engine) as session:
-        punishment = session.get(Punishment, punishment_id)
+        punishment = session.query(Punishment).filter_by(punishment_id=punishment_id).first()
         if not punishment:
             return False
+        punishment.removed_by = moderator_id
+        punishment.removed_at = datetime.utcnow()
         punishment.active = False
-        session.commit()
-        return True
-
-
-def remove_punishment(punishment_id: int) -> bool:
-    with Session(engine) as session:
-        p = session.get(Punishment, punishment_id)
-        if not p:
-            return False
-        session.delete(p)
         session.commit()
         return True
