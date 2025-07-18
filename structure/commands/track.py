@@ -49,7 +49,7 @@ class TrackCommandCog(commands.Cog):
 
         with (Session(engine) as session):
             base_query = session.query(Relay).filter(
-                Relay.discord_id == member.id,
+                Relay.user_id == member.id,
                 Relay.timestamp >= since
             )
 
@@ -60,16 +60,16 @@ class TrackCommandCog(commands.Cog):
                 Relay.channel_id,
                 func.count()
             ).filter(
-                Relay.discord_id == member.id,
+                Relay.user_id == member.id,
                 Relay.timestamp >= since
             ).group_by(Relay.channel_id).order_by(func.count().desc()).limit(3).all()
 
             global_total, global_count = session.query(
                 func.count(),
-                func.count(func.distinct(Relay.discord_id))
+                func.count(func.distinct(Relay.user_id))
             ).filter(
                 Relay.timestamp >= since,
-                Relay.discord_id != member.id
+                Relay.user_id != member.id
             ).one()
 
         if not total:
@@ -113,12 +113,12 @@ class TrackCommandCog(commands.Cog):
 
         with Session(engine) as session:
             leaderboard = session.query(
-                Relay.discord_id,
+                Relay.user_id,
                 func.count(),
                 func.sum(func.if_(Relay.is_deleted == True, 1, 0))
             ).filter(
                 Relay.timestamp >= since
-            ).group_by(Relay.discord_id).order_by(func.count().desc()).limit(10).all()
+            ).group_by(Relay.user_id).order_by(func.count().desc()).limit(10).all()
 
         if not leaderboard:
             return await ctx.send("No relay activity in this time range.")
@@ -189,13 +189,13 @@ class TrackCommandCog(commands.Cog):
         with Session(engine) as session:
             persona_ids = [m.id for m in members]
             leaderboard = session.query(
-                Relay.discord_id,
+                Relay.user_id,
                 func.count(),
                 func.sum(func.if_(Relay.is_deleted == True, 1, 0))
             ).filter(
-                Relay.discord_id.in_(persona_ids),
+                Relay.user_id.in_(persona_ids),
                 Relay.timestamp >= since
-            ).group_by(Relay.discord_id).order_by(func.count().desc()).limit(10).all()
+            ).group_by(Relay.user_id).order_by(func.count().desc()).limit(10).all()
 
         if not leaderboard:
             return await ctx.send("No relay activity from that role in this time range.")
