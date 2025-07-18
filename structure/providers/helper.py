@@ -1,5 +1,7 @@
 import json
+import random
 import re
+import string
 import time
 from datetime import datetime, timedelta
 from datetime import timezone
@@ -89,3 +91,10 @@ def format_subcommands(bot, group_name: str) -> List[str]:
         lines.append(f"`{usage}` – {sub.description or 'No description'}")
 
     return lines
+
+def generate_id(length=9, symbols=True):
+    chars = string.ascii_letters + string.digits
+    if symbols:
+        chars += "#@$&"
+
+    return ''.join(random.choices(chars, k=length))
