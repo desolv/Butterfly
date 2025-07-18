@@ -1,6 +1,6 @@
 {
   "command_prefix": "?",
-  "guild_id": 123,
+  "guild_id": 1154868078274957343,
   "watcher": {
     "enabled": false,
     "batch": {
@@ -17,5 +17,8 @@
   "relay": {
     "enabled": false,
     "ignored_personas": []
+  },
+  "punishments": {
+    "muted_role": 123
   }
 }
