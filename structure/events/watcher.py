@@ -52,7 +52,7 @@ class WatcherCog(commands.Cog):
         self.guild_id = environment["guild_id"]
         self.enabled = environment["watcher"]["enabled"]
         self.monitor_channel = environment["watcher"]["moderation_channel"]
-        self.watching_channel = environment["watcher"]["watching_channel"]
+        self.watching_channels = environment["watcher"]["watching_channels"]
         self.watching_categories = environment["watcher"]["watching_categories"]
         self.batch_loop_seconds = environment["watcher"]["batch"]["batch_loop_seconds"]
         self.batch_loop_messages = environment["watcher"]["batch"]["batch_loop_messages"]
@@ -69,7 +69,7 @@ class WatcherCog(commands.Cog):
         if not self.enabled or (self.guild_id != message.guild.id):
             return
 
-        channel_ok = message.channel.id in self.watching_channel
+        channel_ok = message.channel.id in self.watching_channels
         category_ok = (
                 message.channel.category and
                 message.channel.category.id in self.watching_categories
