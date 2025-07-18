@@ -25,7 +25,7 @@ class RelayCog(commands.Cog):
             name_string = ",".join(names) if has_files else ""
 
             create_relay(
-                discord_id=message.author.id,
+                user_id=message.author.id,
                 message=f"{message.content[:1000]} {name_string}",
                 message_id=message.id,
                 channel_id=message.channel.id,
