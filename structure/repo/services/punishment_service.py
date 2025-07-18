@@ -1,19 +1,18 @@
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
-from structure.providers.helper import generate_id
 from structure.repo.database import engine
 from structure.repo.models.punishment_model import Punishment, PunishmentType
 
 
-def create_punishment(user_id: int, moderator_id: int, type: PunishmentType, reason: str = None, duration: int = None):
+def create_punishment(punishment_id: str, user_id: int, moderator_id: int, type: PunishmentType, reason: str = None, duration: int = None):
     now = datetime.utcnow()
     expires_at = now + timedelta(seconds=duration) if duration else None
     is_active = True if type in (PunishmentType.MUTE, PunishmentType.BAN) and expires_at else None
 
     with Session(engine) as session:
         punishment = Punishment(
-            punishment_id=generate_id(),
+            punishment_id=punishment_id,
             user_id=user_id,
             moderator_id=moderator_id,
             type=type,
