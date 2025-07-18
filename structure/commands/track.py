@@ -17,7 +17,7 @@ class TrackCommandCog(commands.Cog):
         self.bot = bot
 
 
-    @has_roles(group="track", sub="_default")
+    @has_roles(name="track", sub="_default")
     @commands.group(
         name="track",
         invoke_without_command=True
@@ -35,7 +35,7 @@ class TrackCommandCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @has_roles(group="track", sub="persona")
+    @has_roles(name="track", sub="persona")
     @_track.command(
         name="persona",
         description="Show user message activity"
@@ -100,7 +100,7 @@ class TrackCommandCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @has_roles(group="track", sub="messages")
+    @has_roles(name="track", sub="messages")
     @_track.command(
         name="messages",
         description="Show leaderboard of message activity"
@@ -136,7 +136,7 @@ class TrackCommandCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @has_roles(group="track", sub="channels")
+    @has_roles(name="track", sub="channels")
     @_track.command(
         name="channels",
         description="Show leaderboard of message activity by channel"
@@ -171,7 +171,7 @@ class TrackCommandCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @has_roles(group="track", sub="role")
+    @has_roles(name="track", sub="role")
     @_track.command(
         name="role",
         description="Show leaderboard of message activity by role"

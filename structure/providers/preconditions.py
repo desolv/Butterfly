@@ -16,12 +16,12 @@ def is_admin():
     return commands.check(predicate)
 
 
-def has_roles(group: str, sub: str = None):
+def has_roles(name: str, sub: str = None):
     async def predicate(ctx):
         if is_admin():
             return True
 
-        command = load_json_data("permissions").get(group, {})
+        command = load_json_data("permissions").get(name, {})
         role_ids = command.get(sub, [])
         user_role_ids  = [role.id for role in ctx.author.roles]
 
