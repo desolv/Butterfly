@@ -42,7 +42,7 @@ def get_active_punishments():
 
 def deactivate_punishment(punishment_id: str, moderator_id: int | None = None) -> bool:
     with Session(engine) as session:
-        punishment = session.query(Punishment).filter_by(punishment_id=punishment_id).first()
+        punishment = session.query(Punishment).filter_by(punishment_id=punishment_id, active=True).first()
         if not punishment:
             return False
         punishment.removed_at = datetime.utcnow()
@@ -50,4 +50,5 @@ def deactivate_punishment(punishment_id: str, moderator_id: int | None = None) -
         punishment.active = False
         session.commit()
         return True
+
 
