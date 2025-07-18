@@ -50,9 +50,9 @@ class WatcherCog(commands.Cog):
         self.bot = bot
         environment = load_json_data(f"environment")
         self.enabled = environment["watcher"]["enabled"]
-        self.monitor_channel_id = environment["watcher"]["moderation_channel_id"]
-        self.watching_channel_id = environment["watcher"]["watching_channel_id"]
-        self.watching_category_id = environment["watcher"]["watching_category_id"]
+        self.monitor_channel = environment["watcher"]["moderation_channel"]
+        self.watching_channel = environment["watcher"]["watching_channel"]
+        self.watching_categories = environment["watcher"]["watching_categories"]
         self.batch_loop_seconds = environment["watcher"]["batch"]["batch_loop_seconds"]
         self.batch_loop_messages = environment["watcher"]["batch"]["batch_loop_messages"]
         self.prompt = environment["watcher"]["prompt"]
@@ -68,10 +68,10 @@ class WatcherCog(commands.Cog):
         if not self.enabled:
             return
 
-        channel_ok = message.channel.id in self.watching_channel_id
+        channel_ok = message.channel.id in self.watching_channel
         category_ok = (
                 message.channel.category and
-                message.channel.category.id in self.watching_category_id
+                message.channel.category.id in self.watching_categories
         )
 
         if message.author.bot or not (channel_ok or category_ok):
@@ -112,7 +112,7 @@ class WatcherCog(commands.Cog):
         raw_verdicts = await is_inappropriate_batch(self.client, self.prompt, cleaned_messages)
         verdicts = parse_gpt_verdicts(raw_verdicts)
 
-        mod_channel = self.bot.get_channel(self.monitor_channel_id)
+        mod_channel = self.bot.get_channel(self.monitor_channel)
         if not mod_channel:
             return
 
