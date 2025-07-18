@@ -8,7 +8,7 @@
       "batch_loop_messages": 5
     },
     "moderation_channel": 1221928894043787284,
-    "watching_channel": [],
+    "watching_channels": [],
     "watching_categories": [
       1154874898448121977
     ],
@@ -16,9 +16,14 @@
   },
   "relay": {
     "enabled": false,
-    "ignored_personas": []
+    "exempt_users": []
   },
   "punishments": {
-    "muted_role": 123
+    "muted_role": 123,
+    "exempt_roles": [
+      1154869652221083728
+    ],
+    "exempt_users": [],
+    "moderation_channel": 1395616448713588796
   }
 }
