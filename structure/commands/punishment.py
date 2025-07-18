@@ -6,7 +6,7 @@ from discord.ext import commands
 from structure.providers.helper import load_json_data, generate_id
 from structure.providers.preconditions import has_roles
 from structure.repo.models.punishment_model import PunishmentType
-from structure.repo.services.punishment_service import create_punishment
+from structure.repo.services.punishment_service import create_punishment, deactivate_punishment
 
 
 class PunishmentCommandCog(commands.Cog):
@@ -100,6 +100,33 @@ class PunishmentCommandCog(commands.Cog):
         await self.send_moderation_log(ctx.guild, embed)
 
 
+    @has_roles(name="warn", sub="_default")
+    @commands.command(
+        name="removewarn",
+        description="Remove a warning from a member"
+    )
+    async def _removewarn(self, ctx, member: discord.Member, punishment_id: str, *, reason: str = "No reason provided"):
+        if not deactivate_punishment(punishment_id, moderator_id=ctx.author.id):
+            await ctx.send(f"Punishment **#{punishment_id}** not found or inactive.")
+            return
+
+        await member.send(f"Warning **#{punishment_id}** as been removed by **Staff** for **{reason}**.")
+        await ctx.send(f"Warning **#{punishment_id}** has been removed from **@{member}** for **{reason}**.")
+
+        embed = discord.Embed(
+            title=f"ᴡᴀʀɴ ʀᴇᴍᴏᴠᴀʟ ꜰᴏʀ @{member}",
+            description=
+            f"**ᴍᴏᴅᴇʀᴀᴛᴏʀ**: {ctx.author.mention}\n"
+            f"**ʀᴇᴀѕᴏɴ**: {reason}\n"
+            f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ɪᴅ**: **{punishment_id}**",
+            color=discord.Color.teal(),
+            timestamp=datetime.utcnow()
+        )
+
+        avatar_url = member.avatar.url if member.avatar else member.default_avatar.url
+        embed.set_thumbnail(url=avatar_url)
+
+        await self.send_moderation_log(ctx.guild, embed)
 
 
 
