@@ -40,9 +40,9 @@ class TrackCommandCog(commands.Cog):
         name="persona",
         description="Show user message activity"
     )
-    async def _track_persona(self, ctx, member: Member = None, time_range: str = "1d"):
+    async def _track_persona(self, ctx, member: Member = None, duration: str = "1d"):
         try:
-            since = parse_time_window(time_range)
+            parse_duration = parse_time_window(duration)
         except ValueError as e:
             return await ctx.send(e)
         member = member or ctx.author
@@ -50,7 +50,7 @@ class TrackCommandCog(commands.Cog):
         with (Session(engine) as session):
             base_query = session.query(Relay).filter(
                 Relay.user_id == member.id,
-                Relay.timestamp >= since
+                Relay.timestamp >= parse_duration
             )
 
             total = base_query.count()
@@ -61,24 +61,24 @@ class TrackCommandCog(commands.Cog):
                 func.count()
             ).filter(
                 Relay.user_id == member.id,
-                Relay.timestamp >= since
+                Relay.timestamp >= parse_duration
             ).group_by(Relay.channel_id).order_by(func.count().desc()).limit(3).all()
 
             global_total, global_count = session.query(
                 func.count(),
                 func.count(func.distinct(Relay.user_id))
             ).filter(
-                Relay.timestamp >= since,
+                Relay.timestamp >= parse_duration,
                 Relay.user_id != member.id
             ).one()
 
         if not total:
             return await ctx.send("No relay activity in this time range.")
 
-        days = max((datetime.utcnow() - since).days, 1)
+        days = max((datetime.utcnow() - parse_duration).days, 1)
         global_avg_per_persona = round(global_total / max(global_count, 1) / days, 1)
         delete_rate = (deleted / total * 100) if total else 0
-        per_day = round(total / max((datetime.utcnow() - since).days, 1), 1)
+        per_day = round(total / max((datetime.utcnow() - parse_duration).days, 1), 1)
         top_channels = "\n".join(f"<#{cid}> - {count}" for cid, count in per_channel) or "No messages."
 
         embed = discord.Embed(
@@ -92,7 +92,7 @@ class TrackCommandCog(commands.Cog):
 
         embed.add_field(name="ᴀᴠᴇʀᴀɢᴇ/ᴅᴀʏ", value=f"{per_day}", inline=True)
         embed.add_field(name="ᴄᴏᴍᴘᴀʀᴇᴅ ᴛᴏ ɢʟᴏʙᴀʟ ᴀᴠɢ", value=f"{(per_day / global_avg_per_persona):.1f}x" if global_avg_per_persona > 0 else "N/A", inline=True)
-        embed.add_field(name="ᴛɪᴍᴇ ʀᴀɴɢᴇ", value=f"{time_range}", inline=True)
+        embed.add_field(name="ᴛɪᴍᴇ ʀᴀɴɢᴇ", value=f"{duration}", inline=True)
         embed.add_field(name="ᴛᴏᴘ ɪɪɪ ᴄʜᴀɴɴᴇʟѕ", value=f"{top_channels}", inline=False)
 
         embed.set_thumbnail(url=member.avatar.url)
@@ -105,9 +105,9 @@ class TrackCommandCog(commands.Cog):
         name="messages",
         description="Show leaderboard of message activity"
     )
-    async def _track_messages(self, ctx, time_range: str = "1d"):
+    async def _track_messages(self, ctx, duration: str = "1d"):
         try:
-            since = parse_time_window(time_range)
+            parse_duration = parse_time_window(duration)
         except ValueError as e:
             return await ctx.send(e)
 
@@ -117,7 +117,7 @@ class TrackCommandCog(commands.Cog):
                 func.count(),
                 func.sum(func.if_(Relay.is_deleted == True, 1, 0))
             ).filter(
-                Relay.timestamp >= since
+                Relay.timestamp >= parse_duration
             ).group_by(Relay.user_id).order_by(func.count().desc()).limit(10).all()
 
         if not leaderboard:
@@ -125,7 +125,7 @@ class TrackCommandCog(commands.Cog):
 
 
         embed = discord.Embed(
-            title=f"ᴛᴏᴘ x ᴜѕᴇʀ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ - {time_range}",
+            title=f"ᴛᴏᴘ x ᴜѕᴇʀ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ - {duration}",
             color=0x393A41,
             timestamp=datetime.utcnow()
         )
@@ -141,9 +141,9 @@ class TrackCommandCog(commands.Cog):
         name="channels",
         description="Show leaderboard of message activity by channel"
     )
-    async def _track_channels(self, ctx, time_range: str = "1d"):
+    async def _track_channels(self, ctx, duration: str = "1d"):
         try:
-            since = parse_time_window(time_range)
+            parse_duration = parse_time_window(duration)
         except ValueError as e:
             return await ctx.send(e)
 
@@ -153,14 +153,14 @@ class TrackCommandCog(commands.Cog):
                 func.count(),
                 func.sum(func.if_(Relay.is_deleted == True, 1, 0))
             ).filter(
-                Relay.timestamp >= since
+                Relay.timestamp >= parse_duration
             ).group_by(Relay.channel_id).order_by(func.count().desc()).limit(10).all()
 
         if not leaderboard:
             return await ctx.send("No relay channel activity in this time range.")
 
         embed = discord.Embed(
-            title=f"ᴛᴏᴘ x ᴄʜᴀɴɴᴇʟѕ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ - {time_range}",
+            title=f"ᴛᴏᴘ x ᴄʜᴀɴɴᴇʟѕ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ - {duration}",
             color=0x393A41,
             timestamp=datetime.utcnow()
         )
@@ -176,9 +176,9 @@ class TrackCommandCog(commands.Cog):
         name="role",
         description="Show leaderboard of message activity by role"
     )
-    async def _track_role(self, ctx, role: discord.Role, time_range: str = "1d"):
+    async def _track_role(self, ctx, role: discord.Role, duration: str = "1d"):
         try:
-            since = parse_time_window(time_range)
+            parse_duration = parse_time_window(duration)
         except ValueError as e:
             return await ctx.send(e)
 
@@ -194,14 +194,14 @@ class TrackCommandCog(commands.Cog):
                 func.sum(func.if_(Relay.is_deleted == True, 1, 0))
             ).filter(
                 Relay.user_id.in_(persona_ids),
-                Relay.timestamp >= since
+                Relay.timestamp >= parse_duration
             ).group_by(Relay.user_id).order_by(func.count().desc()).limit(10).all()
 
         if not leaderboard:
             return await ctx.send("No relay activity from that role in this time range.")
 
         embed = discord.Embed(
-            title=f"ᴛᴏᴘ @{role.name} ʀᴏʟᴇ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ - {time_range}",
+            title=f"ᴛᴏᴘ @{role.name} ʀᴏʟᴇ - ᴛʀᴀᴄᴋ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ - {duration}",
             color=0x393A41,
             timestamp=datetime.utcnow()
         )
