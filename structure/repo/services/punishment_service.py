@@ -32,7 +32,7 @@ def get_global_active_expiring_punishments_within(within_seconds: int = 120):
     with Session(engine) as session:
         return session.query(Punishment).filter(
             and_(
-                Punishment.active == True,
+                Punishment.is_active == True,
                 Punishment.expires_at <= threshold
             )
         ).order_by(Punishment.expires_at.asc()).all()
@@ -70,7 +70,7 @@ def remove_user_active_punishment(punishment_id: str, moderator_id: int = None, 
         punishment.removed_at = datetime.utcnow()
         punishment.removed_by = moderator_id  # can be None
         punishment.removed_reason = reason
-        punishment.active = False
+        punishment.is_active = False
 
         session.add(punishment)
         session.commit()

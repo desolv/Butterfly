@@ -38,7 +38,7 @@ class Punishment(base):
     removed_by = Column(BigInteger, nullable=True)
     removed_at = Column(DateTime, nullable=True)
     removed_reason = Column(String(255), nullable=True)
-    active = Column(Boolean, nullable=True)
+    is_active = Column(Boolean, nullable=True)
 
     def __repr__(self):
         return f"<Punishment {self.type.value.upper()} for {self.user_id}>"
