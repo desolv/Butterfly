@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 
+import discord
 from discord.ext import commands, tasks
 
 from structure.providers.helper import load_json_data
@@ -117,21 +118,29 @@ class WatcherCog(commands.Cog):
         if not mod_channel:
             return
 
-        lines = ["```ansi", "\u001b[1;37mBatch Moderation Results:\u001b[0m"]
+        embed = discord.Embed(
+            title=f"ʙᴀᴛᴄʜ ᴍᴏᴅᴇʀᴀᴛɪᴏɴ ʀᴇѕᴜʟᴛѕ",
+            color=0x393A41,
+            timestamp=datetime.utcnow()
+        )
 
         for i, (msg, cleaned) in enumerate(batch):
-            verdict_text = verdicts.get(i + 1, "Unknown")
-            verdict_color = "\u001b[1;31m" if verdict_text.lower().startswith("flagged") else "\u001b[1;32m"
+            verdict_text = verdicts.get(i + 1, "No result provided")
 
-            lines.append(f"\n\u001b[1;37mUser:\u001b[0m {msg.author}")
-            lines.append(f"\u001b[1;37mChannel:\u001b[0m #{msg.channel.name}")
-            lines.append(f"\u001b[1;37mVerdict:\u001b[0m {verdict_color}{verdict_text}\u001b[0m")
-            lines.append(f"\u001b[1;37mMessage:\u001b[0m {cleaned}")
-            lines.append(f"\u001b[1;37mTime:\u001b[0m {msg.created_at.strftime('%H:%M:%S')}")
+            embed.add_field(
+                name=" ",
+                value=f"""
+                **ᴘᴇʀѕᴏɴᴀ**: {msg.author.mention}
+                **ᴄʜᴀɴɴᴇʟ**: {msg.channel.mention}
+                **ᴠᴇʀᴅɪᴄᴛ**: {verdict_text}
+                **ᴍᴇѕѕᴀɢᴇ**: {cleaned}
+                **ᴛɪᴍᴇ**: {msg.created_at.strftime('%H:%M:%S')}""",
+                inline=False
+            )
 
-        lines.append("\n\u001b[1;37mBatch Time:\u001b[0m " + datetime.utcnow().strftime('%d %B %Y %H:%M GMT'))
-        lines.append("```")
-        await mod_channel.send("\n".join(lines))
+        embed.add_field(name=" ", value=f"**ʙᴀᴛᴄʜ ᴛɪᴍᴇ**: {datetime.utcnow().strftime('%d %B %Y %H:%M GMT')}")
+
+        await mod_channel.send(embed=embed)
 
 
 async def setup(bot):
