@@ -5,13 +5,14 @@ import psutil
 from discord.ext import commands
 
 from structure.providers.helper import get_time, get_uptime
+from structure.providers.preconditions import is_owner
 
 
 class DevelopmentCommandCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.is_owner()
+    @is_owner()
     @commands.command(
         name="shutdown",
         description="Terminate robot activity",
@@ -28,7 +29,7 @@ class DevelopmentCommandCog(commands.Cog):
         await self.bot.close()
         sys.exit(0)
 
-    @commands.is_owner()
+    @is_owner()
     @commands.command(
         name="debug",
         description="Displays bot runtime information.",
@@ -49,7 +50,7 @@ class DevelopmentCommandCog(commands.Cog):
                        f"- Running on Python {platform.python_version()}\n"
                        f"Paramount memory usage at **{memory_usage:.2f} MB**")
 
-    @commands.is_owner()
+    @is_owner()
     @commands.command(
         name="load",
         description="Loads a cog",
@@ -66,7 +67,7 @@ class DevelopmentCommandCog(commands.Cog):
         except Exception as e:
             await ctx.send(f"Failed to load '{cog}' cog -> {e}")
 
-    @commands.is_owner()
+    @is_owner()
     @commands.command(
         name="unload",
         description="Unloads a cog",
@@ -83,7 +84,7 @@ class DevelopmentCommandCog(commands.Cog):
         except Exception as e:
             await ctx.send(f"Failed to unload '{cog}' cog -> {e}")
 
-    @commands.is_owner()
+    @is_owner()
     @commands.command(
         name="reload",
         description="Reloads a cog or all cogs",
@@ -109,7 +110,7 @@ class DevelopmentCommandCog(commands.Cog):
         except Exception as e:
             await ctx.send(f"Failed to reload '{cog}' cog -> {e}")
 
-    @commands.is_owner()
+    @is_owner()
     @commands.command(
         name="uptime",
         description="Shows robot uptime",
