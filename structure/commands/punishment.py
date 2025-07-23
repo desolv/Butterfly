@@ -3,7 +3,7 @@ from datetime import datetime
 import discord
 from discord.ext import commands
 
-from structure.providers.helper import load_json_data, generate_id, parse_time_window
+from structure.providers.helper import load_json_data, generate_id, parse_time_window, send_private_dm
 from structure.providers.preconditions import has_roles
 from structure.repo.models.punishment_model import PunishmentType, Punishment
 from structure.repo.services.punishment_service import create_punishment, get_user_active_punishment
@@ -101,13 +101,7 @@ class PunishmentCommandCog(commands.Cog):
         )
 
         await ctx.send(f"**@{member}** has been kicked for **{reason}**.")
-
-        try:
-            await member.send(f"You have been kicked from the server for **{reason}**.")
-            sent_dm = True
-        except Exception:
-            await ctx.send(f"Wasn't able to message **{member}**.")
-            sent_dm = False
+        sent_dm = await send_private_dm(member, f"You have been kicked from the server for **{reason}**.", ctx)
 
         await send_punishment_moderation_log(
             ctx.guild,
@@ -142,13 +136,7 @@ class PunishmentCommandCog(commands.Cog):
         )
 
         await ctx.send(f"**@{member}** has been warned for **{reason}**.")
-
-        try:
-            await member.send(f"You have been warned for **{reason}**.")
-            sent_dm = True
-        except Exception:
-            await ctx.send(f"Wasn't able to message **{member}**.")
-            sent_dm = False
+        sent_dm = await send_private_dm(member, f"You have been warned for **{reason}**.", ctx)
 
         await send_punishment_moderation_log(
             ctx.guild,
@@ -166,9 +154,9 @@ class PunishmentCommandCog(commands.Cog):
         description="Mute a member by giving them a role"
     )
     async def _mute(self, ctx, member: discord.Member, duration : str = "1h", *, reason: str = "No reason provided"):
-        if member.id == ctx.author.id:
-            await ctx.send(f"You can't punish your self!")
-            return
+        # if member.id == ctx.author.id:
+        #     await ctx.send(f"You can't punish your self!")
+        #     return
 
         if self.is_exempt(member):
             await ctx.send(f"**@{member}** is exempt from punishments!")
@@ -203,15 +191,11 @@ class PunishmentCommandCog(commands.Cog):
             None if permanent else parse_duration
         )
 
-        await ctx.send(f"**@{member}** has been muted for **{reason}**.")
+        duration_msg = "permanently" if permanent else "temporarily"
+        await ctx.send(f"**@{member}** has been {duration_msg} muted for **{reason}**.")
 
-        try:
-            expiring = "**never** expiring!" if permanent else f"expiring in **{duration}**."
-            await member.send(f"You have been muted for **{reason}** it's {expiring}")
-            sent_dm = True
-        except Exception:
-            await member.send(f"Wasn't able to message **{member}**.")
-            sent_dm = False
+        expiring = "**never** expiring!" if permanent else f"expiring in **{duration}**."
+        sent_dm = await send_private_dm(member, f"You have been muted for **{reason}** it's {expiring}", ctx)
 
         await send_punishment_moderation_log(
             ctx.guild,

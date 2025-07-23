@@ -8,6 +8,7 @@ from datetime import timezone
 from pathlib import Path
 from typing import List
 
+import discord
 import pytz
 from discord.ext import commands
 
@@ -92,9 +93,20 @@ def format_subcommands(bot, group_name: str) -> List[str]:
 
     return lines
 
+
 def generate_id(length=9, symbols=True):
     chars = string.ascii_letters + string.digits
     if symbols:
         chars += "#@$&"
 
     return ''.join(random.choices(chars, k=length))
+
+
+async def send_private_dm(member: discord.Member, message, ctx = None):
+    try:
+        await member.send(message)
+        return True
+    except Exception:
+        if ctx is not None:
+            await ctx.send(f"Wasn't able to message **{member}**.")
+        return False
