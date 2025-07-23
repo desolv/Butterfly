@@ -72,7 +72,7 @@ class PunishmentCog(commands.Cog):
             async for entry in after.guild.audit_logs(
                     limit=5,
                     action=discord.AuditLogAction.member_role_update
-            ): # Data from Audit / EXPERIMENTAL
+            ):
                 if entry.target.id == after.id and muted_role in entry.changes.before.roles:
                     actioner = entry.user
                     reason = entry.reason

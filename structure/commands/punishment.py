@@ -154,9 +154,9 @@ class PunishmentCommandCog(commands.Cog):
         description="Mute a member by giving them a role"
     )
     async def _mute(self, ctx, member: discord.Member, duration : str = "1h", *, reason: str = "No reason provided"):
-        # if member.id == ctx.author.id:
-        #     await ctx.send(f"You can't punish your self!")
-        #     return
+        if member.id == ctx.author.id:
+            await ctx.send(f"You can't punish your self!")
+            return
 
         if self.is_exempt(member):
             await ctx.send(f"**@{member}** is exempt from punishments!")
