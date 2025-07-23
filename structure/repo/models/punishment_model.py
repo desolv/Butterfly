@@ -20,7 +20,7 @@ class Punishment(base):
         Index("ix_punishment_user_id", "user_id"),
         Index("ix_punishment_created_at", "created_at"),
         Index("ix_punishment_removed_by", "removed_by"),
-        Index("ix_punishment_active", "active"),
+        Index("ix_punishment_is_active", "is_active"),
         {
             "mysql_charset": "utf8mb4",
             "mysql_collate": "utf8mb4_unicode_ci"

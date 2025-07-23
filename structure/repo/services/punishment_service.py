@@ -17,7 +17,7 @@ def create_punishment(punishment_id: str, user_id: int, moderator_id: int, type:
             reason=reason,
             created_at=datetime.utcnow(),
             expires_at=duration,
-            active=True if type in (PunishmentType.MUTE, PunishmentType.BAN) else None
+            is_active=True if type in (PunishmentType.MUTE, PunishmentType.BAN) else None
         )
 
         session.add(punishment)
@@ -53,7 +53,7 @@ def get_user_active_punishment(user_id: int, type: PunishmentType):
         return session.query(Punishment).filter_by(
             user_id=user_id,
             type=type,
-            active=True
+            is_active=True
         ).first()
 
 
@@ -61,7 +61,7 @@ def remove_user_active_punishment(punishment_id: str, moderator_id: int = None, 
     with Session(engine) as session:
         punishment = session.query(Punishment).filter_by(
             punishment_id=punishment_id,
-            active=True
+            is_active=True
         ).first()
 
         if not punishment:
