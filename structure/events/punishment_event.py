@@ -10,7 +10,7 @@ from structure.repo.services.punishment_service import remove_user_active_punish
     get_user_active_punishment, get_global_active_expiring_punishments_within
 
 
-class Punishment(commands.Cog):
+class PunishmentCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         environment = load_json_data(f"environment")
@@ -32,20 +32,23 @@ class Punishment(commands.Cog):
             match punishment.type:
                 case PunishmentType.MUTE:
                     muted_role = guild.get_role(self.muted_role_id)
-                    await member.remove_roles(muted_role, "Automatic")
-                    await member.send(f"Hey! **You're able to chat now!** Please refrain from breaking rules again.")
+                    await member.remove_roles(muted_role, reason="Automatic")
+                    sent_dm = await member.send(f"Hey! **You're able to chat now!** Please refrain from breaking rules again.")
                 case PunishmentType.BAN:
                     await guild.unban(punishment.user_id, "Automatic")
+                    sent_dm = False
+                case _:
+                    return
 
-            removed_punishment, success = remove_user_active_punishment(punishment.punishment_id)
+            removed_punishment, success = remove_user_active_punishment(punishment.punishment_id ,reason="Automatic")
 
             await send_punishment_moderation_log(
                 guild,
                 member,
-                self.bot,
+                self.bot.user,
                 removed_punishment,
                 self.moderation_channel,
-                False,
+                sent_dm,
                 removed=True
             )
 
@@ -97,4 +100,4 @@ class Punishment(commands.Cog):
                 )
 
 async def setup(bot):
-    await bot.add_cog(Punishment(bot))
+    await bot.add_cog(PunishmentCog(bot))

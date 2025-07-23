@@ -19,6 +19,6 @@ engine = create_engine(
 base = declarative_base()
 
 def init_tables():
-    from structure.repo.models.relay_model import Relay
+    from structure.repo.models.tracking_model import Track
     from structure.repo.models.punishment_model import Punishment
     base.metadata.create_all(engine)
