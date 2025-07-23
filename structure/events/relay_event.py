@@ -1,10 +1,12 @@
+from os import remove
+
 from discord.ext import commands
 
 from structure.providers.helper import load_json_data
-from structure.repo.services.relay_service import create_relay, delete_relay
+from structure.repo.services.relay_service import create_track, remove_user_track
 
 
-class RelayCog(commands.Cog):
+class TrackCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         environment = load_json_data(f"environment")
@@ -25,7 +27,7 @@ class RelayCog(commands.Cog):
             has_files = bool(names)
             name_string = ",".join(names) if has_files else ""
 
-            create_relay(
+            create_track(
                 user_id=message.author.id,
                 message=f"{message.content[:1000]} {name_string}",
                 message_id=message.id,
@@ -37,9 +39,9 @@ class RelayCog(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
         try:
-            delete_relay(payload.message_id)
+            remove_user_track(payload.message_id)
         except Exception as e:
             print(f"Failed to mark deleted → {e}")
 
 async def setup(bot):
-    await bot.add_cog(RelayCog(bot))
+    await bot.add_cog(TrackCog(bot))

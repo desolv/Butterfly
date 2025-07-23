@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from structure.providers.helper import parse_time_window, format_subcommands
 from structure.providers.preconditions import has_roles
 from structure.repo.database import engine
-from structure.repo.models.relay_model import Relay
+from structure.repo.models.tracking_model import Track
 
 
 class TrackCommandCog(commands.Cog):
@@ -48,28 +48,28 @@ class TrackCommandCog(commands.Cog):
         member = member or ctx.author
 
         with (Session(engine) as session):
-            base_query = session.query(Relay).filter(
-                Relay.user_id == member.id,
-                Relay.timestamp >= parse_duration
+            base_query = session.query(Track).filter(
+                Track.user_id == member.id,
+                Track.timestamp >= parse_duration
             )
 
             total = base_query.count()
-            deleted = base_query.filter(Relay.is_deleted == True).count()
+            deleted = base_query.filter(Track.is_deleted == True).count()
 
             per_channel = session.query(
-                Relay.channel_id,
+                Track.channel_id,
                 func.count()
             ).filter(
-                Relay.user_id == member.id,
-                Relay.timestamp >= parse_duration
-            ).group_by(Relay.channel_id).order_by(func.count().desc()).limit(3).all()
+                Track.user_id == member.id,
+                Track.timestamp >= parse_duration
+            ).group_by(Track.channel_id).order_by(func.count().desc()).limit(3).all()
 
             global_total, global_count = session.query(
                 func.count(),
-                func.count(func.distinct(Relay.user_id))
+                func.count(func.distinct(Track.user_id))
             ).filter(
-                Relay.timestamp >= parse_duration,
-                Relay.user_id != member.id
+                Track.timestamp >= parse_duration,
+                Track.user_id != member.id
             ).one()
 
         if not total:
@@ -113,12 +113,12 @@ class TrackCommandCog(commands.Cog):
 
         with Session(engine) as session:
             leaderboard = session.query(
-                Relay.user_id,
+                Track.user_id,
                 func.count(),
-                func.sum(func.if_(Relay.is_deleted == True, 1, 0))
+                func.sum(func.if_(Track.is_deleted == True, 1, 0))
             ).filter(
-                Relay.timestamp >= parse_duration
-            ).group_by(Relay.user_id).order_by(func.count().desc()).limit(10).all()
+                Track.timestamp >= parse_duration
+            ).group_by(Track.user_id).order_by(func.count().desc()).limit(10).all()
 
         if not leaderboard:
             return await ctx.send("No relay activity in this time range.")
@@ -149,12 +149,12 @@ class TrackCommandCog(commands.Cog):
 
         with Session(engine) as session:
             leaderboard = session.query(
-                Relay.channel_id,
+                Track.channel_id,
                 func.count(),
-                func.sum(func.if_(Relay.is_deleted == True, 1, 0))
+                func.sum(func.if_(Track.is_deleted == True, 1, 0))
             ).filter(
-                Relay.timestamp >= parse_duration
-            ).group_by(Relay.channel_id).order_by(func.count().desc()).limit(10).all()
+                Track.timestamp >= parse_duration
+            ).group_by(Track.channel_id).order_by(func.count().desc()).limit(10).all()
 
         if not leaderboard:
             return await ctx.send("No relay channel activity in this time range.")
@@ -189,13 +189,13 @@ class TrackCommandCog(commands.Cog):
         with Session(engine) as session:
             persona_ids = [m.id for m in members]
             leaderboard = session.query(
-                Relay.user_id,
+                Track.user_id,
                 func.count(),
-                func.sum(func.if_(Relay.is_deleted == True, 1, 0))
+                func.sum(func.if_(Track.is_deleted == True, 1, 0))
             ).filter(
-                Relay.user_id.in_(persona_ids),
-                Relay.timestamp >= parse_duration
-            ).group_by(Relay.user_id).order_by(func.count().desc()).limit(10).all()
+                Track.user_id.in_(persona_ids),
+                Track.timestamp >= parse_duration
+            ).group_by(Track.user_id).order_by(func.count().desc()).limit(10).all()
 
         if not leaderboard:
             return await ctx.send("No relay activity from that role in this time range.")

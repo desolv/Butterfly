@@ -1,40 +1,42 @@
+from datetime import datetime
+
 from sqlalchemy.orm import Session
 
 from structure.repo.database import engine
-from structure.repo.models.relay_model import Relay
+from structure.repo.models.tracking_model import Track
 
 
-def create_relay(user_id: int, message: str, message_id: int, channel_id: int):
+def create_track(user_id: int, message: str, message_id: int, channel_id: int):
     with Session(engine) as session:
-        entry = Relay(
+        tracked = Track(
             user_id=user_id,
             message=message,
             message_id=message_id,
             channel_id=channel_id
         )
-        session.add(entry)
+
+        session.add(tracked)
         session.commit()
-        session.refresh(entry)
-        return entry
+        session.refresh(tracked)
 
-def get_relay(message_id: int) -> Relay | None:
-    with Session(engine) as session:
-        return session.query(Relay).filter_by(message_id=message_id).first()
+        return tracked
 
-def delete_relay(message_id: int) -> bool:
+def get_user_track(message_id: int) -> Track | None:
     with Session(engine) as session:
-        entry = session.query(Relay).filter_by(message_id=message_id).first()
-        if entry:
-            entry.mark_deleted()
-            session.commit()
-            return True
-        return False
+        return session.query(Track).filter_by(message_id=message_id).first()
 
-def restore_relay(message_id: int) -> bool:
+def remove_user_track(message_id: int):
     with Session(engine) as session:
-        entry = session.query(Relay).filter_by(message_id=message_id).first()
-        if entry:
-            entry.unmark_deleted()
-            session.commit()
-            return True
-        return False
+        tracked = session.query(Track).filter_by(message_id=message_id).first()
+
+        if not tracked:
+            return False
+
+        tracked.removed_at = datetime.utcnow()
+        tracked.is_active = False
+
+        session.add(tracked)
+        session.commit()
+        session.refresh(tracked)
+
+        return tracked, True
