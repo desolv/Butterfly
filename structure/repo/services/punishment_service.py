@@ -34,6 +34,7 @@ def get_global_active_expiring_punishments_within(within_seconds: int = 120):
         return session.query(Punishment).filter(
             and_(
                 Punishment.is_active == True,
+                Punishment.type == PunishmentType.MUTE or Punishment.type == PunishmentType.BAN,
                 Punishment.expires_at <= threshold
             )
         ).order_by(Punishment.expires_at.asc()).all()
