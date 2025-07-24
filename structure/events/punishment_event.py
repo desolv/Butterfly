@@ -27,15 +27,32 @@ class PunishmentCog(commands.Cog):
         guild = self.bot.get_guild(self.guild_id)
 
         for punishment in get_global_active_expiring_punishments_within():
-            member = guild.get_member(punishment.user_id)
+            if not punishment.has_expired():
+                continue
+
+            try:
+                member = await self.bot.fetch_user(punishment.user_id)
+            except Exception:
+                print(f"Wasn't able to fetch user {punishment.user_id} for expiring punishments. Aborting!")
+                return
 
             match punishment.type:
                 case PunishmentType.MUTE:
-                    muted_role = guild.get_role(self.muted_role_id)
-                    await member.remove_roles(muted_role, reason="Automatic")
+                    try:
+                        muted_role = guild.get_role(self.muted_role_id)
+                        await member.remove_roles(muted_role, reason="Automatic")
+                    except Exception:
+                        print(f"Wasn't able remove mute for {member}. Aborting!")
+                        return
+
                     sent_dm = await member.send(f"Hey! **You're able to chat now!** Please refrain from breaking rules again.")
                 case PunishmentType.BAN:
-                    await guild.unban(punishment.user_id, "Automatic")
+                    try:
+                        await guild.unban(discord.Object(id=punishment.user_id), reason="Automatic")
+                    except Exception:
+                        print(f"Wasn't able remove ban for {member}. Aborting!")
+                        return
+
                     sent_dm = False
                 case _:
                     return

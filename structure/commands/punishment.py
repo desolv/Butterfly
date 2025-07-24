@@ -50,7 +50,7 @@ async def send_punishment_moderation_log(guild: discord.Guild, member: discord.M
         timestamp=datetime.utcnow()
     )
 
-    avatar_url = member.avatar.url if member.avatar else member.default_avatar.url
+    avatar_url = member.avatar.url if member.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"
     embed.set_thumbnail(url=avatar_url)
 
     channel = guild.get_channel(moderation_channel)
@@ -90,7 +90,11 @@ class PunishmentCommandCog(commands.Cog):
             await ctx.send(f"**@{member}** is exempt from punishments!")
             return
 
-        await member.kick(reason=reason)
+        try:
+            await member.kick(reason=reason)
+        except discord.Forbidden:
+            await ctx.send(f"Wasn't able to kick **{member}**. Aborting!")
+            return
 
         punishment = create_punishment(
             generate_id(),
@@ -196,6 +200,65 @@ class PunishmentCommandCog(commands.Cog):
 
         expiring = "**never** expiring!" if permanent else f"expiring in **{duration}**."
         sent_dm = await send_private_dm(member, f"You have been muted for **{reason}** it's {expiring}", ctx)
+
+        await send_punishment_moderation_log(
+            ctx.guild,
+            member,
+            ctx.author,
+            punishment,
+            self.moderation_channel,
+            sent_dm,
+            duration
+        )
+
+
+    @has_roles(name="ban")
+    @commands.command(
+        name="ban",
+        description="Ban a member by removing them from the server"
+    )
+    async def _mute(self, ctx, member: discord.Member, duration : str = "1h", *, reason: str = "No reason provided"):
+        if member.id == ctx.author.id:
+            await ctx.send(f"You can't punish your self!")
+            return
+
+        if self.is_exempt(member):
+            await ctx.send(f"**@{member}** is exempt from punishments!")
+            return
+
+        if get_user_active_punishment(member.id, PunishmentType.BAN):
+            await ctx.send(f"**@{member}** is already banned!")
+            return
+
+        permanent = True if duration.lower() in ("permanent", "perm") else False
+
+        if not permanent:
+            try:
+                parse_duration = parse_time_window(duration)
+            except ValueError as e:
+                await ctx.send(e)
+                return
+
+        try:
+            await member.ban(reason=reason)
+        except discord.Forbidden:
+            await ctx.send(f"Wasn't able to ban **{member}**. Aborting!")
+            return
+
+        punishment = create_punishment(
+            generate_id(),
+            member.id,
+            ctx.author.id,
+            PunishmentType.BAN,
+            reason,
+            None if permanent else parse_duration
+        )
+
+        duration_msg = "permanently" if permanent else "temporarily"
+        await ctx.send(f"**@{member}** has been {duration_msg} banned for **{reason}**.")
+
+        expiring = "**never** expiring!" if permanent else f"expiring in **{duration}**."
+        sent_dm = await send_private_dm(member, f"You have been banned for **{reason}** it's {expiring}", ctx)
 
         await send_punishment_moderation_log(
             ctx.guild,
