@@ -10,7 +10,8 @@ from structure.repo.services.punishment_service import create_punishment, get_us
 
 
 async def send_punishment_moderation_log(guild: discord.Guild, member: discord.Member, moderator: discord.Member,
-                                         punishment: Punishment, moderation_channel : int, sent_dm : bool, duration : str = None, removed: bool = False):
+                                         punishment: Punishment, moderation_channel: int, sent_dm: bool,
+                                         duration: str = None, removed: bool = False):
     match punishment.type:
         case PunishmentType.KICK:
             punishment_type = "ᴋɪᴄᴋ"
@@ -28,15 +29,15 @@ async def send_punishment_moderation_log(guild: discord.Guild, member: discord.M
             punishment_type = "ᴜɴᴋɴᴏᴡɴ"
             punishment_color = 0x393A41
 
-    punishment_color = 0x393A41 if removed else punishment_color
+    punishment_color = discord.Color.pink() if removed else punishment_color
 
     description = (
         f"**ᴍᴏᴅᴇʀᴀᴛᴏʀ**: {'?' if moderator is None else moderator.mention}\n"
         f"**ʀᴇᴀѕᴏɴ**: {punishment.removed_reason if removed else punishment.reason}\n"
     )
 
-    if not removed:
-        description += f"**ᴅᴜʀᴀᴛɪᴏɴ**: **{'Permanent' if duration in ('permanent', 'perm') else duration}**\n"
+    if not removed and punishment.type is not PunishmentType.WARN:
+        description += f"**ᴅᴜʀᴀᴛɪᴏɴ**: {'Permanent' if duration in ('permanent', 'perm') else duration}\n"
 
     description += (
         f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ɪᴅ**: **{punishment.punishment_id}**\n"
@@ -44,7 +45,7 @@ async def send_punishment_moderation_log(guild: discord.Guild, member: discord.M
     )
 
     embed = discord.Embed(
-        title=f"{"ʀᴇᴍᴏᴠᴇᴅ" if removed else ""} {punishment_type} ᴘᴜɴɪѕʜᴍᴇɴᴛ ꜰᴏʀ @{member}",
+        title=f"{punishment_type} ᴘᴜɴɪѕʜᴍᴇɴᴛ ꜰᴏʀ @{member}" if not removed else f"{punishment_type} ʀᴇᴍᴏᴠᴇᴅ ꜰᴏʀ @{member}",
         description=description,
         color=punishment_color,
         timestamp=datetime.utcnow()
@@ -57,6 +58,7 @@ async def send_punishment_moderation_log(guild: discord.Guild, member: discord.M
 
     if channel:
         await channel.send(embed=embed)
+
 
 class PunishmentCommandCog(commands.Cog):
     def __init__(self, bot):
