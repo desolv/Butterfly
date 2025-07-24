@@ -7,15 +7,16 @@ from structure.repo.database import engine
 from structure.repo.models.punishment_model import Punishment, PunishmentType
 
 
-def create_punishment(punishment_id: str, user_id: int, moderator_id: int, type: PunishmentType, reason: str = None, duration: datetime = None):
+def create_punishment(punishment_id: str, user_id: int, added_by: int, type: PunishmentType,
+                      added_reason: str = None, duration: datetime = None):
     with Session(engine) as session:
         punishment = Punishment(
             punishment_id=punishment_id,
             user_id=user_id,
-            moderator_id=moderator_id,
+            added_by=added_by,
             type=type,
-            reason=reason,
-            created_at=datetime.utcnow(),
+            added_reason=added_reason,
+            added_at=datetime.utcnow(),
             expires_at=duration,
             is_active=True if type in (PunishmentType.MUTE, PunishmentType.BAN) else None
         )
@@ -43,7 +44,7 @@ def get_id_punishment(punishment_id: str):
         return session.query(Punishment).filter_by(punishment_id=punishment_id).first()
 
 
-def get_user_punishments(user_id: int, type : PunishmentType = None):
+def get_user_punishments(user_id: int, type: PunishmentType = None):
     with Session(engine) as session:
         if type:
             return session.query(Punishment).filter_by(
@@ -62,7 +63,7 @@ def get_user_active_punishment(user_id: int, type: PunishmentType):
         ).first()
 
 
-def remove_user_active_punishment(punishment_id: str, moderator_id: int = None, reason : str = "No reason provided"):
+def remove_user_active_punishment(punishment_id: str, removed_by: int = None, reason: str = "No reason provided"):
     with Session(engine) as session:
         punishment = session.query(Punishment).filter_by(
             punishment_id=punishment_id,
@@ -73,7 +74,7 @@ def remove_user_active_punishment(punishment_id: str, moderator_id: int = None, 
             return False
 
         punishment.removed_at = datetime.utcnow()
-        punishment.removed_by = moderator_id  # can be None
+        punishment.removed_by = removed_by  # can be None
         punishment.removed_reason = reason
         punishment.is_active = False
 
@@ -82,5 +83,3 @@ def remove_user_active_punishment(punishment_id: str, moderator_id: int = None, 
         session.refresh(punishment)
 
         return punishment, True
-
-
