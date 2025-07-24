@@ -47,3 +47,6 @@ class Punishment(base):
         if self.expires_at and self.created_at:
             return int((self.expires_at - self.created_at).total_seconds())
         return None
+
+    def has_expired(self) -> bool:
+        return self.expires_at is not None and datetime.utcnow() >= self.expires_at
