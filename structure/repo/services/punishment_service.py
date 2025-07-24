@@ -38,6 +38,11 @@ def get_global_active_expiring_punishments_within(within_seconds: int = 120):
         ).order_by(Punishment.expires_at.asc()).all()
 
 
+def get_id_punishment(punishment_id: str):
+    with Session(engine) as session:
+        return session.query(Punishment).filter_by(punishment_id=punishment_id).first()
+
+
 def get_user_punishments(user_id: int, type : PunishmentType = None):
     with Session(engine) as session:
         if type:
