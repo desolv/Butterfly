@@ -68,11 +68,11 @@ def parse_time_window(input_str: str) -> datetime:
 
     now = datetime.utcnow()
     if unit == "d":
-        return now - timedelta(days=value)
+        return now + timedelta(days=value)
     elif unit == "h":
-        return now - timedelta(hours=value)
+        return now + timedelta(hours=value)
     elif unit == "m":
-        return now - timedelta(minutes=value)
+        return now + timedelta(minutes=value)
     else:
         raise ValueError("Only 'd' (days), 'h' (hours) and 'm' (minutes) are supported.")
 
@@ -103,7 +103,7 @@ def generate_id(length=9, symbols=True):
     return ''.join(random.choices(chars, k=length))
 
 
-async def send_private_dm(member: discord.Member, message, ctx = None):
+async def send_private_dm(member: discord.Member, message, ctx=None):
     try:
         await member.send(message)
         return True
