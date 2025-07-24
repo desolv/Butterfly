@@ -3,37 +3,36 @@ from datetime import datetime
 import discord
 from discord.ext import commands
 
-from structure.providers.helper import load_json_data, generate_id, parse_time_window, send_private_dm
+from structure.providers.helper import load_json_data, generate_id, parse_time_window, send_private_dm, \
+    format_subcommands, get_formatted_time
 from structure.providers.preconditions import has_roles
 from structure.repo.models.punishment_model import PunishmentType, Punishment
-from structure.repo.services.punishment_service import create_punishment, get_user_active_punishment
+from structure.repo.services.punishment_service import create_punishment, get_user_active_punishment, get_id_punishment
+
+
+def get_punishment_metadata(punishment_type: PunishmentType):
+    match punishment_type:
+        case PunishmentType.KICK:
+            return "Kick", "ᴋɪᴄᴋ", discord.Color.yellow()
+        case PunishmentType.WARN:
+            return "Warn", "ᴡᴀʀɴ", discord.Color.teal()
+        case PunishmentType.MUTE:
+            return "Mute", "ᴍᴜᴛᴇ", discord.Color.green()
+        case PunishmentType.BAN:
+            return "Ban", "ʙᴀɴ", discord.Color.red()
+        case _:
+            return "?", "?", discord.Color.from_str("#393A41")
 
 
 async def send_punishment_moderation_log(guild: discord.Guild, member: discord.Member, moderator: discord.Member,
                                          punishment: Punishment, moderation_channel: int, sent_dm: bool,
                                          duration: str = None, removed: bool = False):
-    match punishment.type:
-        case PunishmentType.KICK:
-            punishment_type = "ᴋɪᴄᴋ"
-            punishment_color = discord.Color.yellow()
-        case PunishmentType.WARN:
-            punishment_type = "ᴡᴀʀɴ"
-            punishment_color = discord.Color.teal()
-        case PunishmentType.MUTE:
-            punishment_type = "ᴍᴜᴛᴇ"
-            punishment_color = discord.Color.green()
-        case PunishmentType.BAN:
-            punishment_type = "ʙᴀɴ"
-            punishment_color = discord.Color.red()
-        case _:
-            punishment_type = "ᴜɴᴋɴᴏᴡɴ"
-            punishment_color = 0x393A41
-
+    punishment_name, punishment_fancy, punishment_color = get_punishment_metadata(punishment.type)
     punishment_color = discord.Color.pink() if removed else punishment_color
 
     description = (
         f"**ᴍᴏᴅᴇʀᴀᴛᴏʀ**: {'?' if moderator is None else moderator.mention}\n"
-        f"**ʀᴇᴀѕᴏɴ**: {punishment.removed_reason if removed else punishment.reason}\n"
+        f"**ʀᴇᴀѕᴏɴ**: {punishment.removed_reason if removed else punishment.added_reason}\n"
     )
 
     if not removed and punishment.type is not PunishmentType.WARN:
@@ -45,7 +44,7 @@ async def send_punishment_moderation_log(guild: discord.Guild, member: discord.M
     )
 
     embed = discord.Embed(
-        title=f"{punishment_type} ᴘᴜɴɪѕʜᴍᴇɴᴛ ꜰᴏʀ @{member}" if not removed else f"{punishment_type} ʀᴇᴍᴏᴠᴇᴅ ꜰᴏʀ @{member}",
+        title=f"{punishment_fancy} ᴘᴜɴɪѕʜᴍᴇɴᴛ ꜰᴏʀ @{member}" if not removed else f"{punishment_fancy} ʀᴇᴍᴏᴠᴇᴅ ꜰᴏʀ @{member}",
         description=description,
         color=punishment_color,
         timestamp=datetime.utcnow()
@@ -77,6 +76,78 @@ class PunishmentCommandCog(commands.Cog):
             if role.id in self.exempt_roles:
                 return True
         return False
+
+    @has_roles(name="punishment")
+    @commands.group(
+        name="punishment",
+        aliases=['punish'],
+        invoke_without_command=True
+    )
+    async def _punishment(self, ctx):
+        embed = discord.Embed(
+            title="ᴘᴜɴɪѕʜᴍᴇɴᴛ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
+            description="\n".join(format_subcommands(self.bot, "punishment")),
+            color=0x393A41,
+            timestamp=datetime.utcnow()
+        )
+
+        await ctx.send(embed=embed)
+
+    @has_roles(name="punishment", sub="metadata")
+    @_punishment.command(
+        name="metadata",
+        description="Show punishment information"
+    )
+    async def _punishment_metadata(self, ctx, punishment_id: str):
+        punishment = get_id_punishment(punishment_id)
+
+        if not punishment:
+            await ctx.send(f"No punishment matching **{punishment_id}** found!")
+            return
+
+        try:
+            member = await self.bot.fetch_user(punishment.user_id)
+            added_by = await self.bot.fetch_user(punishment.added_by)
+        except Exception:
+            member = None
+            added_by = None
+
+        punishment_name, punishment_fancy, punishment_color = get_punishment_metadata(punishment.type)
+
+        description = (
+            f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ɪᴅ**: **{punishment_id}**\n"
+            f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴛʏᴘᴇ**: **{punishment_name}**\n\n"
+            f"**ᴀᴅᴅᴇᴅ ʙʏ**: {punishment.added_by if not added_by else added_by.mention}\n"
+            f"**ᴀᴅᴅᴇᴅ ᴀᴛ**: **{get_formatted_time(punishment.added_at, format="%d/%m/%y %H:%M %Z")}**\n"
+            f"**ᴀᴅᴅᴇᴅ ʀᴇᴀѕᴏɴ**: {punishment.added_reason}\n"
+            f"**ᴅᴜʀᴀᴛɪᴏɴ**: {punishment.get_duration()}s\n"
+        )
+
+        if not punishment.is_active and (
+                punishment.type is PunishmentType.MUTE or punishment.type is PunishmentType.BAN):
+
+            try:
+                removed_by = await self.bot.fetch_user(punishment.removed_by)
+            except Exception:
+                removed_by = None
+
+            description += (
+                f"\n**ʀᴇᴍᴏᴠᴇᴅ ʙʏ**: {self.bot.user.mention if removed_by is None else removed_by.mention}\n"
+                f"**ʀᴇᴍᴏᴠᴇᴅ ᴀᴛ**: **{get_formatted_time(punishment.removed_at, format="%d/%m/%y %H:%M %Z")}**\n"
+                f"**ʀᴇᴍᴏᴠᴇᴅ ʀᴇᴀѕᴏɴ**: {punishment.removed_reason}"
+            )
+
+        embed = discord.Embed(
+            title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ ꜰᴏʀ @{punishment.user_id if not member else member}",
+            description=description,
+            color=punishment_color,
+            timestamp=datetime.utcnow()
+        )
+
+        avatar_url = member.avatar.url if member.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"
+        embed.set_thumbnail(url=avatar_url)
+
+        await ctx.send(embed=embed)
 
     @has_roles(name="kick")
     @commands.command(
@@ -118,7 +189,6 @@ class PunishmentCommandCog(commands.Cog):
             sent_dm
         )
 
-
     @has_roles(name="warn")
     @commands.command(
         name="warn",
@@ -153,13 +223,12 @@ class PunishmentCommandCog(commands.Cog):
             sent_dm
         )
 
-
     @has_roles(name="mute")
     @commands.command(
         name="mute",
         description="Mute a member by giving them a role"
     )
-    async def _mute(self, ctx, member: discord.Member, duration : str = "1h", *, reason: str = "No reason provided"):
+    async def _mute(self, ctx, member: discord.Member, duration: str = "1h", *, reason: str = "No reason provided"):
         if member.id == ctx.author.id:
             await ctx.send(f"You can't punish your self!")
             return
@@ -213,13 +282,12 @@ class PunishmentCommandCog(commands.Cog):
             duration
         )
 
-
     @has_roles(name="ban")
     @commands.command(
         name="ban",
         description="Ban a member by removing them from the server"
     )
-    async def _mute(self, ctx, member: discord.Member, duration : str = "1h", *, reason: str = "No reason provided"):
+    async def _ban(self, ctx, member: discord.Member, duration: str = "1h", *, reason: str = "No reason provided"):
         if member.id == ctx.author.id:
             await ctx.send(f"You can't punish your self!")
             return
