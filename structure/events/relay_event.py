@@ -8,13 +8,12 @@ class TrackCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         environment = load_json_data(f"environment")
-        self.guild_id = environment["guild_id"]
         self.enabled = environment["relay"]["enabled"]
         self.exempt_users = environment["relay"]["exempt_users"]
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if not self.enabled or message.author.bot or (self.guild_id != message.guild.id):
+        if not self.enabled or message.author.bot:
             return
 
         if message.author.id in self.exempt_users:

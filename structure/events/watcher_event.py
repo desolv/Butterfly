@@ -50,7 +50,6 @@ class WatcherCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         environment = load_json_data(f"environment")
-        self.guild_id = environment["guild_id"]
         self.enabled = environment["watcher"]["enabled"]
         self.monitor_channel = environment["watcher"]["moderation_channel"]
         self.watching_channels = environment["watcher"]["watching_channels"]
@@ -67,7 +66,7 @@ class WatcherCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if not self.enabled or (self.guild_id != message.guild.id):
+        if not self.enabled:
             return
 
         channel_ok = message.channel.id in self.watching_channels
