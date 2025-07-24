@@ -21,9 +21,11 @@ def create_track(user_id: int, message: str, message_id: int, channel_id: int):
 
         return tracked
 
+
 def get_user_track(message_id: int) -> Track | None:
     with Session(engine) as session:
         return session.query(Track).filter_by(message_id=message_id).first()
+
 
 def remove_user_track(message_id: int):
     with Session(engine) as session:

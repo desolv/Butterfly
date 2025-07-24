@@ -21,6 +21,7 @@ class Punishment(base):
         Index("ix_punishment_created_at", "created_at"),
         Index("ix_punishment_removed_by", "removed_by"),
         Index("ix_punishment_is_active", "is_active"),
+        Index("ix_punishment_type", "type"),
         {
             "mysql_charset": "utf8mb4",
             "mysql_collate": "utf8mb4_unicode_ci"
@@ -43,10 +44,12 @@ class Punishment(base):
     def __repr__(self):
         return f"<Punishment {self.type.value.upper()} for {self.user_id}>"
 
+
     def get_duration(self) -> int | None:
         if self.expires_at and self.created_at:
             return int((self.expires_at - self.created_at).total_seconds())
         return None
+
 
     def has_expired(self) -> bool:
         return self.expires_at is not None and datetime.utcnow() >= self.expires_at

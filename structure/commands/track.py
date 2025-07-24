@@ -23,11 +23,9 @@ class TrackCommandCog(commands.Cog):
         invoke_without_command=True
     )
     async def _track(self, ctx):
-        lines = format_subcommands(self.bot, "track")
-
         embed = discord.Embed(
             title="ᴛʀᴀᴄᴋ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
-            description="\n".join(lines),
+            description="\n".join(format_subcommands(self.bot, "track")),
             color=0x393A41,
             timestamp=datetime.utcnow()
         )

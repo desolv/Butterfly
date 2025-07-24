@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands, tasks
 
 from structure.commands.punishment import send_punishment_moderation_log
-from structure.providers.helper import load_json_data
+from structure.providers.helper import load_json_data, send_private_dm
 from structure.repo.models.punishment_model import PunishmentType
 from structure.repo.services.punishment_service import remove_user_active_punishment, \
     get_user_active_punishment, get_global_active_expiring_punishments_within
@@ -30,34 +30,35 @@ class PunishmentCog(commands.Cog):
             if not punishment.has_expired():
                 continue
 
-            try:
-                member = await self.bot.fetch_user(punishment.user_id)
-            except Exception:
-                print(f"Wasn't able to fetch user {punishment.user_id} for expiring punishments. Aborting!")
-                return
-
             match punishment.type:
                 case PunishmentType.MUTE:
                     try:
+                        member = guild.get_member(punishment.user_id)
                         muted_role = guild.get_role(self.muted_role_id)
                         await member.remove_roles(muted_role, reason="Automatic")
-                    except Exception:
-                        print(f"Wasn't able remove mute for {member}. Aborting!")
-                        return
+                    except Exception as e:
+                        print(f"Wasn't able remove mute for {punishment.user_id}. Aborting! -> {e}")
+                        continue
 
-                    sent_dm = await member.send(f"Hey! **You're able to chat now!** Please refrain from breaking rules again.")
+                    sent_dm = await send_private_dm(member,
+                                                    f"Hey! **You're able to chat now!** Please refrain from breaking rules again.")
                 case PunishmentType.BAN:
                     try:
                         await guild.unban(discord.Object(id=punishment.user_id), reason="Automatic")
+                    except Exception as e:
+                        print(f"Wasn't able remove ban for {punishment.user_id}. Aborting! -> {e}")
+                        continue
+
+                    try:
+                        member = await self.bot.fetch_user(punishment.user_id)
                     except Exception:
-                        print(f"Wasn't able remove ban for {member}. Aborting!")
-                        return
+                        member = None
 
                     sent_dm = False
                 case _:
-                    return
+                    continue
 
-            removed_punishment, success = remove_user_active_punishment(punishment.punishment_id ,reason="Automatic")
+            removed_punishment, success = remove_user_active_punishment(punishment.punishment_id, reason="Automatic")
 
             await send_punishment_moderation_log(
                 guild,
@@ -68,7 +69,6 @@ class PunishmentCog(commands.Cog):
                 sent_dm,
                 removed=True
             )
-
 
     @check_expiring_punishments.before_loop
     async def before_check(self):
@@ -106,15 +106,19 @@ class PunishmentCog(commands.Cog):
                     reason=reason if reason else "No reason provided"
                 )
 
+                sent_dm = await send_private_dm(after,
+                                                f"Hey! **You're able to chat now!** Please refrain from breaking rules again.")
+
                 await send_punishment_moderation_log(
                     before.guild,
                     after,
                     actioner,
                     removed_punishment,
                     self.moderation_channel,
-                    False,
+                    sent_dm,
                     removed=True
                 )
+
 
 async def setup(bot):
     await bot.add_cog(PunishmentCog(bot))
