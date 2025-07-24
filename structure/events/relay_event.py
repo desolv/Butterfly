@@ -1,9 +1,7 @@
-from os import remove
-
 from discord.ext import commands
 
 from structure.providers.helper import load_json_data
-from structure.repo.services.relay_service import create_track, remove_user_track
+from structure.repo.services.tracking_service import create_track, remove_user_track
 
 
 class TrackCog(commands.Cog):
@@ -42,6 +40,7 @@ class TrackCog(commands.Cog):
             remove_user_track(payload.message_id)
         except Exception as e:
             print(f"Failed to mark deleted → {e}")
+
 
 async def setup(bot):
     await bot.add_cog(TrackCog(bot))

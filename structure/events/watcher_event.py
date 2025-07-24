@@ -32,7 +32,7 @@ def parse_gpt_verdicts(raw: str) -> dict[int, str]:
 
 
 async def is_inappropriate_batch(client, gpt_prompt, messages: list[str]) -> str:
-    prompt = gpt_prompt +"\n".join(f"[{i + 1}] {msg}" for i, msg in enumerate(messages))
+    prompt = gpt_prompt + "\n".join(f"[{i + 1}] {msg}" for i, msg in enumerate(messages))
 
     try:
         response = client.chat.completions.create(
@@ -134,7 +134,7 @@ class WatcherCog(commands.Cog):
                 **ᴄʜᴀɴɴᴇʟ**: {msg.channel.mention}
                 **ᴠᴇʀᴅɪᴄᴛ**: {verdict_text}
                 **ᴍᴇѕѕᴀɢᴇ**: {cleaned}
-                **ᴛɪᴍᴇ**: {msg.created_at.strftime('%H:%M:%S')}""",
+                **ᴛɪᴍᴇ**: {msg.added_at.strftime('%H:%M:%S')}""",
                 inline=False
             )
 

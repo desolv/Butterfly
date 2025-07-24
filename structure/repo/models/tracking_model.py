@@ -20,11 +20,10 @@ class Track(base):
     user_id = Column(BigInteger, nullable=False)
     message_id = Column(BigInteger, nullable=False)
     message = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    added_at = Column(DateTime, default=datetime.utcnow)
     channel_id = Column(BigInteger, nullable=False)
     removed_at = Column(DateTime, nullable=True)
     is_active = Column(Boolean, default=False)
 
     def __repr__(self):
         return f"<Track {self.user_id} @ {self.channel_id} & {self.message_id}>"
-
