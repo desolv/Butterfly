@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from datetime import timezone
 from pathlib import Path
 from typing import List
+from urllib.parse import urlparse
 
 import discord
 import pytz
@@ -109,4 +110,12 @@ async def send_private_dm(member: discord.Member, message, ctx = None):
     except Exception:
         if ctx is not None:
             await ctx.send(f"Wasn't able to message **{member}**.")
+        return False
+
+
+def is_valid_url(url: str) -> bool:
+    try:
+        parsed = urlparse(url)
+        return all([parsed.scheme in ("http", "https"), parsed.netloc])
+    except Exception:
         return False
