@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, BigInteger, Boolean, DateTime
 from sqlalchemy.orm import relationship
 
-from structure.database import base
+from core.database import base
 
 
 class Guild(base):

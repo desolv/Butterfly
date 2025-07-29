@@ -5,7 +5,7 @@ import os
 import nest_asyncio
 from dotenv import load_dotenv
 
-from structure.database import engine, init_tables
+from core.database import engine, init_tables
 
 nest_asyncio.apply()
 
@@ -18,7 +18,7 @@ from discord.ext import commands
 from pathlib import Path
 
 from openai import OpenAI
-from structure.helper import get_formatted_time
+from core.helper import get_formatted_time
 
 load_dotenv(f"io/.env")
 

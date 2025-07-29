@@ -1,7 +1,7 @@
 from sqlalchemy import Column, BigInteger, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 
-from structure.database import base
+from core.database import base
 
 
 class PunishmentConfig(base):

@@ -20,9 +20,9 @@ base = declarative_base()
 
 def init_tables():
     # noinspection PyUnresolvedReferences
-    from structure.guilds.models import Guild
+    from guilds.models import Guild
 
     # noinspection PyUnresolvedReferences
-    from structure.permissions.models import PermissionConfig
+    from permissions.models import PermissionConfig
 
     base.metadata.create_all(engine)

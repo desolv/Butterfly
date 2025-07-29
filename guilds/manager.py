@@ -2,10 +2,10 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from structure.database import engine
-from structure.guilds.models import Guild
-from structure.permissions.models import PermissionConfig
-from structure.punishments.models import PunishmentConfig
+from core.database import engine
+from guilds.models import Guild
+from permissions.models import PermissionConfig
+from punishments.models import PunishmentConfig
 
 
 def get_guild_by_id(guild_id: int):

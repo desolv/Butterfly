@@ -3,8 +3,8 @@ from datetime import datetime
 import discord
 from discord.ext import commands
 
-from structure.guilds.manager import get_guild_by_id, create_or_update_guild
-from structure.helper import get_sub_commands_help_message, get_formatted_time
+from core.helper import get_sub_commands_help_message, get_formatted_time
+from guilds.manager import get_guild_by_id, create_or_update_guild
 
 
 class GuildCommand(commands.Cog):

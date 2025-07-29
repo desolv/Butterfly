@@ -1,7 +1,7 @@
 from sqlalchemy import Column, BigInteger, String, Boolean, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 
-from structure.database import base
+from core.database import base
 
 
 class PermissionConfig(base):
