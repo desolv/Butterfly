@@ -5,7 +5,7 @@ import os
 import nest_asyncio
 from dotenv import load_dotenv
 
-from core.database import engine, init_tables
+from backend.core.database import engine, init_tables
 
 nest_asyncio.apply()
 
@@ -18,14 +18,14 @@ from discord.ext import commands
 from pathlib import Path
 
 from openai import OpenAI
-from core.helper import get_formatted_time
+from backend.core.helper import get_formatted_time
 
 load_dotenv(f"io/.env")
 
 bot = commands.Bot(command_prefix="?", intents=discord.Intents.all())
 bot.client = OpenAI(api_key=os.getenv("OPENAI"))
 
-print(f"Paramount Robot")
+print(f"Butterfly Robot")
 print(f"Running at Python {platform.python_version()}v, "
       f"Discord.py {discord.__version__}v - {platform.system()} {platform.release()} ({os.name})")
 
@@ -50,10 +50,10 @@ except Exception as e:
 
 
 async def load():
-    skip_folders = {}
-    skip_file_names = {"database.py", "models.py"}
+    skip_folders = {".venv", "io"}
+    skip_file_names = {"database.py", "models.py", "butterfly.py"}
 
-    for extension in Path("structure").rglob("*.py"):
+    for extension in Path("backend").rglob("*.py"):
         if (
                 extension.stem.startswith("__")
                 or "models" in extension.parts
