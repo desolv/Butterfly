@@ -2,7 +2,7 @@ from datetime import datetime
 
 from discord.ext import commands
 
-from core.helper import get_time
+from backend.core.helper import get_time
 
 
 class Master(commands.Cog):

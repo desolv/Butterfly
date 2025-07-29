@@ -2,7 +2,7 @@ from datetime import datetime
 
 from discord.ext import commands
 
-from guilds.manager import create_or_update_guild
+from backend.guilds.manager import create_or_update_guild
 
 
 class GuildEvents(commands.Cog):

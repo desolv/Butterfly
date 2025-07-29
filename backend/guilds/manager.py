@@ -2,10 +2,9 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from core.database import engine
-from guilds.models import Guild
-from permissions.models import PermissionConfig
-from punishments.models import PunishmentConfig
+from backend.core.database import engine
+from backend.guilds.models import Guild
+from backend.punishments.models import PunishmentConfig
 
 
 def get_guild_by_id(guild_id: int):
@@ -20,7 +19,6 @@ def create_or_update_guild(guild_id: int, **kwargs):
         if not guild:
             guild = Guild(guild_id=guild_id, added_at=datetime.utcnow(), is_active=True)
             guild.punishment_config = PunishmentConfig(guild_id=guild_id)
-            guild.permissions_config = PermissionConfig(guild_id=guild_id)
 
         for field, value in kwargs.items():
             if value is not None and hasattr(guild, field):
