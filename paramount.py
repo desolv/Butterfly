@@ -51,7 +51,7 @@ except Exception as e:
 
 async def load():
     skip_folders = {}
-    skip_file_names = {"database.py", "model.py"}
+    skip_file_names = {"database.py", "models.py"}
 
     for extension in Path("structure").rglob("*.py"):
         if (

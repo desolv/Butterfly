@@ -12,12 +12,17 @@ engine = create_engine(
     pool_recycle=280,
     pool_timeout=30,
     pool_size=10,
-    max_overflow=5,
-    echo=os.getenv("DEBUG") == "True"
+    max_overflow=5
 )
 
 base = declarative_base()
 
 
 def init_tables():
+    # noinspection PyUnresolvedReferences
+    from structure.guilds.models import Guild
+
+    # noinspection PyUnresolvedReferences
+    from structure.permissions.models import PermissionConfig
+
     base.metadata.create_all(engine)

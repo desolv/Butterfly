@@ -77,7 +77,7 @@ def parse_time_window(input_str: str) -> datetime:
         raise ValueError("Only 'd' (days), 'h' (hours) and 'm' (minutes) are supported.")
 
 
-def format_subcommands(bot, group_name: str) -> List[str]:
+def get_sub_commands_help_message(bot, group_name: str):
     cmd_obj = bot.get_command(group_name)
     if not cmd_obj or not isinstance(cmd_obj, commands.Group):
         return []
@@ -92,10 +92,10 @@ def format_subcommands(bot, group_name: str) -> List[str]:
 
         lines.append(f"`{usage}` – {sub.description or 'No description'}")
 
-    return lines
+    return "\n".join(lines)
 
 
-def generate_id(length=9, symbols=True):
+def generate_id(length=12, symbols=True):
     chars = string.ascii_letters + string.digits
     if symbols:
         chars += "#@$&"
