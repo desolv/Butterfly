@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 import asyncio
+import os
 
 import nest_asyncio
+from dotenv import load_dotenv
+
+from structure.database import engine, init_tables
 
 nest_asyncio.apply()
 
@@ -14,12 +18,11 @@ from discord.ext import commands
 from pathlib import Path
 
 from openai import OpenAI
-from structure.providers.helper import get_formatted_time, load_json_data
-from structure.repo.database import *
+from structure.helper import get_formatted_time
 
 load_dotenv(f"io/.env")
 
-bot = commands.Bot(command_prefix=load_json_data(f"environment")["command_prefix"], intents=discord.Intents.all())
+bot = commands.Bot(command_prefix="?", intents=discord.Intents.all())
 bot.client = OpenAI(api_key=os.getenv("OPENAI"))
 
 print(f"Paramount Robot")
@@ -40,22 +43,30 @@ try:
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": "Ping"}]
     )
-    print("Connected to OpenAI\n")
+    print("Connected to OpenAI")
 except Exception as e:
     print(f"Failed to connect to OpenAI -> {e}")
     sys.exit(0)
 
+
 async def load():
+    skip_folders = {}
+    skip_file_names = {"database.py", "model.py"}
+
     for extension in Path("structure").rglob("*.py"):
-        if extension.stem.startswith("__") or "repo" in extension.parts:
+        if (
+                extension.stem.startswith("__")
+                or "models" in extension.parts
+                or any(folder in extension.parts for folder in skip_folders)
+                or extension.name in skip_file_names
+        ):
             continue
 
-        if extension.stem != "__init__":
-            ext_path = ".".join(extension.parts).replace(".py", "")
-            try:
-                await bot.load_extension(ext_path)
-            except commands.NoEntryPointError:
-                print(f"Skipped loading extension '{extension.stem}' as it does not have a 'setup' function")
+        ext_path = ".".join(extension.with_suffix("").parts)
+        try:
+            await bot.load_extension(ext_path)
+        except commands.NoEntryPointError:
+            continue
 
 
 async def main():
