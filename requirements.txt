@@ -1,7 +1,6 @@
 discord.py
 sqlalchemy
-pymysql
-aiomysql
+psycopg2-binary
 python-dotenv
 pytz
 psutil

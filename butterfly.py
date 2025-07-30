@@ -5,7 +5,7 @@ import os
 import nest_asyncio
 from dotenv import load_dotenv
 
-from backend.core.database import engine, init_tables
+from backend.core.database import Engine, init_tables
 
 nest_asyncio.apply()
 
@@ -30,12 +30,12 @@ print(f"Running at Python {platform.python_version()}v, "
       f"Discord.py {discord.__version__}v - {platform.system()} {platform.release()} ({os.name})")
 
 try:
-    mysql_uptime = datetime.now()
-    with engine.connect() as connection:
-        print(f"Running MySQL with SQLAlchemy at {str(get_formatted_time(mysql_uptime, format="%S"))}ms")
+    postgre_uptime = datetime.now()
+    with Engine.connect() as connection:
+        print(f"Running PostgreSQL with SQLAlchemy at {str(get_formatted_time(postgre_uptime, format="%S"))}ms")
     init_tables()
 except Exception as e:
-    print(f"Failed to connect to MySQL -> {e}")
+    print(f"Failed to connect to PostgreSQL -> {e}")
     sys.exit(0)
 
 try:
