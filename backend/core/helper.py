@@ -23,7 +23,7 @@ def get_time(format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London")
 def get_uptime(bot, format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London"):
     master_cog = bot.get_cog("MasterCog")
     if not master_cog:
-        return "MasterCog not loaded."
+        return "Master not loaded."
 
     start_time = master_cog.get_uptime()
     tz = pytz.timezone(timezone)
@@ -66,7 +66,7 @@ def parse_time_window(input_str: str) -> datetime:
     value, unit = match.groups()
     value = int(value)
 
-    now = datetime.utcnow()
+    now = get_utc_now()
     if unit == "d":
         return now + timedelta(days=value)
     elif unit == "h":
@@ -77,10 +77,10 @@ def parse_time_window(input_str: str) -> datetime:
         raise ValueError("Only 'd' (days), 'h' (hours) and 'm' (minutes) are supported.")
 
 
-def get_sub_commands_help_message(bot, group_name: str):
+def get_sub_commands_help_message(bot, group_name: str) -> str:
     cmd_obj = bot.get_command(group_name)
     if not cmd_obj or not isinstance(cmd_obj, commands.Group):
-        return []
+        return ""
 
     lines: List[str] = []
     for sub in cmd_obj.commands:
@@ -90,7 +90,9 @@ def get_sub_commands_help_message(bot, group_name: str):
         params = " ".join(f"<{name}>" for name in sub.clean_params)
         usage = f"{sub.name} {params}".strip()
 
-        lines.append(f"`{usage}` – {sub.description or 'No description'}")
+        desc = sub.help or sub.description or "No description"
+
+        lines.append(f"`{usage}` – {desc}")
 
     return "\n".join(lines)
 
@@ -119,3 +121,7 @@ def is_valid_url(url: str) -> bool:
         return all([parsed.scheme in ("http", "https"), parsed.netloc])
     except Exception:
         return False
+
+
+def get_utc_now():
+    return datetime.now(timezone.utc)
