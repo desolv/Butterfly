@@ -1,24 +1,21 @@
-from datetime import datetime
-
 from sqlalchemy.orm import Session
 
-from backend.core.database import engine
+from backend.configs.models import Config
+from backend.core.database import Engine
+from backend.core.helper import get_utc_now
 from backend.guilds.models import Guild
-from backend.punishments.models import PunishmentConfig
+from backend.permissions.models import Permission
 
 
-def get_guild_by_id(guild_id: int):
-    with Session(engine) as session:
-        return session.query(Guild).filter_by(guild_id=guild_id).first()
-
-
-def create_or_update_guild(guild_id: int, **kwargs):
-    with Session(engine) as session:
+def create_or_update_guild(bot, guild_id: int, **kwargs):
+    with Session(Engine) as session:
         guild = session.query(Guild).filter_by(guild_id=guild_id).first()
+        discord_guild = bot.get_guild(guild_id)
 
-        if not guild:
-            guild = Guild(guild_id=guild_id, added_at=datetime.utcnow(), is_active=True)
-            guild.punishment_config = PunishmentConfig(guild_id=guild_id)
+        if discord_guild and not guild:
+            guild = Guild(guild_id=guild_id, added_at=get_utc_now(), is_active=True)
+            guild.config = Config(guild_id=guild_id)
+            guild.permission = Permission(guild_id=guild_id)
 
         for field, value in kwargs.items():
             if value is not None and hasattr(guild, field):
@@ -27,4 +24,5 @@ def create_or_update_guild(guild_id: int, **kwargs):
         session.add(guild)
         session.commit()
         session.refresh(guild)
-        return guild
+
+        return guild, discord_guild

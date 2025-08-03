@@ -6,8 +6,8 @@ from sqlalchemy.orm import declarative_base
 
 load_dotenv(f"io/.env")
 
-engine = create_engine(
-    os.getenv("MYSQL"),
+Engine = create_engine(
+    os.getenv("POSTGRESQL"),
     pool_pre_ping=True,
     pool_recycle=280,
     pool_timeout=30,
@@ -15,7 +15,7 @@ engine = create_engine(
     max_overflow=5
 )
 
-base = declarative_base()
+Base = declarative_base()
 
 
 def init_tables():
@@ -23,9 +23,9 @@ def init_tables():
     from backend.guilds.models import Guild
 
     # noinspection PyUnresolvedReferences
-    from backend.permissions.models import PermissionConfig
+    from backend.configs.models import Config
 
     # noinspection PyUnresolvedReferences
-    from backend.punishments.models import PunishmentConfig
+    from backend.permissions.models import Permission
 
-    base.metadata.create_all(engine)
+    Base.metadata.create_all(Engine)

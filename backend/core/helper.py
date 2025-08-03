@@ -6,12 +6,10 @@ import time
 from datetime import datetime, timedelta
 from datetime import timezone
 from pathlib import Path
-from typing import List
 from urllib.parse import urlparse
 
 import discord
 import pytz
-from discord.ext import commands
 
 
 def get_time(format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London"):
@@ -77,23 +75,35 @@ def parse_time_window(input_str: str) -> datetime:
         raise ValueError("Only 'd' (days), 'h' (hours) and 'm' (minutes) are supported.")
 
 
+from typing import List
+from discord.ext import commands
+
+
 def get_sub_commands_help_message(bot, group_name: str) -> str:
     cmd_obj = bot.get_command(group_name)
     if not cmd_obj or not isinstance(cmd_obj, commands.Group):
         return ""
 
     lines: List[str] = []
-    for sub in cmd_obj.commands:
-        if sub.hidden:
-            continue
 
-        params = " ".join(f"<{name}>" for name in sub.clean_params)
-        usage = f"{sub.name} {params}".strip()
+    def recurse(group: commands.Group, prefix: str = ""):
+        for sub in group.commands:
+            if sub.hidden:
+                continue
 
-        desc = sub.help or sub.description or "No description"
+            is_group = isinstance(sub, commands.Group)
+            full_name = f"{prefix}{sub.name}"
+            params = " ".join(f"<{p}>" for p in sub.clean_params)
+            usage = f"{full_name} {params}".strip()
+            desc = sub.help or sub.description or "No description"
 
-        lines.append(f"`{usage}` – {desc}")
+            if not (is_group and not sub.invoke_without_command):
+                lines.append(f"`{usage}` – {desc}")
 
+            if is_group:
+                recurse(sub, prefix=f"{full_name} ")
+
+    recurse(cmd_obj)
     return "\n".join(lines)
 
 
