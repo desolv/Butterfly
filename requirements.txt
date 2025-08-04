@@ -6,3 +6,4 @@ pytz
 psutil
 openai
 nest-asyncio
+python-dateutil
