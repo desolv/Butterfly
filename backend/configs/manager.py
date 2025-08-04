@@ -6,7 +6,7 @@ from backend.core.database import Engine
 
 def update_punishment_config(guild_id: int, **kwargs):
     with Session(Engine) as session:
-        config = session.query(Config).filter_by(guild_id=guild_id).first() or Config(guild_id=guild_id)
+        config = session.query(Config).filter_by(guild_id=guild_id).first()
         session.add(config)
         session.commit()
         session.refresh(config)
@@ -35,5 +35,6 @@ def get_punishment_settings(guild_id: int):
             data.get("muted_role"),
             data.get("protected_roles", []),
             data.get("protected_users", []),
-            data.get("logging_channel")
+            data.get("moderation_channel"),
+            data.get("last_modify")
         )
