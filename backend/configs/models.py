@@ -14,7 +14,8 @@ class Config(Base):
         "muted_role": None,
         "protected_roles": [],
         "protected_users": [],
-        "logging_channel": None
+        "moderation_channel": None,
+        "last_modify": None
     })
 
     guild = relationship("Guild", back_populates="config")
