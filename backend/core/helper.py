@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import discord
 import pytz
+from dateutil.parser import isoparse
 
 
 def get_time(format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London"):
@@ -135,3 +136,9 @@ def is_valid_url(url: str) -> bool:
 
 def get_utc_now():
     return datetime.now(timezone.utc)
+
+
+def parse_iso(iso_str: str) -> datetime:
+    dt_aware = isoparse(iso_str)
+    dt_local = dt_aware.astimezone()
+    return dt_local.replace(tzinfo=None)
