@@ -4,13 +4,14 @@ from discord.ext import commands
 from backend.configs.manager import update_punishment_config, get_punishment_settings
 from backend.core.helper import get_sub_commands_help_message, get_utc_now, get_formatted_time, parse_iso
 from backend.core.pagination import Pagination
-from backend.guilds.manager import create_or_update_guild
+from backend.permissions.enforce import has_permission
 
 
 class PunishmentCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @has_permission()
     @commands.group(
         name="punishment",
         invoke_without_command=True
@@ -25,21 +26,22 @@ class PunishmentCommand(commands.Cog):
 
         await ctx.send(embed=view.create_embed(), view=view)
 
+    @has_permission()
     @_punishment.command(name="catalog")
     async def _catalog(self, ctx):
-        """Display the current punishment blueprint for the server."""
+        """Display the current punishment catalog."""
 
-        guild, discord_guild = create_or_update_guild(self.bot, ctx.guild.id)
+        guild = ctx.guild
 
         muted_role, protected_roles, protected_users, moderation_channel, last_modify = get_punishment_settings(
             ctx.guild.id)
 
-        muted_role = discord_guild.get_role(muted_role)
+        muted_role = guild.get_role(muted_role)
 
         protected_roles = " ".join(
             [
                 role.mention
-                for role in (discord_guild.get_role(int(role_id)) for role_id in protected_roles)
+                for role in (guild.get_role(int(role_id)) for role_id in protected_roles)
                 if role
             ]
         ) or "None"
@@ -47,12 +49,12 @@ class PunishmentCommand(commands.Cog):
         protected_users = " ".join(
             [
                 member.mention
-                for member in (discord_guild.get_member(int(member_id)) for member_id in protected_users)
+                for member in (guild.get_member(int(member_id)) for member_id in protected_users)
                 if member
             ]
         ) or "None"
 
-        moderation_channel = discord_guild.get_channel(moderation_channel)
+        moderation_channel = guild.get_channel(moderation_channel)
 
         last_modify = get_formatted_time(
             parse_iso(last_modify),
@@ -67,7 +69,7 @@ class PunishmentCommand(commands.Cog):
         )
 
         embed = discord.Embed(
-            title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴄᴀᴛᴀʟᴏɢ ꜰᴏʀ {discord_guild.name}",
+            title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴄᴀᴛᴀʟᴏɢ ꜰᴏʀ {guild.name}",
             description=description,
             color=0x393A41,
             timestamp=get_utc_now()
@@ -75,10 +77,11 @@ class PunishmentCommand(commands.Cog):
 
         embed.add_field(name="**ʟᴀѕᴛ ᴍᴏᴅɪꜰʏ**", value=f"{last_modify}",
                         inline=True)
-        embed.add_field(name="**ɢᴜɪʟᴅ ɪᴅ**", value=f"{discord_guild.id}", inline=True)
+        embed.add_field(name="**ɢᴜɪʟᴅ ɪᴅ**", value=f"{guild.id}", inline=True)
 
         await ctx.send(embed=embed)
 
+    @has_permission()
     @_punishment.command(name="muted_role")
     async def _muted_role(
             self,
@@ -95,6 +98,7 @@ class PunishmentCommand(commands.Cog):
 
         await ctx.send(f"Updated punishment **muted role** to {role.mention}")
 
+    @has_permission()
     @_punishment.command(name="moderation_channel")
     async def _moderation_channel(
             self,
@@ -111,10 +115,12 @@ class PunishmentCommand(commands.Cog):
 
         await ctx.send(f"Updated punishment **moderation channel** to {channel.mention}")
 
+    @has_permission()
     @_punishment.group(name="protected_roles")
     async def _protected_roles(self, ctx):
         pass
 
+    @has_permission()
     @_protected_roles.command(name="add")
     async def _protected_roles_add(
             self,
@@ -139,6 +145,7 @@ class PunishmentCommand(commands.Cog):
 
         await ctx.send(f"Added {role.mention} to protected roles!")
 
+    @has_permission()
     @_protected_roles.command(name="remove")
     async def _protected_roles_remove(
             self,
@@ -163,10 +170,12 @@ class PunishmentCommand(commands.Cog):
 
         await ctx.send(f"Removed {role.mention} from protected roles!")
 
+    @has_permission()
     @_punishment.group(name="protected_users")
     async def _protected_users(self, ctx):
         pass
 
+    @has_permission()
     @_protected_users.command(name="add")
     async def _protected_users_add(
             self,
@@ -191,6 +200,7 @@ class PunishmentCommand(commands.Cog):
 
         await ctx.send(f"Added {member.mention} to protected users!")
 
+    @has_permission()
     @_protected_users.command(name="remove")
     async def _protected_users_remove(
             self,

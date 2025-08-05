@@ -1,22 +1,29 @@
+from discord.ext import commands
 from sqlalchemy.orm import Session
 
 from backend.configs.models import Config
 from backend.core.database import Engine
 from backend.core.helper import get_utc_now
 from backend.guilds.models import Guild
+from backend.permissions.manager import initialize_permissions_for_guild
 
 
-def create_or_update_guild(bot, guild_id: int, **kwargs):
+def create_or_update_guild(bot: commands.Bot, guild_id: int, **kwargs):
     """
         Ensure a Guild record exists in the database and apply updates from keyword arguments.
     """
     with Session(Engine) as session:
         guild = session.query(Guild).filter_by(guild_id=guild_id).first()
-        discord_guild = bot.get_guild(guild_id)
 
-        if discord_guild and not guild:
+        if not guild:
             guild = Guild(guild_id=guild_id, added_at=get_utc_now(), is_active=True)
             guild.config = Config(guild_id=guild_id)
+
+            session.add(guild)
+            session.commit()
+            session.refresh(guild)
+
+            initialize_permissions_for_guild(bot, guild_id)
 
         for field, value in kwargs.items():
             if value is not None and hasattr(guild, field):
@@ -26,4 +33,4 @@ def create_or_update_guild(bot, guild_id: int, **kwargs):
         session.commit()
         session.refresh(guild)
 
-        return guild, discord_guild
+        return guild
