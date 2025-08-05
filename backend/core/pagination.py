@@ -48,7 +48,7 @@ class Pagination(View):
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         if interaction.user.id != self.author_id:
-            await interaction.response.send_message("You are not allowed to use this!", ephemeral=True)
+            await interaction.followup.send("You are not allowed to use this!", ephemeral=True)
             return False
 
         if not interaction.response.is_done():
