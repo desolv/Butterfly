@@ -1,0 +1,68 @@
+import discord
+from discord.ext import commands
+
+from backend.core.helper import parse_time_window, send_private_dm
+from backend.permissions.enforce import has_permission
+from backend.punishments.manager import has_permission_to_punish, get_user_active_punishment, create_punishment, \
+    send_punishment_moderation_log
+from backend.punishments.models import PunishmentType
+
+
+class BanCommand(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @has_permission()
+    @commands.command(name="ban")
+    async def _ban(self, ctx, member: discord.Member, duration: str = "1h", *, reason: str = "No reason provided"):
+        """Ban a member by removing them from the server"""
+
+        if not await has_permission_to_punish(ctx, member):
+            return
+
+        if get_user_active_punishment(ctx.guild.id, member.id, PunishmentType.BAN):
+            await ctx.send(f"**@{member}** is already banned!")
+            return
+
+        permanent = True if duration.lower() in ("permanent", "perm") else False
+
+        if not permanent:
+            try:
+                parse_duration = parse_time_window(duration)
+            except ValueError as e:
+                await ctx.send(e)
+                return
+
+        try:
+            await member.ban(reason=reason)
+        except discord.Forbidden:
+            await ctx.send(f"Wasn't able to ban **{member}**. Aborting!")
+            return
+
+        punishment = create_punishment(
+            ctx.guild.id,
+            member.id,
+            ctx.author.id,
+            PunishmentType.BAN,
+            reason,
+            None if permanent else parse_duration
+        )
+
+        duration_msg = "permanently" if permanent else "temporarily"
+        await ctx.send(f"**@{member}** has been {duration_msg} banned for **{reason}**.")
+
+        expiring = "**never** expiring!" if permanent else f"expiring in **{duration}**."
+        sent_dm = await send_private_dm(member, f"You have been banned for **{reason}** it's {expiring}", ctx)
+
+        await send_punishment_moderation_log(
+            ctx.guild,
+            member,
+            ctx.author,
+            punishment,
+            sent_dm,
+            duration
+        )
+
+
+async def setup(bot):
+    await bot.add_cog(BanCommand(bot))

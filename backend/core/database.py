@@ -28,4 +28,7 @@ def init_tables():
     # noinspection PyUnresolvedReferences
     from backend.permissions.models import Permission
 
+    # noinspection PyUnresolvedReferences
+    from backend.punishments.models import Punishment
+
     Base.metadata.create_all(Engine)
