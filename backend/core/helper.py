@@ -80,7 +80,7 @@ from typing import List
 from discord.ext import commands
 
 
-def get_sub_commands_help_message(bot, group_name: str) -> str:
+def get_sub_commands_help_message(bot, group_name: str):
     cmd_obj = bot.get_command(group_name)
     if not cmd_obj or not isinstance(cmd_obj, commands.Group):
         return ""
@@ -105,7 +105,7 @@ def get_sub_commands_help_message(bot, group_name: str) -> str:
                 recurse(sub, prefix=f"{full_name} ")
 
     recurse(cmd_obj)
-    return "\n".join(lines)
+    return lines
 
 
 def generate_id(length=12, symbols=True):
