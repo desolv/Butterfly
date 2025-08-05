@@ -22,7 +22,7 @@ from backend.core.helper import get_formatted_time
 
 load_dotenv(f"io/.env")
 
-bot = commands.Bot(command_prefix="?", intents=discord.Intents.all())
+bot = commands.Bot(command_prefix="?", help_command=None, intents=discord.Intents.all())
 bot.client = OpenAI(api_key=os.getenv("OPENAI"))
 
 print(f"Butterfly Robot")
