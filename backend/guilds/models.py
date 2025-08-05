@@ -14,4 +14,3 @@ class Guild(Base):
     is_active = Column(Boolean, default=True)
 
     config = relationship("Config", uselist=False, back_populates="guild")
-    permission = relationship("Permission", back_populates="guild")

@@ -12,6 +12,7 @@ def create_or_update_guild(bot: commands.Bot, guild_id: int, **kwargs):
     """
         Ensure a Guild record exists in the database and apply updates from keyword arguments.
     """
+
     with Session(Engine) as session:
         guild = session.query(Guild).filter_by(guild_id=guild_id).first()
 
