@@ -83,7 +83,7 @@ def parse_time_window(input_str: str) -> datetime:
 def get_sub_commands_help_message(
         bot: commands.Bot,
         group_name: str,
-        include_hidden: bool
+        include_hidden: bool = False
 ) -> List[str]:
     """
     Generate help lines for subcommands of a command group.
@@ -166,3 +166,40 @@ def parse_iso(iso_str: str) -> datetime:
     dt_aware = isoparse(iso_str)
     dt_local = dt_aware.astimezone()
     return dt_local.replace(tzinfo=None)
+
+
+def is_valid_command(bot: commands.Bot, name: str) -> bool:
+    """
+    Determine whether a given command name is registered on the bot.
+    """
+    return bot.get_command(name) is not None
+
+
+def get_all_command_names(bot: commands.Bot, include_hidden: bool = False) -> List[str]:
+    """
+    Gather every command’s qualified_name, including subcommands.
+    """
+    names: List[str] = []
+
+    def recurse(group: commands.Command, prefix: str = ""):
+        if getattr(group, "hidden", False) and not include_hidden:
+            return
+
+        qualified = f"{prefix}{group.name}"
+        names.append(qualified)
+
+        if isinstance(group, commands.Group):
+            for sub in group.commands:
+                recurse(sub, prefix=f"{qualified} ")
+
+    for cmd in bot.commands:
+        recurse(cmd)
+
+    seen = set()
+    unique = []
+    for n in names:
+        if n not in seen:
+            seen.add(n)
+            unique.append(n)
+
+    return unique
