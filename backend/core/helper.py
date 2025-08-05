@@ -6,11 +6,13 @@ import time
 from datetime import datetime, timedelta
 from datetime import timezone
 from pathlib import Path
+from typing import List
 from urllib.parse import urlparse
 
 import discord
 import pytz
 from dateutil.parser import isoparse
+from discord.ext import commands
 
 
 def get_time(format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London"):
@@ -76,18 +78,21 @@ def parse_time_window(input_str: str) -> datetime:
         raise ValueError("Only 'd' (days), 'h' (hours) and 'm' (minutes) are supported.")
 
 
-from typing import List
-from discord.ext import commands
-
-
-def get_sub_commands_help_message(bot, group_name: str):
+def get_sub_commands_help_message(
+        bot: commands.Bot,
+        group_name: str,
+        include_hidden: bool
+) -> List[str]:
     cmd_obj = bot.get_command(group_name)
     if not cmd_obj or not isinstance(cmd_obj, commands.Group):
-        return ""
+        return []
 
     lines: List[str] = []
 
     def recurse(group: commands.Group, prefix: str = ""):
+        if group.hidden and not include_hidden:
+            return
+
         for sub in group.commands:
             if sub.hidden:
                 continue
