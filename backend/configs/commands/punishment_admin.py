@@ -7,19 +7,19 @@ from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission
 
 
-class PunishmentCommand(commands.Cog):
+class PunishmentAdminCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @has_permission()
     @commands.group(
-        name="punishment",
+        name="punishment-admin",
         invoke_without_command=True
     )
     async def _punishment(self, ctx):
         view = Pagination(
-            "ᴘᴜɴɪѕʜᴍᴇɴᴛ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
-            get_sub_commands_help_message(self.bot, "punishment"),
+            "ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴀᴅᴍɪɴ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
+            get_sub_commands_help_message(self.bot, "punishment-admin"),
             3,
             ctx.author.id
         )
@@ -227,4 +227,4 @@ class PunishmentCommand(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(PunishmentCommand(bot))
+    await bot.add_cog(PunishmentAdminCommand(bot))
