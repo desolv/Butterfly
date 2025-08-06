@@ -80,6 +80,68 @@ def parse_time_window(input_str: str) -> datetime:
     raise ValueError("Only 'd' (days), 'h' (hours) and 'm' (minutes) are supported.")
 
 
+def format_time_window(target: datetime) -> str:
+    """
+    Given a UTC datetime (naive or aware), return a duration string like '1d', '3h', or '30m'.
+    If the target is in the past or now, returns '0m'.
+    """
+    if target.tzinfo is None:
+        target = target.replace(tzinfo=timezone.utc)
+    else:
+        target = target.astimezone(timezone.utc)
+
+    now = get_utc_now()
+
+    delta: timedelta = target - now
+    total_seconds = int(delta.total_seconds())
+
+    if total_seconds <= 0:
+        return "0m"
+
+    days = delta.days
+    if days >= 1:
+        return f"{days}d"
+
+    hours = total_seconds // 3600
+    if hours >= 1:
+        return f"{hours}h"
+
+    minutes = (total_seconds % 3600) // 60
+    return f"{minutes}m"
+
+
+def format_duration(start: datetime, end: datetime) -> str:
+    """
+    Given two UTC datetimes return the difference as
+    'Xd', 'Xh', or 'Xm'
+    """
+
+    def ensure_utc(dt: datetime) -> datetime:
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+
+    start_utc = ensure_utc(start)
+    end_utc = ensure_utc(end)
+
+    delta: timedelta = end_utc - start_utc
+    total_seconds = int(delta.total_seconds())
+
+    if total_seconds <= 0:
+        return "0m"
+
+    days = total_seconds // 86400
+    if days >= 1:
+        return f"{days}d"
+
+    hours = total_seconds // 3600
+    if hours >= 1:
+        return f"{hours}h"
+
+    minutes = (total_seconds % 3600) // 60
+    return f"{minutes}m"
+
+
 def get_sub_commands_help_message(
         bot: commands.Bot,
         group_name: str,
