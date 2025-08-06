@@ -237,9 +237,12 @@ async def process_punishment_removal(bot: commands.Bot, guild: discord.Guild, pu
         case _:
             return
 
-    removed_punishment, success = remove_user_active_punishment(punishment.guild_id,
-                                                                punishment.punishment_id,
-                                                                reason=reason)
+    removed_punishment, success = remove_user_active_punishment(
+        punishment.guild_id,
+        punishment.punishment_id,
+        moderator.id,
+        reason
+    )
 
     await send_punishment_moderation_log(
         guild,
