@@ -93,7 +93,7 @@ class PunishmentCommand(commands.Cog):
             ctx,
             punishment_id: int,
             *,
-            reason
+            reason: str = "No reason"
     ):
         punishment = get_punishment_by_id(ctx.guild.id, punishment_id)
 
