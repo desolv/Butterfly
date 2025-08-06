@@ -52,7 +52,9 @@ class BanCommand(commands.Cog):
         await ctx.send(f"**@{member}** has been {duration_msg} banned for **{reason}**.")
 
         expiring = "**never** expiring!" if permanent else f"expiring in **{duration}**."
-        sent_dm = await send_private_dm(member, f"You have been banned for **{reason}** it's {expiring}", ctx)
+        sent_dm = await send_private_dm(member,
+                                        f"You have been banned from **{ctx.guild.name}** for **{reason}** it's {expiring}",
+                                        ctx)
 
         await send_punishment_moderation_log(
             ctx.guild,

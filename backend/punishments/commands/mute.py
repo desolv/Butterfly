@@ -55,7 +55,9 @@ class MuteCommand(commands.Cog):
         await ctx.send(f"**@{member}** has been {duration_msg} muted for **{reason}**.")
 
         expiring = "**never** expiring!" if permanent else f"expiring in **{duration}**."
-        sent_dm = await send_private_dm(member, f"You have been muted for **{reason}** it's {expiring}", ctx)
+        sent_dm = await send_private_dm(member,
+                                        f"You have been muted from **{ctx.guild.name}** for **{reason}** it's {expiring}",
+                                        ctx)
 
         await send_punishment_moderation_log(
             ctx.guild,

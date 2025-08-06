@@ -34,7 +34,8 @@ class KickCommand(commands.Cog):
         )
 
         await ctx.send(f"**@{member}** has been kicked for **{reason}**.")
-        sent_dm = await send_private_dm(member, f"You have been kicked from the server for **{reason}**.", ctx)
+        sent_dm = await send_private_dm(member, f"You have been kicked from **{ctx.guild.name}** for **{reason}**.",
+                                        ctx)
 
         await send_punishment_moderation_log(
             ctx.guild,

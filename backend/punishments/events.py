@@ -21,14 +21,13 @@ class PunishmentEvents(commands.Cog):
     @tasks.loop(seconds=30)
     async def check_expiring_punishments(self):
         for punishment in get_global_active_expiring_punishments_within():
-            if not punishment.has_expired():
+            if not punishment.has_expired:
                 continue
 
             muted_role, _, _, _, _ = get_punishment_settings(punishment.guild_id)
+            guild = self.bot.get_guild(punishment.guild_id)
 
-            guild = self.bot.get_guild_data(punishment.guild_id)
-
-            match punishment.punishment_type:
+            match punishment.type:
                 case PunishmentType.MUTE:
                     try:
                         member = guild.get_member(punishment.user_id)
@@ -39,7 +38,7 @@ class PunishmentEvents(commands.Cog):
                         continue
 
                     sent_dm = await send_private_dm(member,
-                                                    f"Hey! **You're able to chat now!** Please refrain from breaking rules again.")
+                                                    f"Hey! **You're able to chat now at {guild.name}!** Please refrain from breaking rules again.")
                 case PunishmentType.BAN:
                     try:
                         await guild.unban(discord.Object(id=punishment.user_id), reason="Automatic")
@@ -56,7 +55,8 @@ class PunishmentEvents(commands.Cog):
                 case _:
                     continue
 
-            removed_punishment, success = remove_user_active_punishment(punishment.guild_id, punishment.punishment_id,
+            removed_punishment, success = remove_user_active_punishment(punishment.guild_id,
+                                                                        punishment.punishment_id,
                                                                         reason="Automatic")
 
             await send_punishment_moderation_log(
@@ -105,7 +105,7 @@ class PunishmentEvents(commands.Cog):
                 )
 
                 sent_dm = await send_private_dm(after,
-                                                f"Hey! **You're able to chat now!** Please refrain from breaking rules again.")
+                                                f"Hey! **You're able to chat now at {after.guild.name}!** Please refrain from breaking rules again.")
 
                 await send_punishment_moderation_log(
                     before.guild,

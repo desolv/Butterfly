@@ -31,7 +31,7 @@ class Punishment(Base):
 
     def get_duration(self) -> int | None:
         if self.expires_at and self.added_at:
-            return int((self.added_at - self.expires_at).total_seconds())
+            return int((self.expires_at - self.added_at).total_seconds())
         return None
 
     def has_expired(self) -> bool:
