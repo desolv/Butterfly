@@ -96,9 +96,9 @@ def format_time_window(target: datetime) -> str:
     total_seconds = int(delta.total_seconds())
 
     if total_seconds <= 0:
-        return "0m"
+        return "0s"
 
-    days = delta.days
+    days = total_seconds // 86400
     if days >= 1:
         return f"{days}d"
 
@@ -107,7 +107,11 @@ def format_time_window(target: datetime) -> str:
         return f"{hours}h"
 
     minutes = (total_seconds % 3600) // 60
-    return f"{minutes}m"
+    if minutes >= 1:
+        return f"{minutes}m"
+
+    seconds = total_seconds % 60
+    return f"{seconds}s"
 
 
 def format_duration(start: datetime, end: datetime) -> str:
@@ -128,7 +132,7 @@ def format_duration(start: datetime, end: datetime) -> str:
     total_seconds = int(delta.total_seconds())
 
     if total_seconds <= 0:
-        return "0m"
+        return "0s"
 
     days = total_seconds // 86400
     if days >= 1:
@@ -139,7 +143,11 @@ def format_duration(start: datetime, end: datetime) -> str:
         return f"{hours}h"
 
     minutes = (total_seconds % 3600) // 60
-    return f"{minutes}m"
+    if minutes >= 1:
+        return f"{minutes}m"
+
+    seconds = total_seconds % 60
+    return f"{seconds}s"
 
 
 def get_sub_commands_help_message(
