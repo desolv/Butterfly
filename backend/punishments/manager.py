@@ -2,12 +2,13 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import discord
+from discord.ext import commands
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from backend.configs.manager import get_punishment_settings
 from backend.core.database import Engine
-from backend.core.helper import get_utc_now
+from backend.core.helper import get_utc_now, send_private_dm
 from backend.punishments.models import Punishment, PunishmentType
 
 
@@ -203,3 +204,48 @@ async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
         return False
 
     return True
+
+
+async def process_punishment_removal(bot: commands.Bot, guild: discord.Guild, punishment: Punishment,
+                                     moderator: discord.Member, reason: str):
+    match punishment.type:
+        case PunishmentType.MUTE:
+            try:
+                muted_role, _, _, _, _ = get_punishment_settings(punishment.guild_id)
+                member = guild.get_member(punishment.user_id)
+                muted_role = guild.get_role(muted_role)
+                await member.remove_roles(muted_role, reason=reason)
+            except Exception as e:
+                print(f"Wasn't able remove mute for {punishment.user_id}. Aborting! -> {e}")
+                return
+
+            sent_dm = await send_private_dm(member,
+                                            f"Hey! **You're able to chat now at {guild.name}!** Please refrain from breaking rules again.")
+        case PunishmentType.BAN:
+            try:
+                await guild.unban(discord.Object(id=punishment.user_id), reason=reason)
+            except Exception as e:
+                print(f"Wasn't able remove ban for {punishment.user_id}. Aborting! -> {e}")
+                return
+
+            try:
+                member = await bot.fetch_user(punishment.user_id)
+            except Exception:
+                member = None
+
+            sent_dm = False
+        case _:
+            return
+
+    removed_punishment, success = remove_user_active_punishment(punishment.guild_id,
+                                                                punishment.punishment_id,
+                                                                reason=reason)
+
+    await send_punishment_moderation_log(
+        guild,
+        member,
+        moderator,
+        removed_punishment,
+        sent_dm,
+        removed=True
+    )
