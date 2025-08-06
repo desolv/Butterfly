@@ -101,7 +101,7 @@ class PunishmentEvents(commands.Cog):
                 removed_punishment, success = remove_user_active_punishment(
                     punishment.guild_id,
                     punishment.punishment_id,
-                    reason=reason if reason else "No reason provided"
+                    reason=reason if reason else "No reason"
                 )
 
                 sent_dm = await send_private_dm(after,

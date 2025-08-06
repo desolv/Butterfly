@@ -14,7 +14,7 @@ class BanCommand(commands.Cog):
 
     @has_permission()
     @commands.command(name="ban")
-    async def _ban(self, ctx, member: discord.Member, duration: str = "1h", *, reason: str = "No reason provided"):
+    async def _ban(self, ctx, member: discord.Member, duration: str = "1h", *, reason: str = "No reason"):
         """Ban a member by removing them from the server"""
 
         if not await has_permission_to_punish(ctx, member):

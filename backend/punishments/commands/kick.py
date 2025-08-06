@@ -13,7 +13,7 @@ class KickCommand(commands.Cog):
 
     @has_permission()
     @commands.command(name="kick")
-    async def _kick(self, ctx, member: discord.Member, *, reason: str = "No reason provided"):
+    async def _kick(self, ctx, member: discord.Member, *, reason: str = "No reason"):
         """Kick a member from the server"""
 
         if not await has_permission_to_punish(ctx, member):

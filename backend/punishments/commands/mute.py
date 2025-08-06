@@ -15,7 +15,7 @@ class MuteCommand(commands.Cog):
 
     @has_permission()
     @commands.command(name="mute")
-    async def _mute(self, ctx, member: discord.Member, duration: str = "1h", *, reason: str = "No reason provided"):
+    async def _mute(self, ctx, member: discord.Member, duration: str = "1h", *, reason: str = "No reason"):
         """Mute a member by giving them a role"""
 
         if not await has_permission_to_punish(ctx, member):

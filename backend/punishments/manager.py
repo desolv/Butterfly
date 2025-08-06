@@ -16,7 +16,7 @@ def create_punishment(
         user_id: int,
         added_by: int,
         punishment_type: PunishmentType,
-        reason: str = "No reason provided",
+        reason: str = "No reason",
         duration: datetime = None
 ):
     with Session(Engine) as session:
@@ -94,7 +94,7 @@ def remove_user_active_punishment(
         guild_id: int,
         punishment_id: int,
         removed_by: int = None,
-        reason: str = "No reason provided"
+        reason: str = "No reason"
 ):
     with Session(Engine) as session:
         punishment = session.query(Punishment).filter_by(
@@ -149,39 +149,36 @@ async def send_punishment_moderation_log(guild: discord.Guild, member: discord.M
                                          duration: str = None, removed: bool = False):
     punishment_name, punishment_fancy, punishment_color = get_punishment_metadata(punishment.type)
     punishment_color = discord.Color.pink() if removed else punishment_color
-    try:
-        _, _, _, moderation_channel, _ = get_punishment_settings(guild.id)
 
-        description = (
-            f"**ᴍᴏᴅᴇʀᴀᴛᴏʀ**: {'?' if moderator is None else moderator.mention}\n"
-            f"**ʀᴇᴀѕᴏɴ**: {punishment.removed_reason if removed else punishment.reason}\n"
-        )
+    _, _, _, moderation_channel, _ = get_punishment_settings(guild.id)
 
-        if not removed and punishment.type is not PunishmentType.WARN:
-            description += f"**ᴅᴜʀᴀᴛɪᴏɴ**: {'Permanent' if duration in ('permanent', 'perm') else duration}\n"
+    description = (
+        f"**ᴍᴏᴅᴇʀᴀᴛᴏʀ**: {'?' if moderator is None else moderator.mention}\n"
+        f"**ʀᴇᴀѕᴏɴ**: {punishment.removed_reason if removed else punishment.reason}\n"
+    )
 
-        description += (
-            f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ɪᴅ**: **{punishment.punishment_id}**\n"
-            f"**ᴘʀɪᴠᴀᴛᴇ ᴅᴍ**: {'✅' if sent_dm else '❎'}"
-        )
+    if not removed and punishment.type is not PunishmentType.WARN:
+        description += f"**ᴅᴜʀᴀᴛɪᴏɴ**: {'Permanent' if duration in ('permanent', 'perm') else duration}\n"
 
-        embed = discord.Embed(
-            title=f"{punishment_fancy} ᴘᴜɴɪѕʜᴍᴇɴᴛ ꜰᴏʀ @{member}" if not removed else f"{punishment_fancy} ʀᴇᴍᴏᴠᴇᴅ ꜰᴏʀ @{member}",
-            description=description,
-            color=punishment_color,
-            timestamp=datetime.utcnow()
-        )
+    description += (
+        f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ɪᴅ**: **{punishment.punishment_id}**\n"
+        f"**ᴘʀɪᴠᴀᴛᴇ ᴅᴍ**: {'✅' if sent_dm else '❎'}"
+    )
 
-        avatar_url = member.avatar.url if member.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"
-        embed.set_thumbnail(url=avatar_url)
+    embed = discord.Embed(
+        title=f"{punishment_fancy} ᴘᴜɴɪѕʜᴍᴇɴᴛ ꜰᴏʀ @{member}" if not removed else f"{punishment_fancy} ʀᴇᴍᴏᴠᴇᴅ ꜰᴏʀ @{member}",
+        description=description,
+        color=punishment_color,
+        timestamp=datetime.utcnow()
+    )
 
-        print(moderation_channel)
-        channel = guild.get_channel(moderation_channel)
+    avatar_url = member.avatar.url if member.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"
+    embed.set_thumbnail(url=avatar_url)
 
-        if channel:
-            await channel.send(embed=embed)
-    except Exception as e:
-        print(e)
+    channel = guild.get_channel(moderation_channel)
+
+    if channel:
+        await channel.send(embed=embed)
 
 
 async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
@@ -189,17 +186,20 @@ async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
         await ctx.send(f"You can't punish your self!")
         return False
 
+    if ctx.author.guild_permissions.administrator:
+        return True
+
     _, protected_roles, protected_users, _, _ = get_punishment_settings(ctx.guild.id)
 
     protected_roles = set(protected_roles)
     member_role_ids = {role.id for role in member.roles}
 
     if member.id in protected_users or member_role_ids & protected_roles:
-        await ctx.send(f"{member.mention} is exempt from punishments.")
+        await ctx.send(f"{member.mention} has an exception from punishments!")
         return False
 
     if ctx.author.top_role.position <= member.top_role.position:
-        await ctx.send(f"You cannot punish {member.mention} because their role is higher or equal to yours.")
+        await ctx.send(f"{member.mention} has an higher or equal role to yours.")
         return False
 
     return True
