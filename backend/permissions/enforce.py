@@ -1,8 +1,8 @@
 from discord.ext import commands
 from discord.ext.commands import Context, CheckFailure
 
-from backend.guilds.manager import create_or_update_guild
-from backend.permissions.manager import create_or_retrieve_command
+from backend.guilds.director import create_or_update_guild
+from backend.permissions.director import create_or_retrieve_command
 
 
 def has_permission():

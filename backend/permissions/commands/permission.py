@@ -3,8 +3,8 @@ from discord.ext import commands
 
 from backend.core.helper import get_utc_now, format_time_in_zone, get_commands_help_messages
 from backend.core.pagination import Pagination
+from backend.permissions.director import create_or_retrieve_command, get_permissions_for_guild
 from backend.permissions.enforce import has_permission
-from backend.permissions.manager import create_or_retrieve_command, get_permissions_for_guild
 
 
 class PermissionCommand(commands.Cog):

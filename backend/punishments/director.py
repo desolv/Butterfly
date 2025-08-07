@@ -6,7 +6,7 @@ from discord.ext import commands
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from backend.configs.manager import get_guild_punishment_config
+from backend.configs.director import get_guild_punishment_config
 from backend.core.database import Engine
 from backend.core.helper import get_utc_now, send_private_dm
 from backend.punishments.models import Punishment, PunishmentType

@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from backend.configs.manager import update_guild_punishment_config, get_guild_punishment_config
+from backend.configs.director import update_guild_punishment_config, get_guild_punishment_config
 from backend.core.helper import get_utc_now, format_time_in_zone, parse_iso, \
     get_commands_help_messages
 from backend.core.pagination import Pagination

@@ -1,7 +1,7 @@
 from discord.ext import commands
 
 from backend.core.helper import get_utc_now, get_current_time
-from backend.guilds.manager import create_or_update_guild
+from backend.guilds.director import create_or_update_guild
 
 
 class GuildEvents(commands.Cog):

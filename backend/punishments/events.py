@@ -3,8 +3,8 @@ import asyncio
 import discord
 from discord.ext import commands, tasks
 
-from backend.configs.manager import get_guild_punishment_config
-from backend.punishments.manager import get_global_active_expiring_punishments_within, get_user_active_punishment, \
+from backend.configs.director import get_guild_punishment_config
+from backend.punishments.director import get_global_active_expiring_punishments_within, get_user_active_punishment, \
     process_punishment_removal
 from backend.punishments.models import PunishmentType
 

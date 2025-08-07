@@ -5,7 +5,7 @@ from backend.configs.models import Config
 from backend.core.database import Engine
 from backend.core.helper import get_utc_now
 from backend.guilds.models import Guild
-from backend.permissions.manager import initialize_permissions_for_guild
+from backend.permissions.director import initialize_permissions_for_guild
 
 
 def create_or_update_guild(bot: commands.Bot, guild_id: int, **kwargs):
