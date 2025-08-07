@@ -60,6 +60,14 @@ class ErrorDirector(commands.Cog):
             )
             return
 
+        if isinstance(error, commands.CheckFailure):
+            await ctx.reply(
+                f"⚠️ Something went wrong for some checks. {error}",
+                delete_after=10,
+                mention_author=False
+            )
+            return
+
         print(f"Unhandled exception while '{ctx.command}' -> {error}")
         await ctx.reply(
             "❌ Something went wrong. Contact an administrator if error persists.",
