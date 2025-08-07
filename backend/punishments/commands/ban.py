@@ -28,11 +28,7 @@ class BanCommand(commands.Cog):
         permanent = True if duration.lower() in ("permanent", "perm") else False
 
         if not permanent:
-            try:
-                parse_duration = parse_time_window(duration)
-            except ValueError as e:
-                await ctx.send(e)
-                return
+            parse_duration = parse_time_window(duration)
 
         try:
             await member.ban(reason=reason)
