@@ -16,10 +16,6 @@ class KickCommand(commands.Cog):
     async def _kick(self, ctx, member: discord.Member, *, reason: str = "No reason"):
         """
         Kick a member from the server
-        :param ctx:
-        :param member:
-        :param reason:
-        :return:
         """
         if not await has_permission_to_punish(ctx, member):
             return

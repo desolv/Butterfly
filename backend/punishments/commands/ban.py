@@ -17,11 +17,6 @@ class BanCommand(commands.Cog):
     async def _ban(self, ctx, member: discord.Member, duration: str = "1h", *, reason: str = "No reason"):
         """
         Ban a member by removing them from the server
-        :param ctx:
-        :param member:
-        :param duration:
-        :param reason:
-        :return:
         """
         if not await has_permission_to_punish(ctx, member):
             return

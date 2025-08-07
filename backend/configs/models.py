@@ -18,4 +18,4 @@ class Config(Base):
         "last_modify": None
     })
 
-    guild = relationship("Guild", back_populates="configuration")
+    guild = relationship("Guild", back_populates="config")

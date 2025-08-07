@@ -16,10 +16,6 @@ class WarnCommand(commands.Cog):
     async def _warn(self, ctx, member: discord.Member, *, reason: str = "No reason"):
         """
         Warn a member via sending a private message
-        :param ctx:
-        :param member:
-        :param reason:
-        :return:
         """
         if not await has_permission_to_punish(ctx, member):
             return
