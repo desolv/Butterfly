@@ -2,7 +2,8 @@ import discord
 from discord.ext import commands
 
 from backend.configs.manager import update_guild_punishment_config, get_guild_punishment_config
-from backend.core.helper import get_sub_commands_help_message, get_utc_now, format_time_in_zone, parse_iso
+from backend.core.helper import get_utc_now, format_time_in_zone, parse_iso, \
+    get_commands_help_messages
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission
 
@@ -16,10 +17,14 @@ class PunishmentAdminCommand(commands.Cog):
         name="punishment-admin",
         invoke_without_command=True
     )
-    async def _punishment(self, ctx):
+    async def _punishment_admin(self, ctx):
         view = Pagination(
             "ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴀᴅᴍɪɴ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
-            get_sub_commands_help_message(self.bot, "punishment-admin"),
+            get_commands_help_messages(
+                self.bot,
+                [PunishmentAdminCommand],
+                ctx.author.guild_permissions.administrator
+            ),
             3,
             ctx.author.id
         )
@@ -27,12 +32,10 @@ class PunishmentAdminCommand(commands.Cog):
         await ctx.send(embed=view.create_embed(), view=view)
 
     @has_permission()
-    @_punishment.command(name="catalog")
+    @_punishment_admin.command(name="catalog")
     async def _catalog(self, ctx):
         """
-        Display the current punishment catalog.
-        :param ctx:
-        :return:
+        Display the current punishment catalog
         """
         guild = ctx.guild
         muted_role, protected_roles, protected_users, moderation_channel, last_modify = get_guild_punishment_config(
@@ -84,7 +87,7 @@ class PunishmentAdminCommand(commands.Cog):
         await ctx.send(embed=embed)
 
     @has_permission()
-    @_punishment.command(name="muted_role")
+    @_punishment_admin.command(name="muted_role")
     async def _muted_role(
             self,
             ctx,
@@ -92,9 +95,6 @@ class PunishmentAdminCommand(commands.Cog):
     ):
         """
         Set the muted role for punishment config
-        :param ctx:
-        :param role:
-        :return:
         """
         update_guild_punishment_config(
             ctx.guild.id,
@@ -105,7 +105,7 @@ class PunishmentAdminCommand(commands.Cog):
         await ctx.send(f"Updated punishment **muted role** to {role.mention}")
 
     @has_permission()
-    @_punishment.command(name="moderation_channel")
+    @_punishment_admin.command(name="moderation_channel")
     async def _moderation_channel(
             self,
             ctx,
@@ -113,9 +113,6 @@ class PunishmentAdminCommand(commands.Cog):
     ):
         """
         Set the logging channel for punishment config
-        :param ctx:
-        :param channel:
-        :return:
         """
         update_guild_punishment_config(
             ctx.guild.id,
@@ -126,7 +123,7 @@ class PunishmentAdminCommand(commands.Cog):
         await ctx.send(f"Updated punishment **moderation channel** to {channel.mention}")
 
     @has_permission()
-    @_punishment.group(name="protected_roles")
+    @_punishment_admin.group(name="protected_roles")
     async def _protected_roles(self, ctx):
         pass
 
@@ -139,9 +136,6 @@ class PunishmentAdminCommand(commands.Cog):
     ):
         """
         Add a role to punishment config protected roles
-        :param ctx:
-        :param role:
-        :return:
         """
         role_id = role.id
         _, protected_roles, _, _, _ = get_guild_punishment_config(ctx.guild.id)
@@ -168,9 +162,6 @@ class PunishmentAdminCommand(commands.Cog):
     ):
         """
         Remove a role from punishment config protected roles
-        :param ctx:
-        :param role:
-        :return:
         """
         role_id = role.id
         _, protected_roles, _, _, _ = get_guild_punishment_config(ctx.guild.id)
@@ -189,7 +180,7 @@ class PunishmentAdminCommand(commands.Cog):
         await ctx.send(f"Removed {role.mention} from protected roles!")
 
     @has_permission()
-    @_punishment.group(name="protected_users")
+    @_punishment_admin.group(name="protected_users")
     async def _protected_users(self, ctx):
         pass
 
@@ -202,9 +193,6 @@ class PunishmentAdminCommand(commands.Cog):
     ):
         """
         Add a member to punishment config protected users
-        :param ctx:
-        :param member:
-        :return:
         """
         member_id = member.id
         _, _, protected_users, _, _ = get_guild_punishment_config(ctx.guild.id)
@@ -231,9 +219,6 @@ class PunishmentAdminCommand(commands.Cog):
     ):
         """
         Remove a member from punishment config protected users
-        :param ctx:
-        :param member:
-        :return:
         """
         member_id = member.id
         _, _, protected_users, _, _ = get_guild_punishment_config(ctx.guild.id)

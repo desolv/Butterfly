@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import get_sub_commands_help_message, format_time_in_zone, get_utc_now, format_duration
+from backend.core.helper import format_time_in_zone, get_utc_now, format_duration, \
+    get_commands_help_messages
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission
 from backend.punishments.manager import get_punishment_by_id, get_punishment_metadata, process_punishment_removal
@@ -20,7 +21,11 @@ class PunishmentCommand(commands.Cog):
     async def _punishment(self, ctx):
         view = Pagination(
             "ᴘᴜɴɪѕʜᴍᴇɴᴛ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
-            get_sub_commands_help_message(self.bot, "punishment"),
+            get_commands_help_messages(
+                self.bot,
+                [PunishmentCommand],
+                ctx.author.guild_permissions.administrator
+            ),
             3,
             ctx.author.id
         )
@@ -32,9 +37,6 @@ class PunishmentCommand(commands.Cog):
     async def _punishment_view(self, ctx, punishment_id: int):
         """
         Display detailed information about a specific punishment by ID
-        :param ctx:
-        :param punishment_id:
-        :return:
         """
         punishment = get_punishment_by_id(ctx.guild.id, punishment_id)
 
@@ -103,10 +105,6 @@ class PunishmentCommand(commands.Cog):
     ):
         """
         Remove an active punishment and log the removal with reason
-        :param ctx:
-        :param punishment_id:
-        :param reason:
-        :return:
         """
         punishment = get_punishment_by_id(ctx.guild.id, punishment_id)
 
