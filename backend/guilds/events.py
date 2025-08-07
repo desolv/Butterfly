@@ -1,12 +1,16 @@
 from discord.ext import commands
 
-from backend.core.helper import get_utc_now
+from backend.core.helper import get_utc_now, get_current_time
 from backend.guilds.manager import create_or_update_guild
 
 
 class GuildEvents(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print(f"Logged in as {self.bot.user} with {len(self.bot.guilds)} guild(s) at {get_current_time()}")
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):

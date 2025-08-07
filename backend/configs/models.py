@@ -7,7 +7,7 @@ from backend.core.database import Base
 
 
 class Config(Base):
-    __tablename__ = "configs"
+    __tablename__ = "configurations"
 
     guild_id = Column(BigInteger, ForeignKey("guilds.guild_id", ondelete="CASCADE"), primary_key=True)
     punishment = Column(MutableDict.as_mutable(JSONB), default=lambda: {
@@ -18,4 +18,4 @@ class Config(Base):
         "last_modify": None
     })
 
-    guild = relationship("Guild", back_populates="config")
+    guild = relationship("Guild", back_populates="configuration")

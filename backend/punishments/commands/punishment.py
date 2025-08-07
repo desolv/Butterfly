@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import get_sub_commands_help_message, get_formatted_time, get_utc_now, format_duration
+from backend.core.helper import get_sub_commands_help_message, format_time_in_zone, get_utc_now, format_duration
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission
 from backend.punishments.manager import get_punishment_by_id, get_punishment_metadata, process_punishment_removal
@@ -30,6 +30,12 @@ class PunishmentCommand(commands.Cog):
     @has_permission()
     @_punishment.command(name="view")
     async def _punishment_view(self, ctx, punishment_id: int):
+        """
+        Display detailed information about a specific punishment by ID
+        :param ctx:
+        :param punishment_id:
+        :return:
+        """
         punishment = get_punishment_by_id(ctx.guild.id, punishment_id)
 
         if not punishment:
@@ -44,7 +50,7 @@ class PunishmentCommand(commands.Cog):
             added_by = None
 
         punishment_name, punishment_fancy, punishment_color = get_punishment_metadata(punishment.type)
-        added_at_time = get_formatted_time(punishment.added_at, format="%d/%m/%y %H:%M %Z")
+        added_at_time = format_time_in_zone(punishment.added_at, format="%d/%m/%y %H:%M %Z")
 
         description = (
             f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ɪᴅ**: **{punishment_id}**\n"
@@ -70,7 +76,7 @@ class PunishmentCommand(commands.Cog):
 
                 description += (
                     f"\n**ʀᴇᴍᴏᴠᴇᴅ ʙʏ**: {self.bot.user.mention if removed_by is None else removed_by.mention}\n"
-                    f"**ʀᴇᴍᴏᴠᴇᴅ ᴀᴛ**: **{get_formatted_time(punishment.removed_at, format="%d/%m/%y %H:%M %Z")}**\n"
+                    f"**ʀᴇᴍᴏᴠᴇᴅ ᴀᴛ**: **{format_time_in_zone(punishment.removed_at, format="%d/%m/%y %H:%M %Z")}**\n"
                     f"**ʀᴇᴍᴏᴠᴇᴅ ʀᴇᴀѕᴏɴ**: {punishment.removed_reason}"
                 )
 
@@ -95,6 +101,13 @@ class PunishmentCommand(commands.Cog):
             *,
             reason: str = "No reason"
     ):
+        """
+        Remove an active punishment and log the removal with reason
+        :param ctx:
+        :param punishment_id:
+        :param reason:
+        :return:
+        """
         punishment = get_punishment_by_id(ctx.guild.id, punishment_id)
 
         if not punishment:

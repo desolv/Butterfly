@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import get_sub_commands_help_message, get_utc_now, get_formatted_time
+from backend.core.helper import get_sub_commands_help_message, get_utc_now, format_time_in_zone
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission
 from backend.permissions.manager import create_or_retrieve_command, get_permissions_for_guild
@@ -34,8 +34,12 @@ class PermissionCommand(commands.Cog):
             *,
             command_name: str
     ):
-        """Display the current command information."""
-
+        """
+        Display the current command information
+        :param ctx:
+        :param command_name:
+        :return:
+        """
         guild = ctx.guild
         command_name = command_name.lower()
 
@@ -66,7 +70,7 @@ class PermissionCommand(commands.Cog):
         )
 
         embed.add_field(name="**ᴀᴅᴅᴇᴅ ᴀᴛ**",
-                        value=f"{get_formatted_time(permission.added_at, format="%d/%m/%y %H:%M %Z")}", inline=True)
+                        value=f"{format_time_in_zone(permission.added_at, format="%d/%m/%y %H:%M %Z")}", inline=True)
         embed.add_field(name="**ɢᴜɪʟᴅ ɪᴅ**", value=f"{guild.id}", inline=True)
 
         await ctx.send(embed=embed)
@@ -74,8 +78,11 @@ class PermissionCommand(commands.Cog):
     @has_permission()
     @_permission.command(name="catalog")
     async def _catalog(self, ctx):
-        """Display the current commands loaded to the server."""
-
+        """
+        Display the current commands loaded to the server
+        :param ctx:
+        :return:
+        """
         permissions = get_permissions_for_guild(self.bot, ctx.guild.id)
 
         lines: list[str] = []
@@ -113,8 +120,13 @@ class PermissionCommand(commands.Cog):
             *,
             command_name: str
     ):
-        """Set the admin only for commands"""
-
+        """
+        Set the admin only for commands
+        :param ctx:
+        :param is_admin:
+        :param command_name:
+        :return:
+        """
         guild = ctx.guild
         command_name = command_name.lower()
 
@@ -140,8 +152,13 @@ class PermissionCommand(commands.Cog):
             *,
             command_name: str
     ):
-        """Set the enabled for commands"""
-
+        """
+        Set the enabled for commands
+        :param ctx:
+        :param is_enabled:
+        :param command_name:
+        :return:
+        """
         guild = ctx.guild
         command_name = command_name.lower()
 
@@ -172,8 +189,13 @@ class PermissionCommand(commands.Cog):
             *,
             command_name: str
     ):
-        """Add a role to permissions allowed roles"""
-
+        """
+        Add a role to permissions allowed roles
+        :param ctx:
+        :param role:
+        :param command_name:
+        :return:
+        """
         role_id = role.id
         guild = ctx.guild
         command_name = command_name.lower()
@@ -210,8 +232,13 @@ class PermissionCommand(commands.Cog):
             *,
             command_name: str
     ):
-        """Remove a role from permissions allowed roles"""
-
+        """
+        Remove a role from permissions allowed roles
+        :param ctx:
+        :param role:
+        :param command_name:
+        :return:
+        """
         role_id = role.id
         guild = ctx.guild
         command_name = command_name.lower()

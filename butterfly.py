@@ -18,7 +18,7 @@ from discord.ext import commands
 from pathlib import Path
 
 from openai import OpenAI
-from backend.core.helper import get_formatted_time
+from backend.core.helper import format_time_in_zone
 
 load_dotenv(f"io/.env")
 
@@ -32,7 +32,7 @@ print(f"Running at Python {platform.python_version()}v, "
 try:
     postgre_uptime = datetime.now()
     with Engine.connect() as connection:
-        print(f"Running PostgreSQL with SQLAlchemy at {str(get_formatted_time(postgre_uptime, format="%S"))}ms")
+        print(f"Running PostgreSQL with SQLAlchemy at {str(format_time_in_zone(postgre_uptime, format="%S"))}ms")
     init_tables()
 except Exception as e:
     print(f"Failed to connect to PostgreSQL -> {e}")

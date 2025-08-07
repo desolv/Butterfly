@@ -2,7 +2,6 @@ import json
 import random
 import re
 import string
-import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import List
@@ -14,42 +13,27 @@ from dateutil.parser import isoparse
 from discord.ext import commands
 
 
-def get_time(format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London") -> str:
+def get_current_time(format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London") -> str:
     """
-    Return the current time formatted according to the given format and timezone.
+    Return the current time formatted according to the given format and timezone
     """
     tz = pytz.timezone(timezone)
     now = datetime.now(tz)
     return now.strftime(format)
 
 
-def get_formatted_time(time: datetime, format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London") -> str:
+def format_time_in_zone(time: datetime, format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London") -> str:
     """
-    Localize a datetime object to the specified timezone and format it.
+    Localize a datetime object to the specified timezone and format it
     """
     tz = pytz.timezone(timezone)
     localized = tz.localize(time)
     return localized.strftime(format)
 
 
-def get_millis() -> int:
-    """
-    Return the current time in milliseconds since the Unix epoch.
-    """
-    return int(time.time() * 1000)
-
-
-def convert_millis_to_formatted(ms: int, format: str, zone: str) -> str:
-    """
-    Convert milliseconds since epoch to a localized formatted time string.
-    """
-    dt = datetime.fromtimestamp(ms / 1000, tz=timezone.utc)
-    return get_formatted_time(dt, format, zone)
-
-
 def load_json_data(path: str) -> dict:
     """
-    Load and return JSON data from a file in the io directory.
+    Load and return JSON data from a file in the io directory
     """
     file_path = Path(f"io/{path}.json")
     if not file_path.exists():

@@ -6,7 +6,7 @@ from discord.ext import commands
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from backend.configs.manager import get_punishment_settings
+from backend.configs.manager import get_guild_punishment_config
 from backend.core.database import Engine
 from backend.core.helper import get_utc_now, send_private_dm
 from backend.punishments.models import Punishment, PunishmentType
@@ -20,6 +20,9 @@ def create_punishment(
         reason: str = "No reason",
         duration: datetime = None
 ):
+    """
+    Create and save a new punishment record
+    """
     with Session(Engine) as session:
         punishment = Punishment(
             guild_id=guild_id,
@@ -40,6 +43,9 @@ def create_punishment(
 
 
 def get_global_active_expiring_punishments_within(within_seconds: int = 120):
+    """
+    Fetch active mutes/bans expiring within a given timespan
+    """
     threshold = get_utc_now() + timedelta(seconds=within_seconds)
     with Session(Engine) as session:
         return session.query(Punishment).filter(
@@ -52,6 +58,9 @@ def get_global_active_expiring_punishments_within(within_seconds: int = 120):
 
 
 def get_punishment_by_id(guild_id: int, punishment_id: int):
+    """
+    Retrieve a punishment by its guild and ID
+    """
     with Session(Engine) as session:
         return session.query(Punishment).filter_by(
             guild_id=guild_id,
@@ -64,6 +73,9 @@ def get_user_punishments(
         user_id: int,
         punishment_type: PunishmentType = None
 ):
+    """
+    List punishments for a user, optionally filtered by type
+    """
     with Session(Engine) as session:
         if punishment_type:
             return session.query(Punishment).filter_by(
@@ -82,6 +94,9 @@ def get_user_active_punishment(
         user_id: int,
         punishment_type: PunishmentType
 ):
+    """
+    Get the active punishment of a specific type for a user
+    """
     with Session(Engine) as session:
         return session.query(Punishment).filter_by(
             guild_id=guild_id,
@@ -97,6 +112,9 @@ def remove_user_active_punishment(
         removed_by: int = None,
         reason: str = "No reason"
 ):
+    """
+    Mark an active punishment as removed with a reason
+    """
     with Session(Engine) as session:
         punishment = session.query(Punishment).filter_by(
             guild_id=guild_id,
@@ -120,6 +138,9 @@ def remove_user_active_punishment(
 
 
 def is_valid_punishment_type(value: Any):
+    """
+    Check if a string matches a valid PunishmentType
+    """
     if not isinstance(value, str):
         return False, None
 
@@ -132,6 +153,9 @@ def is_valid_punishment_type(value: Any):
 
 
 def get_punishment_metadata(punishment_type: PunishmentType):
+    """
+    Map a PunishmentType to its display name, icon, and color
+    """
     match punishment_type:
         case PunishmentType.KICK:
             return "Kick", "ᴋɪᴄᴋ", discord.Color.yellow()
@@ -148,10 +172,13 @@ def get_punishment_metadata(punishment_type: PunishmentType):
 async def send_punishment_moderation_log(guild: discord.Guild, member: discord.Member, moderator: discord.Member,
                                          punishment: Punishment, sent_dm: bool,
                                          duration: str = None, removed: bool = False):
+    """
+    Log punishment actions to the guild's moderation channel
+    """
     punishment_name, punishment_fancy, punishment_color = get_punishment_metadata(punishment.type)
     punishment_color = discord.Color.pink() if removed else punishment_color
 
-    _, _, _, moderation_channel, _ = get_punishment_settings(guild.id)
+    _, _, _, moderation_channel, _ = get_guild_punishment_config(guild.id)
 
     description = (
         f"**ᴍᴏᴅᴇʀᴀᴛᴏʀ**: {'?' if moderator is None else moderator.mention}\n"
@@ -183,6 +210,9 @@ async def send_punishment_moderation_log(guild: discord.Guild, member: discord.M
 
 
 async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
+    """
+    Verify the command issuer can punish the specified member
+    """
     if member.id == ctx.author.id:
         await ctx.send(f"You can't punish your self!")
         return False
@@ -190,7 +220,7 @@ async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
     if ctx.author.guild_permissions.administrator:
         return True
 
-    _, protected_roles, protected_users, _, _ = get_punishment_settings(ctx.guild.id)
+    _, protected_roles, protected_users, _, _ = get_guild_punishment_config(ctx.guild.id)
 
     protected_roles = set(protected_roles)
     member_role_ids = {role.id for role in member.roles}
@@ -208,10 +238,13 @@ async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
 
 async def process_punishment_removal(bot: commands.Bot, guild: discord.Guild, punishment: Punishment,
                                      moderator: discord.Member, reason: str):
+    """
+    Remove roles/unban and mark punishment as revoked
+    """
     match punishment.type:
         case PunishmentType.MUTE:
             try:
-                muted_role, _, _, _, _ = get_punishment_settings(punishment.guild_id)
+                muted_role, _, _, _, _ = get_guild_punishment_config(punishment.guild_id)
                 member = guild.get_member(punishment.user_id)
                 muted_role = guild.get_role(muted_role)
                 await member.remove_roles(muted_role, reason=reason)

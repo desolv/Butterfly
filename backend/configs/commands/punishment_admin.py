@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
 
-from backend.configs.manager import update_punishment_config, get_punishment_settings
-from backend.core.helper import get_sub_commands_help_message, get_utc_now, get_formatted_time, parse_iso
+from backend.configs.manager import update_guild_punishment_config, get_guild_punishment_config
+from backend.core.helper import get_sub_commands_help_message, get_utc_now, format_time_in_zone, parse_iso
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission
 
@@ -29,11 +29,13 @@ class PunishmentAdminCommand(commands.Cog):
     @has_permission()
     @_punishment.command(name="catalog")
     async def _catalog(self, ctx):
-        """Display the current punishment catalog."""
-
+        """
+        Display the current punishment catalog.
+        :param ctx:
+        :return:
+        """
         guild = ctx.guild
-
-        muted_role, protected_roles, protected_users, moderation_channel, last_modify = get_punishment_settings(
+        muted_role, protected_roles, protected_users, moderation_channel, last_modify = get_guild_punishment_config(
             ctx.guild.id)
 
         muted_role = guild.get_role(muted_role)
@@ -56,7 +58,7 @@ class PunishmentAdminCommand(commands.Cog):
 
         moderation_channel = guild.get_channel(moderation_channel)
 
-        last_modify = get_formatted_time(
+        last_modify = format_time_in_zone(
             parse_iso(last_modify),
             format="%d/%m/%y %H:%M %Z"
         ) if last_modify else "None"
@@ -88,9 +90,13 @@ class PunishmentAdminCommand(commands.Cog):
             ctx,
             role: discord.Role
     ):
-        """Set the muted role for punishments"""
-
-        update_punishment_config(
+        """
+        Set the muted role for punishment config
+        :param ctx:
+        :param role:
+        :return:
+        """
+        update_guild_punishment_config(
             ctx.guild.id,
             muted_role=role.id,
             last_modify=get_utc_now().isoformat()
@@ -105,9 +111,13 @@ class PunishmentAdminCommand(commands.Cog):
             ctx,
             channel: discord.TextChannel
     ):
-        """Set the logging channel for punishments"""
-
-        update_punishment_config(
+        """
+        Set the logging channel for punishment config
+        :param ctx:
+        :param channel:
+        :return:
+        """
+        update_guild_punishment_config(
             ctx.guild.id,
             moderation_channel=channel.id,
             last_modify=get_utc_now().isoformat()
@@ -127,17 +137,21 @@ class PunishmentAdminCommand(commands.Cog):
             ctx,
             role: discord.Role
     ):
-        """Add a role to punishment protected roles"""
-
+        """
+        Add a role to punishment config protected roles
+        :param ctx:
+        :param role:
+        :return:
+        """
         role_id = role.id
-        _, protected_roles, _, _, _ = get_punishment_settings(ctx.guild.id)
+        _, protected_roles, _, _, _ = get_guild_punishment_config(ctx.guild.id)
 
         if role_id in protected_roles:
             return await ctx.send(f"Role {role.mention} is **present**!")
 
         protected_roles.append(role_id)
 
-        update_punishment_config(
+        update_guild_punishment_config(
             ctx.guild.id,
             protected_roles=protected_roles,
             last_modify=get_utc_now().isoformat()
@@ -152,17 +166,21 @@ class PunishmentAdminCommand(commands.Cog):
             ctx,
             role: discord.Role
     ):
-        """Remove a role from punishment protected roles"""
-
+        """
+        Remove a role from punishment config protected roles
+        :param ctx:
+        :param role:
+        :return:
+        """
         role_id = role.id
-        _, protected_roles, _, _, _ = get_punishment_settings(ctx.guild.id)
+        _, protected_roles, _, _, _ = get_guild_punishment_config(ctx.guild.id)
 
         if role_id not in protected_roles:
             return await ctx.send(f"Role {role.mention} is **not present**!")
 
         protected_roles.remove(role_id)
 
-        update_punishment_config(
+        update_guild_punishment_config(
             ctx.guild.id,
             protected_roles=protected_roles,
             last_modify=get_utc_now().isoformat()
@@ -182,17 +200,21 @@ class PunishmentAdminCommand(commands.Cog):
             ctx,
             member: discord.Member
     ):
-        """Add a member to punishment protected users"""
-
+        """
+        Add a member to punishment config protected users
+        :param ctx:
+        :param member:
+        :return:
+        """
         member_id = member.id
-        _, _, protected_users, _, _ = get_punishment_settings(ctx.guild.id)
+        _, _, protected_users, _, _ = get_guild_punishment_config(ctx.guild.id)
 
         if member_id in protected_users:
             return await ctx.send(f"User {member.mention} is **present**!")
 
         protected_users.append(member_id)
 
-        update_punishment_config(
+        update_guild_punishment_config(
             ctx.guild.id,
             protected_users=protected_users,
             last_modify=get_utc_now().isoformat()
@@ -207,17 +229,21 @@ class PunishmentAdminCommand(commands.Cog):
             ctx,
             member: discord.Member
     ):
-        """Remove a member from punishment protected users"""
-
+        """
+        Remove a member from punishment config protected users
+        :param ctx:
+        :param member:
+        :return:
+        """
         member_id = member.id
-        _, _, protected_users, _, _ = get_punishment_settings(ctx.guild.id)
+        _, _, protected_users, _, _ = get_guild_punishment_config(ctx.guild.id)
 
         if member_id not in protected_users:
             return await ctx.send(f"User {member.mention} is **not present**!")
 
         protected_users.remove(member_id)
 
-        update_punishment_config(
+        update_guild_punishment_config(
             ctx.guild.id,
             protected_users=protected_users,
             last_modify=get_utc_now().isoformat()

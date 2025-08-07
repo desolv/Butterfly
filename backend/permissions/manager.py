@@ -10,7 +10,6 @@ def get_permissions_for_guild(bot: commands.Bot | None, guild_id: int) -> list[t
     """
     Retrieve all Permission entries for the given guild.
     """
-
     with Session(Engine) as session:
         for perm in session.query(Permission).filter_by(guild_id=guild_id):
             if bot is not None and not is_valid_command(bot, perm.command_name):
@@ -30,7 +29,6 @@ def create_or_retrieve_command(bot: commands.Bot | None, guild_id: int, command_
     """
     Retrieve existing or create new Permission entry for the given guild and command.
     """
-
     with Session(Engine) as session:
         permission = (
             session.query(Permission)
@@ -65,7 +63,6 @@ def initialize_permissions_for_guild(bot: commands.Bot, guild_id: int):
     Seed a fresh Permission table for a new guild.
     Creates one Permission row per command/subcommand without checking for existing entries.
     """
-
     all_names = get_all_command_names(bot, True)
 
     perms = [

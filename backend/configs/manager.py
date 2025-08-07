@@ -4,9 +4,9 @@ from backend.configs.models import Config
 from backend.core.database import Engine
 
 
-def update_punishment_config(guild_id: int, **kwargs):
+def update_guild_punishment_config(guild_id: int, **kwargs):
     """
-    Update the punishment configuration for the specified guild using provided keyword arguments.
+    Update the punishment configuration for the specified guild
     """
     with Session(Engine) as session:
         config = session.query(Config).filter_by(guild_id=guild_id).first()
@@ -22,12 +22,11 @@ def update_punishment_config(guild_id: int, **kwargs):
 
         config.punishment = payload
         session.commit()
-        return config
 
 
-def get_punishment_settings(guild_id: int) -> tuple:
+def get_guild_punishment_config(guild_id: int) -> tuple:
     """
-    Retrieve the punishment settings for the specified guild as a tuple
+    Retrieve the punishment config for the specified guild
     """
     with Session(Engine) as session:
         config = session.get(Config, guild_id)

@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from backend.configs.manager import get_punishment_settings
+from backend.configs.manager import get_guild_punishment_config
 from backend.core.helper import parse_time_window, send_private_dm
 from backend.permissions.enforce import has_permission
 from backend.punishments.manager import has_permission_to_punish, get_user_active_punishment, create_punishment, \
@@ -16,8 +16,14 @@ class MuteCommand(commands.Cog):
     @has_permission()
     @commands.command(name="mute")
     async def _mute(self, ctx, member: discord.Member, duration: str = "1h", *, reason: str = "No reason"):
-        """Mute a member by giving them a role"""
-
+        """
+        Mute a member by giving them a role
+        :param ctx:
+        :param member:
+        :param duration:
+        :param reason:
+        :return:
+        """
         if not await has_permission_to_punish(ctx, member):
             return
 
@@ -35,7 +41,7 @@ class MuteCommand(commands.Cog):
                 return
 
         try:
-            muted_role, _, _, _, _ = get_punishment_settings(ctx.guild.id)
+            muted_role, _, _, _, _ = get_guild_punishment_config(ctx.guild.id)
             muted_role = ctx.guild.get_role(muted_role)
             await member.add_roles(muted_role, reason=reason)
         except discord.Forbidden:
