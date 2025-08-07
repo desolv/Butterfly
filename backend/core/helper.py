@@ -4,7 +4,7 @@ import re
 import string
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import List
+from typing import List, Sequence, Type
 from urllib.parse import urlparse
 
 import discord
@@ -134,41 +134,54 @@ def format_duration(start: datetime, end: datetime) -> str:
     return f"{seconds}s"
 
 
-def get_sub_commands_help_message(
+def get_commands_help_messages(
         bot: commands.Bot,
-        group_name: str,
-        include_hidden: bool = False
+        cog_classes: Sequence[Type[commands.Cog]],
+        is_admin: bool
 ) -> List[str]:
     """
-    Generate help lines for subcommands of a command group.
+    Given a list of Cog classes and a command context, return a flat list of
+    help lines (usage + description) for every command and subcommand in each
+    loaded instance. Hidden commands/groups are only shown if ctx.author is
+    a guild administrator, and are marked with a '*' prefix.
     """
-    cmd_obj = bot.get_command(group_name)
-    if not cmd_obj or not isinstance(cmd_obj, commands.Group):
-        return []
-
     lines: List[str] = []
 
-    def recurse(group: commands.Group, prefix: str = ""):
-        if group.hidden and not include_hidden:
+    def recurse(group: commands.Group, prefix: str):
+        if group.hidden and not is_admin:
             return
 
         for sub in group.commands:
-            if sub.hidden:
+            if sub.hidden and not is_admin:
                 continue
 
-            full_name = f"{prefix}{sub.name}"
+            star_sub = "*" if sub.hidden else ""
             params = " ".join(f"<{p}>" for p in sub.clean_params)
-            usage = f"{full_name} {params}".strip()
+            usage = f"{star_sub}{prefix}{sub.name} {params}".strip()
             desc = sub.help or sub.description or "No description"
-            is_group = isinstance(sub, commands.Group)
+            lines.append(f"`{usage}` – {desc}")
 
-            if not (is_group and not sub.invoke_without_command):
+            if isinstance(sub, commands.Group):
+                recurse(sub, f"{prefix}{sub.name} ")
+
+    for cog_cls in cog_classes:
+        cog = bot.get_cog(cog_cls.__name__)
+        if not cog:
+            continue
+
+        for cmd in cog.get_commands():
+            if cmd.hidden and not is_admin:
+                continue
+
+            star_cmd = "*" if cmd.hidden else ""
+            if isinstance(cmd, commands.Group):
+                recurse(cmd, f"{star_cmd}{cmd.name} ")
+            else:
+                params = " ".join(f"<{p}>" for p in cmd.clean_params)
+                usage = f"{star_cmd}{cmd.name} {params}".strip()
+                desc = cmd.help or cmd.description or "No description"
                 lines.append(f"`{usage}` – {desc}")
 
-            if is_group:
-                recurse(sub, prefix=f"{full_name} ")
-
-    recurse(cmd_obj)
     return lines
 
 
