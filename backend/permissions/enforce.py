@@ -1,5 +1,12 @@
+import time
+
+from discord.app_commands import Cooldown
 from discord.ext import commands
-from discord.ext.commands import Context, CheckFailure
+from discord.ext.commands import CheckFailure, BucketType
+from discord.ext.commands import (
+    Context,
+    CommandOnCooldown,
+)
 
 from backend.guilds.director import create_or_update_guild
 from backend.permissions.director import create_or_retrieve_command
@@ -15,9 +22,11 @@ def has_permission():
             return True
 
         guild_id = ctx.guild.id
-
         create_or_update_guild(ctx.bot, guild_id)
         permission = create_or_retrieve_command(None, guild_id, str(ctx.command))
+
+        if permission is None:
+            raise CheckFailure("I couldn't retrieve the command permissions, contact an administrator!")
 
         if not permission.is_enabled:
             raise CheckFailure("That command is currently disabled in this guild.")
@@ -33,6 +42,46 @@ def has_permission():
             if not user_role_ids.intersection(permission.allowed_roles):
                 raise CheckFailure("You don't have the required role to use this command.")
 
+        return True
+
+    return commands.check(predicate)
+
+
+_last_invocations: dict[tuple[int, str, int], float] = {}
+
+
+def has_cooldown():
+    """
+    Decorator to enforce per-command cooldowns using _last_invocations
+    """
+
+    def predicate(ctx: Context) -> bool:
+        if ctx.guild is None:
+            return True
+
+        if ctx.author.guild_permissions.administrator:
+            return True
+
+        guild_id = ctx.guild.id
+        permission = create_or_retrieve_command(None, guild_id, str(ctx.command))
+        cooldown_secs = permission.command_cooldown
+
+        if cooldown_secs <= 0:
+            return True
+
+        key = (guild_id, str(ctx.command), ctx.author.id)
+        now = time.time()
+        last = _last_invocations.get(key)
+
+        if last is not None:
+            elapsed = now - last
+            retry_after = cooldown_secs - elapsed
+
+            if retry_after > 0:
+                dummy_cd = Cooldown(1, cooldown_secs)
+                raise CommandOnCooldown(dummy_cd, retry_after, BucketType.user)
+
+        _last_invocations[key] = now
         return True
 
     return commands.check(predicate)

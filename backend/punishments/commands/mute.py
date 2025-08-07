@@ -3,7 +3,7 @@ from discord.ext import commands
 
 from backend.configs.director import get_guild_punishment_config
 from backend.core.helper import parse_time_window, send_private_dm
-from backend.permissions.enforce import has_permission
+from backend.permissions.enforce import has_permission, has_cooldown
 from backend.punishments.director import has_permission_to_punish, get_user_active_punishment, create_punishment, \
     send_punishment_moderation_log
 from backend.punishments.models import PunishmentType
@@ -14,6 +14,7 @@ class MuteCommand(commands.Cog):
         self.bot = bot
 
     @has_permission()
+    @has_cooldown()
     @commands.command(name="mute")
     async def _mute(self, ctx, member: discord.Member, duration: str = "1h", *, reason: str = "No reason"):
         """

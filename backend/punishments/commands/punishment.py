@@ -4,7 +4,7 @@ from discord.ext import commands
 from backend.core.helper import format_time_in_zone, get_utc_now, format_duration, \
     get_commands_help_messages
 from backend.core.pagination import Pagination
-from backend.permissions.enforce import has_permission
+from backend.permissions.enforce import has_permission, has_cooldown
 from backend.punishments.director import get_punishment_by_id, get_punishment_metadata, process_punishment_removal
 from backend.punishments.models import PunishmentType
 
@@ -33,6 +33,7 @@ class PunishmentCommand(commands.Cog):
         await ctx.send(embed=view.create_embed(), view=view)
 
     @has_permission()
+    @has_cooldown()
     @_punishment.command(name="view")
     async def _punishment_view(self, ctx, punishment_id: int):
         """
@@ -95,6 +96,7 @@ class PunishmentCommand(commands.Cog):
         await ctx.send(embed=embed)
 
     @has_permission()
+    @has_cooldown()
     @_punishment.command(name="remove")
     async def _punishment_remove(
             self,

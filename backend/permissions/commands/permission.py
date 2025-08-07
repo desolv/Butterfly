@@ -59,7 +59,8 @@ class PermissionCommand(commands.Cog):
 
         description = (
             f"**ᴀᴅᴍɪɴ**: {'✅' if permission.is_admin else '❎'}\n"
-            f"**ᴀʟʟᴏᴡᴇᴅ ʀᴏʟᴇѕ**: {allowed_roles}\n\n"
+            f"**ᴀʟʟᴏᴡᴇᴅ ʀᴏʟᴇѕ**: {allowed_roles}\n"
+            f"**ᴄᴏᴏʟᴅᴏᴡɴ**: {f"**{permission.command_cooldown}s**" if permission.command_cooldown > 0 else "None"}\n\n"
             f"**ᴇɴᴀʙʟᴇᴅ**: {'✅' if permission.is_enabled else '❎'}\n"
         )
 
@@ -98,6 +99,7 @@ class PermissionCommand(commands.Cog):
                 f"**{permission.command_name}**\n"
                 f"**ᴀᴅᴍɪɴ**: {'✅' if permission.is_admin else '❎'}\n"
                 f"**ᴀʟʟᴏᴡᴇᴅ ʀᴏʟᴇѕ**: {allowed_roles}\n"
+                f"**ᴄᴏᴏʟᴅᴏᴡɴ**: {f"**{permission.command_cooldown}s**" if permission.command_cooldown > 0 else "None"}\n"
                 f"**ᴇɴᴀʙʟᴇᴅ**: {'✅' if permission.is_enabled else '❎'}\n"
             )
 
@@ -165,6 +167,37 @@ class PermissionCommand(commands.Cog):
 
         await ctx.send(
             f"Updated permission **is enabled** for **{permission.command_name}** command to **{permission.is_enabled}**")
+
+    @has_permission()
+    @_permission.command(name="cooldown")
+    async def _cooldown(
+            self,
+            ctx,
+            seconds: int,
+            *,
+            command_name: str
+    ):
+        """
+        Set the cooldown for commands
+        """
+        if seconds > 600 or seconds < 0:
+            return await ctx.send(f"Seconds must be between 0-600!")
+
+        guild = ctx.guild
+        command_name = command_name.lower()
+
+        permission = create_or_retrieve_command(
+            self.bot,
+            guild.id,
+            command_name,
+            command_cooldown=seconds
+        )
+
+        if not permission:
+            return await ctx.send(f"No command **{command_name}** has been found!")
+
+        await ctx.send(
+            f"Updated permission **cooldown** for **{permission.command_name}** command to **{f"{seconds}s" if seconds > 0 else "None"}**")
 
     @has_permission()
     @_permission.group(name="allowed_roles")
