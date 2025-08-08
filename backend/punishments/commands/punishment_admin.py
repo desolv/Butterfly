@@ -31,10 +31,10 @@ class PunishmentAdminCommand(commands.Cog):
         await ctx.send(embed=view.create_embed(), view=view)
 
     @has_permission()
-    @_punishment_admin.command(name="catalog")
-    async def _catalog(self, ctx):
+    @_punishment_admin.command(name="manifest")
+    async def _manifest(self, ctx):
         """
-        Display the current punishment catalog
+        Display the current punishments policy
         """
         guild = ctx.guild
         punishment_policies = create_or_update_punishment_config(guild.id)

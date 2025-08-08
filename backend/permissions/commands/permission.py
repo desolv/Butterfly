@@ -78,10 +78,10 @@ class PermissionCommand(commands.Cog):
         await ctx.send(embed=embed)
 
     @has_permission()
-    @_permission.command(name="catalog")
-    async def _catalog(self, ctx):
+    @_permission.command(name="manifest")
+    async def _manifest(self, ctx):
         """
-        Display the current commands loaded to the server
+        Display the current commands permissions
         """
         permissions = get_permissions_for_guild(self.bot, ctx.guild.id)
 
