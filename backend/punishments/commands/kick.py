@@ -4,7 +4,7 @@ from discord.ext import commands
 from backend.core.helper import send_private_dm
 from backend.permissions.enforce import has_permission, has_cooldown
 from backend.punishments.director import create_punishment, send_punishment_moderation_log, has_permission_to_punish
-from backend.punishments.models import PunishmentType
+from backend.punishments.models.punishment import PunishmentType
 
 
 class KickCommand(commands.Cog):

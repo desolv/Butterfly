@@ -1,12 +1,11 @@
 import discord
 from discord.ext import commands
 
-from backend.configs.director import get_guild_punishment_config
 from backend.core.helper import parse_time_window, send_private_dm
 from backend.permissions.enforce import has_permission, has_cooldown
 from backend.punishments.director import has_permission_to_punish, get_user_active_punishment, create_punishment, \
-    send_punishment_moderation_log
-from backend.punishments.models import PunishmentType
+    send_punishment_moderation_log, create_or_update_punishment_config
+from backend.punishments.models.punishment import PunishmentType
 
 
 class MuteCommand(commands.Cog):
@@ -33,8 +32,8 @@ class MuteCommand(commands.Cog):
             parse_duration = parse_time_window(duration)
 
         try:
-            muted_role, _, _, _, _ = get_guild_punishment_config(ctx.guild.id)
-            muted_role = ctx.guild.get_role(muted_role)
+            muted_role_id = create_or_update_punishment_config(ctx.guild.id).muted_role_id
+            muted_role = ctx.guild.get_role(muted_role_id)
             await member.add_roles(muted_role, reason=reason)
         except discord.Forbidden:
             await ctx.send(f"Wasn't able to add mute to **{member}**. Aborting!")

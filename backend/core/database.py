@@ -20,15 +20,15 @@ Base = declarative_base()
 
 def init_tables():
     # noinspection PyUnresolvedReferences
-    from backend.guilds.models import Guild
+    from backend.guilds.models.guild import Guild
 
     # noinspection PyUnresolvedReferences
-    from backend.configs.models import Config
+    from backend.permissions.models.permission import Permission
 
     # noinspection PyUnresolvedReferences
-    from backend.permissions.models import Permission
+    from backend.punishments.models.punishment import Punishment
 
     # noinspection PyUnresolvedReferences
-    from backend.punishments.models import Punishment
+    from backend.punishments.models.punishment_policy import PunishmentPolicy
 
     Base.metadata.create_all(Engine)

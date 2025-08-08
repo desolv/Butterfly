@@ -1,6 +1,5 @@
 from discord.ext import commands
 
-from backend.configs.commands.punishment_admin import PunishmentAdminCommand
 from backend.core.helper import get_commands_help_messages
 from backend.core.pagination import Pagination
 from backend.permissions.commands.permission import PermissionCommand
@@ -9,6 +8,7 @@ from backend.punishments.commands.ban import BanCommand
 from backend.punishments.commands.kick import KickCommand
 from backend.punishments.commands.mute import MuteCommand
 from backend.punishments.commands.punishment import PunishmentCommand
+from backend.punishments.commands.punishment_admin import PunishmentAdminCommand
 from backend.punishments.commands.warn import WarnCommand
 
 

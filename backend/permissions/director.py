@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from backend.core.database import Engine
 from backend.core.helper import is_valid_command, get_all_command_names
-from backend.permissions.models import Permission
+from backend.permissions.models.permission import Permission
 
 
 def get_permissions_for_guild(bot: commands.Bot | None, guild_id: int) -> list[type[Permission]]:
@@ -16,16 +16,17 @@ def get_permissions_for_guild(bot: commands.Bot | None, guild_id: int) -> list[t
                 session.delete(perm)
 
         session.commit()
+        results = session.query(Permission).filter_by(guild_id=guild_id).all()
 
-        return (
-            session
-            .query(Permission)
-            .filter_by(guild_id=guild_id)
-            .all()
-        )
+    return results
 
 
-def create_or_retrieve_command(bot: commands.Bot | None, guild_id: int, command_name: str, **kwargs):
+def create_or_retrieve_command(
+        bot: commands.Bot | None,
+        guild_id: int,
+        command_name: str,
+        **kwargs
+):
     """
     Retrieve existing or create new Permission entry for the given guild and command.
     """

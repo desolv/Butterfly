@@ -3,10 +3,9 @@ import asyncio
 import discord
 from discord.ext import commands, tasks
 
-from backend.configs.director import get_guild_punishment_config
 from backend.punishments.director import get_global_active_expiring_punishments_within, get_user_active_punishment, \
-    process_punishment_removal
-from backend.punishments.models import PunishmentType
+    process_punishment_removal, create_or_update_punishment_config
+from backend.punishments.models.punishment import PunishmentType
 
 
 class PunishmentEvents(commands.Cog):
@@ -39,8 +38,8 @@ class PunishmentEvents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
-        muted_role, _, _, _, _ = get_guild_punishment_config(after.guild.id)
-        muted_role = after.guild.get_role(muted_role)
+        muted_role_id = create_or_update_punishment_config(after.guild.id).muted_role_id
+        muted_role = after.guild.get_role(muted_role_id)
 
         if not muted_role:
             return

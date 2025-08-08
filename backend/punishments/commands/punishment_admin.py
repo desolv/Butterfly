@@ -1,11 +1,10 @@
 import discord
 from discord.ext import commands
 
-from backend.configs.director import update_guild_punishment_config, get_guild_punishment_config
-from backend.core.helper import get_utc_now, format_time_in_zone, parse_iso, \
-    get_commands_help_messages
+from backend.core.helper import get_utc_now, format_time_in_zone, get_commands_help_messages
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission
+from backend.punishments.director import create_or_update_punishment_config
 
 
 class PunishmentAdminCommand(commands.Cog):
@@ -38,15 +37,14 @@ class PunishmentAdminCommand(commands.Cog):
         Display the current punishment catalog
         """
         guild = ctx.guild
-        muted_role, protected_roles, protected_users, moderation_channel, last_modify = get_guild_punishment_config(
-            ctx.guild.id)
+        punishment_policies = create_or_update_punishment_config(guild.id)
 
-        muted_role = guild.get_role(muted_role)
+        muted_role = guild.get_role(punishment_policies.muted_role_id)
 
         protected_roles = " ".join(
             [
                 role.mention
-                for role in (guild.get_role(int(role_id)) for role_id in protected_roles)
+                for role in (guild.get_role(int(role_id)) for role_id in punishment_policies.protected_roles)
                 if role
             ]
         ) or "None"
@@ -54,23 +52,24 @@ class PunishmentAdminCommand(commands.Cog):
         protected_users = " ".join(
             [
                 member.mention
-                for member in (guild.get_member(int(member_id)) for member_id in protected_users)
+                for member in (guild.get_member(int(member_id)) for member_id in punishment_policies.protected_users)
                 if member
             ]
         ) or "None"
 
-        moderation_channel = guild.get_channel(moderation_channel)
+        logging_channel = guild.get_channel(punishment_policies.logging_channel_id)
 
-        last_modify = format_time_in_zone(
-            parse_iso(last_modify),
-            format="%d/%m/%y %H:%M %Z"
-        ) if last_modify else "None"
+        updated_at = format_time_in_zone(punishment_policies.updated_at,
+                                         format="%d/%m/%y %H:%M %Z") if punishment_policies.updated_at else "None"
+
+        updated_by = guild.get_member(punishment_policies.updated_by)
+        updated_by = updated_by.mention if updated_by else "None"
 
         description = (
             f"**ᴘʀᴏᴛᴇᴄᴛᴇᴅ ʀᴏʟᴇѕ**: {protected_roles}\n"
             f"**ᴘʀᴏᴛᴇᴄᴛᴇᴅ ᴜѕᴇʀѕ**: {protected_users}\n\n"
             f"**ᴍᴜᴛᴇᴅ ʀᴏʟᴇ**: {muted_role.mention if muted_role else "None"}\n"
-            f"**ᴍᴏᴅᴇʀᴀᴛɪᴏɴ ᴄʜᴀɴɴᴇʟ**: {moderation_channel.mention if moderation_channel else "None"}\n"
+            f"**ʟᴏɢɢɪɴɢ ᴄʜᴀɴɴᴇʟ**: {logging_channel.mention if logging_channel else "None"}\n"
         )
 
         embed = discord.Embed(
@@ -80,9 +79,8 @@ class PunishmentAdminCommand(commands.Cog):
             timestamp=get_utc_now()
         )
 
-        embed.add_field(name="**ʟᴀѕᴛ ᴍᴏᴅɪꜰʏ**", value=f"{last_modify}",
-                        inline=True)
-        embed.add_field(name="**ɢᴜɪʟᴅ ɪᴅ**", value=f"{guild.id}", inline=True)
+        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**", value=f"{updated_at}", inline=True)
+        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ʙʏ**", value=f"{updated_by}", inline=True)
 
         await ctx.send(embed=embed)
 
@@ -96,17 +94,17 @@ class PunishmentAdminCommand(commands.Cog):
         """
         Set the muted role for punishment config
         """
-        update_guild_punishment_config(
+        create_or_update_punishment_config(
             ctx.guild.id,
-            muted_role=role.id,
-            last_modify=get_utc_now().isoformat()
+            muted_role_id=role.id,
+            updated_by=ctx.author.id
         )
 
         await ctx.send(f"Updated punishment **muted role** to {role.mention}")
 
     @has_permission()
-    @_punishment_admin.command(name="moderation_channel")
-    async def _moderation_channel(
+    @_punishment_admin.command(name="logging_channel")
+    async def _logging_channel(
             self,
             ctx,
             channel: discord.TextChannel
@@ -114,10 +112,10 @@ class PunishmentAdminCommand(commands.Cog):
         """
         Set the logging channel for punishment config
         """
-        update_guild_punishment_config(
+        create_or_update_punishment_config(
             ctx.guild.id,
-            moderation_channel=channel.id,
-            last_modify=get_utc_now().isoformat()
+            logging_channel_id=channel.id,
+            updated_by=ctx.author.id
         )
 
         await ctx.send(f"Updated punishment **moderation channel** to {channel.mention}")
@@ -138,17 +136,18 @@ class PunishmentAdminCommand(commands.Cog):
         Add a role to punishment config protected roles
         """
         role_id = role.id
-        _, protected_roles, _, _, _ = get_guild_punishment_config(ctx.guild.id)
+        punishment_policies = create_or_update_punishment_config(ctx.guild.id)
+        protected_roles = punishment_policies.protected_roles
 
         if role_id in protected_roles:
             return await ctx.send(f"Role {role.mention} is **present**!")
 
         protected_roles.append(role_id)
 
-        update_guild_punishment_config(
+        create_or_update_punishment_config(
             ctx.guild.id,
             protected_roles=protected_roles,
-            last_modify=get_utc_now().isoformat()
+            updated_by=ctx.author.id
         )
 
         await ctx.send(f"Added {role.mention} to protected roles!")
@@ -164,17 +163,18 @@ class PunishmentAdminCommand(commands.Cog):
         Remove a role from punishment config protected roles
         """
         role_id = role.id
-        _, protected_roles, _, _, _ = get_guild_punishment_config(ctx.guild.id)
+        punishment_policies = create_or_update_punishment_config(ctx.guild.id)
+        protected_roles = punishment_policies.protected_roles
 
         if role_id not in protected_roles:
             return await ctx.send(f"Role {role.mention} is **not present**!")
 
         protected_roles.remove(role_id)
 
-        update_guild_punishment_config(
+        create_or_update_punishment_config(
             ctx.guild.id,
             protected_roles=protected_roles,
-            last_modify=get_utc_now().isoformat()
+            updated_by=ctx.author.id
         )
 
         await ctx.send(f"Removed {role.mention} from protected roles!")
@@ -195,17 +195,18 @@ class PunishmentAdminCommand(commands.Cog):
         Add a member to punishment config protected users
         """
         member_id = member.id
-        _, _, protected_users, _, _ = get_guild_punishment_config(ctx.guild.id)
+        punishment_policies = create_or_update_punishment_config(ctx.guild.id)
+        protected_users = punishment_policies.protected_users
 
         if member_id in protected_users:
             return await ctx.send(f"User {member.mention} is **present**!")
 
         protected_users.append(member_id)
 
-        update_guild_punishment_config(
+        create_or_update_punishment_config(
             ctx.guild.id,
             protected_users=protected_users,
-            last_modify=get_utc_now().isoformat()
+            updated_by=ctx.author.id
         )
 
         await ctx.send(f"Added {member.mention} to protected users!")
@@ -221,17 +222,18 @@ class PunishmentAdminCommand(commands.Cog):
         Remove a member from punishment config protected users
         """
         member_id = member.id
-        _, _, protected_users, _, _ = get_guild_punishment_config(ctx.guild.id)
+        punishment_policies = create_or_update_punishment_config(ctx.guild.id)
+        protected_users = punishment_policies.protected_users
 
         if member_id not in protected_users:
             return await ctx.send(f"User {member.mention} is **not present**!")
 
         protected_users.remove(member_id)
 
-        update_guild_punishment_config(
+        create_or_update_punishment_config(
             ctx.guild.id,
             protected_users=protected_users,
-            last_modify=get_utc_now().isoformat()
+            updated_by=ctx.author.id
         )
 
         await ctx.send(f"Removed {member.mention} from protected users!")

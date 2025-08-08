@@ -34,7 +34,7 @@ def has_permission():
         if ctx.author.guild_permissions.administrator:
             return True
 
-        if permission.is_admin and not ctx.author.guild_permissions.administrator:
+        if (permission.is_admin and not ctx.author.guild_permissions.administrator) and not permission.allowed_roles:
             return False
 
         if permission.allowed_roles:

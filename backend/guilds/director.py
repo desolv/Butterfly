@@ -1,11 +1,11 @@
 from discord.ext import commands
 from sqlalchemy.orm import Session
 
-from backend.configs.models import Config
 from backend.core.database import Engine
 from backend.core.helper import get_utc_now
-from backend.guilds.models import Guild
+from backend.guilds.models.guild import Guild
 from backend.permissions.director import initialize_permissions_for_guild
+from backend.punishments.models.punishment_policy import PunishmentPolicy
 
 
 def create_or_update_guild(bot: commands.Bot, guild_id: int, **kwargs):
@@ -17,7 +17,7 @@ def create_or_update_guild(bot: commands.Bot, guild_id: int, **kwargs):
 
         if not guild:
             guild = Guild(guild_id=guild_id, added_at=get_utc_now(), is_active=True)
-            guild.config = Config(guild_id=guild_id)
+            guild.punishment_policies = PunishmentPolicy(guild_id=guild_id)
 
             session.add(guild)
             session.commit()

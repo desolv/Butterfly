@@ -6,7 +6,7 @@ from backend.core.helper import format_time_in_zone, get_utc_now, format_duratio
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission, has_cooldown
 from backend.punishments.director import get_punishment_by_id, get_punishment_metadata, process_punishment_removal
-from backend.punishments.models import PunishmentType
+from backend.punishments.models.punishment import PunishmentType
 
 
 class PunishmentCommand(commands.Cog):

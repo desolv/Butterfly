@@ -6,10 +6,10 @@ from discord.ext import commands
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from backend.configs.director import get_guild_punishment_config
 from backend.core.database import Engine
 from backend.core.helper import get_utc_now, send_private_dm
-from backend.punishments.models import Punishment, PunishmentType
+from backend.punishments.models.punishment import Punishment, PunishmentType
+from backend.punishments.models.punishment_policy import PunishmentPolicy
 
 
 def create_punishment(
@@ -178,7 +178,7 @@ async def send_punishment_moderation_log(guild: discord.Guild, member: discord.M
     punishment_name, punishment_fancy, punishment_color = get_punishment_metadata(punishment.type)
     punishment_color = discord.Color.pink() if removed else punishment_color
 
-    _, _, _, moderation_channel, _ = get_guild_punishment_config(guild.id)
+    logging_channel_id = create_or_update_punishment_config(guild.id).logging_channel_id
 
     description = (
         f"**ᴍᴏᴅᴇʀᴀᴛᴏʀ**: {'?' if moderator is None else moderator.mention}\n"
@@ -203,10 +203,10 @@ async def send_punishment_moderation_log(guild: discord.Guild, member: discord.M
     avatar_url = member.avatar.url if member.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"
     embed.set_thumbnail(url=avatar_url)
 
-    channel = guild.get_channel(moderation_channel)
+    loging_channel = guild.get_channel(logging_channel_id)
 
-    if channel:
-        await channel.send(embed=embed)
+    if loging_channel:
+        await loging_channel.send(embed=embed)
 
 
 async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
@@ -220,7 +220,9 @@ async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
     if ctx.author.guild_permissions.administrator:
         return True
 
-    _, protected_roles, protected_users, _, _ = get_guild_punishment_config(ctx.guild.id)
+    punishment_policies = create_or_update_punishment_config(ctx.guild.id)
+    protected_roles = punishment_policies.protected_roles
+    protected_users = punishment_policies.protected_users
 
     protected_roles = set(protected_roles)
     member_role_ids = {role.id for role in member.roles}
@@ -244,9 +246,9 @@ async def process_punishment_removal(bot: commands.Bot, guild: discord.Guild, pu
     match punishment.type:
         case PunishmentType.MUTE:
             try:
-                muted_role, _, _, _, _ = get_guild_punishment_config(punishment.guild_id)
+                muted_role_id = create_or_update_punishment_config(guild.id).muted_role_id
                 member = guild.get_member(punishment.user_id)
-                muted_role = guild.get_role(muted_role)
+                muted_role = guild.get_role(muted_role_id)
                 await member.remove_roles(muted_role, reason=reason)
             except Exception as e:
                 print(f"Wasn't able remove mute for {punishment.user_id}. Aborting! -> {e}")
@@ -285,3 +287,28 @@ async def process_punishment_removal(bot: commands.Bot, guild: discord.Guild, pu
         sent_dm,
         removed=True
     )
+
+
+def create_or_update_punishment_config(guild_id: int, **kwargs):
+    """
+        Ensure a Punishment record exists in the database and apply updates.
+    """
+    with Session(Engine) as session:
+        punishment = session.query(PunishmentPolicy).filter_by(guild_id=guild_id).first()
+
+        if not punishment:
+            punishment = PunishmentPolicy(guild_id=guild_id)
+
+            session.add(punishment)
+            session.commit()
+            session.refresh(punishment)
+
+        for field, value in kwargs.items():
+            if value is not None and hasattr(punishment, field):
+                setattr(punishment, field, value)
+
+        session.add(punishment)
+        session.commit()
+        session.refresh(punishment)
+
+        return punishment

@@ -50,7 +50,7 @@ except Exception as e:
 
 
 async def load():
-    skip_folders = {".venv", "io"}
+    skip_folders = {".venv", "io", "models"}
     skip_file_names = {"database.py", "models.py", "butterfly.py"}
 
     for extension in Path("backend").rglob("*.py"):
