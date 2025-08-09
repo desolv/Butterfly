@@ -52,7 +52,7 @@ class PermissionCommand(commands.Cog):
         allowed_roles = " ".join(
             [
                 role.mention
-                for role in (guild.get_role(int(role_id)) for role_id in permission.allowed_roles)
+                for role in (guild.get_role(int(role_id)) for role_id in permission.allowed_role_ids)
                 if role
             ]
         ) or "None"
@@ -90,7 +90,7 @@ class PermissionCommand(commands.Cog):
             allowed_roles = " ".join(
                 [
                     role.mention
-                    for role in (ctx.guild.get_role(int(role_id)) for role_id in permission.allowed_roles)
+                    for role in (ctx.guild.get_role(int(role_id)) for role_id in permission.allowed_role_ids)
                     if role
                 ]
             ) or "None"
@@ -104,7 +104,7 @@ class PermissionCommand(commands.Cog):
             )
 
         view = Pagination(
-            f"ᴘᴇʀᴍɪѕѕɪᴏɴ ᴄᴀᴛᴀʟᴏɢ ꜰᴏʀ {ctx.guild.name}",
+            f"ᴘᴇʀᴍɪѕѕɪᴏɴ ᴍᴀɴɪꜰᴇѕᴛ ꜰᴏʀ {ctx.guild.name}",
             lines,
             3,
             ctx.author.id
@@ -206,7 +206,7 @@ class PermissionCommand(commands.Cog):
 
     @has_permission()
     @_allowed_roles.command(name="add")
-    async def __allowed_roles_add(
+    async def _allowed_roles_add(
             self,
             ctx,
             role: discord.Role,
@@ -229,23 +229,23 @@ class PermissionCommand(commands.Cog):
         if not permission:
             return await ctx.reply(f"No command **{command_name}** has been found!")
 
-        if role_id in permission.allowed_roles:
+        if role_id in permission.allowed_role_ids:
             return await ctx.reply(f"Role {role.mention} is **present**!")
 
-        permission.allowed_roles.append(role_id)
+        permission.allowed_role_ids.append(role_id)
 
         create_or_retrieve_command(
             self.bot,
             guild.id,
             command_name,
-            allowed_roles=permission.allowed_roles
+            allowed_role_ids=permission.allowed_role_ids
         )
 
         await ctx.reply(f"Added {role.mention} to **{permission.command_name}** command allowed roles!")
 
     @has_permission()
     @_allowed_roles.command(name="remove")
-    async def __allowed_roles_remove(
+    async def _allowed_roles_remove(
             self,
             ctx,
             role: discord.Role,
@@ -268,16 +268,16 @@ class PermissionCommand(commands.Cog):
         if not permission:
             return await ctx.reply(f"No command **{command_name}** has been found!")
 
-        if role_id not in permission.allowed_roles:
+        if role_id not in permission.allowed_role_ids:
             return await ctx.reply(f"Role {role.mention} is not **present**!")
 
-        permission.allowed_roles.remove(role_id)
+        permission.allowed_role_ids.remove(role_id)
 
         create_or_retrieve_command(
             self.bot,
             guild.id,
             command_name,
-            allowed_roles=permission.allowed_roles
+            allowed_role_ids=permission.allowed_role_ids
         )
 
         await ctx.reply(f"Removed {role.mention} from **{permission.command_name}** command allowed roles!")

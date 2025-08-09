@@ -34,12 +34,12 @@ def has_permission():
         if ctx.author.guild_permissions.administrator:
             return True
 
-        if (permission.is_admin and not ctx.author.guild_permissions.administrator) and not permission.allowed_roles:
+        if (permission.is_admin and not ctx.author.guild_permissions.administrator) and not permission.allowed_role_ids:
             return False
 
-        if permission.allowed_roles:
+        if permission.allowed_role_ids:
             user_role_ids = {role.id for role in ctx.author.roles}
-            if not user_role_ids.intersection(permission.allowed_roles):
+            if not user_role_ids.intersection(permission.allowed_role_ids):
                 raise CheckFailure("You don't have the required role to use this command.")
 
         return True
