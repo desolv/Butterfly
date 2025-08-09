@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from backend.core.database import Engine
 from backend.core.helper import get_utc_now, send_private_dm
 from backend.punishments.models.punishment import Punishment, PunishmentType
-from backend.punishments.models.punishment_policy import PunishmentPolicy
+from backend.punishments.models.punishment_config import PunishmentConfig
 
 
 def create_punishment(
@@ -181,6 +181,7 @@ async def send_punishment_moderation_log(guild: discord.Guild, member: discord.M
     logging_channel_id = create_or_update_punishment_config(guild.id).logging_channel_id
 
     description = (
+        f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ɪᴅ**: **{punishment.punishment_id}**\n"
         f"**ᴍᴏᴅᴇʀᴀᴛᴏʀ**: {'?' if moderator is None else moderator.mention}\n"
         f"**ʀᴇᴀѕᴏɴ**: {punishment.removed_reason if removed else punishment.reason}\n"
     )
@@ -189,7 +190,6 @@ async def send_punishment_moderation_log(guild: discord.Guild, member: discord.M
         description += f"**ᴅᴜʀᴀᴛɪᴏɴ**: {'Permanent' if duration in ('permanent', 'perm') else duration}\n"
 
     description += (
-        f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ɪᴅ**: **{punishment.punishment_id}**\n"
         f"**ᴘʀɪᴠᴀᴛᴇ ᴅᴍ**: {'✅' if sent_dm else '❎'}"
     )
 
@@ -294,10 +294,10 @@ def create_or_update_punishment_config(guild_id: int, **kwargs):
         Ensure a Punishment record exists in the database and apply updates.
     """
     with Session(Engine) as session:
-        punishment = session.query(PunishmentPolicy).filter_by(guild_id=guild_id).first()
+        punishment = session.query(PunishmentConfig).filter_by(guild_id=guild_id).first()
 
         if not punishment:
-            punishment = PunishmentPolicy(guild_id=guild_id)
+            punishment = PunishmentConfig(guild_id=guild_id)
 
             session.add(punishment)
             session.commit()

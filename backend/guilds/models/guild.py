@@ -13,4 +13,5 @@ class Guild(Base):
     removed_at = Column(DateTime, default=None)
     is_active = Column(Boolean, default=True)
 
-    punishment_policies = relationship("PunishmentPolicy", uselist=False, back_populates="guild")
+    punishment_configs = relationship("PunishmentConfig", uselist=False, back_populates="guild")
+    ticket_panels = relationship("TicketPanel", uselist=False, back_populates="guild")

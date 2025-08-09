@@ -34,7 +34,7 @@ class PunishmentAdminCommand(commands.Cog):
     @_punishment_admin.command(name="manifest")
     async def _manifest(self, ctx):
         """
-        Display the current punishments policy
+        Display the current punishments config
         """
         guild = ctx.guild
         punishment_policies = create_or_update_punishment_config(guild.id)

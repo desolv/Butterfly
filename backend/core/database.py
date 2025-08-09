@@ -29,6 +29,12 @@ def init_tables():
     from backend.punishments.models.punishment import Punishment
 
     # noinspection PyUnresolvedReferences
-    from backend.punishments.models.punishment_policy import PunishmentPolicy
+    from backend.punishments.models.punishment_config import PunishmentConfig
+
+    # noinspection PyUnresolvedReferences
+    from backend.tickets.models.ticket import Ticket
+
+    # noinspection PyUnresolvedReferences
+    from backend.tickets.models.ticket_panel import TicketPanel
 
     Base.metadata.create_all(Engine)
