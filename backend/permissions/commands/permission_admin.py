@@ -7,21 +7,21 @@ from backend.permissions.director import create_or_retrieve_command, get_permiss
 from backend.permissions.enforce import has_permission
 
 
-class PermissionCommand(commands.Cog):
+class PermissionAdminCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @has_permission()
     @commands.group(
-        name="permission",
+        name="permission-admin",
         invoke_without_command=True
     )
-    async def _permission(self, ctx):
+    async def _permission_admin(self, ctx):
         view = Pagination(
-            "ᴘᴇʀᴍɪѕѕɪᴏɴ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
+            "ᴘᴇʀᴍɪѕѕɪᴏɴ ᴀᴅᴍɪɴ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
             get_commands_help_messages(
                 self.bot,
-                [PermissionCommand],
+                [PermissionAdminCommand],
                 ctx.author.guild_permissions.administrator
             ),
             3,
@@ -31,7 +31,7 @@ class PermissionCommand(commands.Cog):
         await ctx.reply(embed=view.create_embed(), view=view)
 
     @has_permission()
-    @_permission.command(name="view")
+    @_permission_admin.command(name="view")
     async def _view(
             self,
             ctx,
@@ -42,24 +42,22 @@ class PermissionCommand(commands.Cog):
         Display the current command information
         """
         guild = ctx.guild
-        command_name = command_name.lower()
-
         permission = create_or_retrieve_command(self.bot, guild.id, command_name)
 
         if not permission:
             return await ctx.reply(f"No command **{command_name}** has been found!")
 
-        allowed_roles = " ".join(
+        required_roles = " ".join(
             [
                 role.mention
-                for role in (guild.get_role(int(role_id)) for role_id in permission.allowed_role_ids)
+                for role in (guild.get_role(int(role_id)) for role_id in permission.required_role_ids)
                 if role
             ]
         ) or "None"
 
         description = (
             f"**ᴀᴅᴍɪɴ**: {'✅' if permission.is_admin else '❎'}\n"
-            f"**ᴀʟʟᴏᴡᴇᴅ ʀᴏʟᴇѕ**: {allowed_roles}\n"
+            f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {required_roles}\n"
             f"**ᴄᴏᴏʟᴅᴏᴡɴ**: {f"**{permission.command_cooldown}s**" if permission.command_cooldown > 0 else "None"}\n\n"
             f"**ᴇɴᴀʙʟᴇᴅ**: {'✅' if permission.is_enabled else '❎'}\n"
         )
@@ -78,7 +76,7 @@ class PermissionCommand(commands.Cog):
         await ctx.reply(embed=embed)
 
     @has_permission()
-    @_permission.command(name="manifest")
+    @_permission_admin.command(name="manifest")
     async def _manifest(self, ctx):
         """
         Display the current commands permissions
@@ -87,10 +85,10 @@ class PermissionCommand(commands.Cog):
 
         lines: list[str] = []
         for permission in permissions:
-            allowed_roles = " ".join(
+            required_roles = " ".join(
                 [
                     role.mention
-                    for role in (ctx.guild.get_role(int(role_id)) for role_id in permission.allowed_role_ids)
+                    for role in (ctx.guild.get_role(int(role_id)) for role_id in permission.required_role_ids)
                     if role
                 ]
             ) or "None"
@@ -98,7 +96,7 @@ class PermissionCommand(commands.Cog):
             lines.append(
                 f"**{permission.command_name}**\n"
                 f"**ᴀᴅᴍɪɴ**: {'✅' if permission.is_admin else '❎'}\n"
-                f"**ᴀʟʟᴏᴡᴇᴅ ʀᴏʟᴇѕ**: {allowed_roles}\n"
+                f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {required_roles}\n"
                 f"**ᴄᴏᴏʟᴅᴏᴡɴ**: {f"**{permission.command_cooldown}s**" if permission.command_cooldown > 0 else "None"}\n"
                 f"**ᴇɴᴀʙʟᴇᴅ**: {'✅' if permission.is_enabled else '❎'}\n"
             )
@@ -113,7 +111,7 @@ class PermissionCommand(commands.Cog):
         await ctx.reply(embed=view.create_embed(), view=view)
 
     @has_permission()
-    @_permission.command(name="is_admin")
+    @_permission_admin.command(name="is_admin")
     async def _is_admin(
             self,
             ctx,
@@ -124,12 +122,9 @@ class PermissionCommand(commands.Cog):
         """
         Set the admin only for commands
         """
-        guild = ctx.guild
-        command_name = command_name.lower()
-
         permission = create_or_retrieve_command(
             self.bot,
-            guild.id,
+            ctx.guild.id,
             command_name,
             is_admin=is_admin
         )
@@ -141,7 +136,7 @@ class PermissionCommand(commands.Cog):
             f"Updated permission **is admin** for **{permission.command_name}** command to **{permission.is_admin}**")
 
     @has_permission()
-    @_permission.command(name="is_enabled")
+    @_permission_admin.command(name="is_enabled")
     async def _is_enabled(
             self,
             ctx,
@@ -152,12 +147,9 @@ class PermissionCommand(commands.Cog):
         """
         Set the enabled for commands
         """
-        guild = ctx.guild
-        command_name = command_name.lower()
-
         permission = create_or_retrieve_command(
             self.bot,
-            guild.id,
+            ctx.guild.id,
             command_name,
             is_enabled=is_enabled
         )
@@ -169,7 +161,7 @@ class PermissionCommand(commands.Cog):
             f"Updated permission **is enabled** for **{permission.command_name}** command to **{permission.is_enabled}**")
 
     @has_permission()
-    @_permission.command(name="cooldown")
+    @_permission_admin.command(name="cooldown")
     async def _cooldown(
             self,
             ctx,
@@ -183,12 +175,9 @@ class PermissionCommand(commands.Cog):
         if seconds > 600 or seconds < 0:
             return await ctx.reply(f"Seconds must be between 0-600!")
 
-        guild = ctx.guild
-        command_name = command_name.lower()
-
         permission = create_or_retrieve_command(
             self.bot,
-            guild.id,
+            ctx.guild.id,
             command_name,
             command_cooldown=seconds
         )
@@ -200,13 +189,13 @@ class PermissionCommand(commands.Cog):
             f"Updated permission **cooldown** for **{permission.command_name}** command to **{f"{seconds}s" if seconds > 0 else "None"}**")
 
     @has_permission()
-    @_permission.group(name="allowed_roles")
-    async def _allowed_roles(self, ctx):
+    @_permission_admin.group(name="required_roles")
+    async def _required_roles(self, ctx):
         pass
 
     @has_permission()
-    @_allowed_roles.command(name="add")
-    async def _allowed_roles_add(
+    @_required_roles.command(name="add")
+    async def _required_roles_add(
             self,
             ctx,
             role: discord.Role,
@@ -216,36 +205,35 @@ class PermissionCommand(commands.Cog):
         """
         Add a role to permissions allowed roles
         """
-        role_id = role.id
-        guild = ctx.guild
-        command_name = command_name.lower()
-
         permission = create_or_retrieve_command(
             self.bot,
-            guild.id,
+            ctx.guild.id,
             command_name
         )
 
         if not permission:
             return await ctx.reply(f"No command **{command_name}** has been found!")
 
-        if role_id in permission.allowed_role_ids:
+        role_id = role.id
+
+        if role_id in permission.required_role_ids:
             return await ctx.reply(f"Role {role.mention} is **present**!")
 
-        permission.allowed_role_ids.append(role_id)
+        permission.required_role_ids.append(role_id)
 
         create_or_retrieve_command(
             self.bot,
-            guild.id,
+            ctx.guild.id,
             command_name,
-            allowed_role_ids=permission.allowed_role_ids
+            required_role_ids=permission.required_role_ids
         )
 
-        await ctx.reply(f"Added {role.mention} to **{permission.command_name}** command allowed roles!")
+        await ctx.reply(
+            f"Updated permission **required_roles** for **{permission.command_name}** command by adding {role.mention}")
 
     @has_permission()
-    @_allowed_roles.command(name="remove")
-    async def _allowed_roles_remove(
+    @_required_roles.command(name="remove")
+    async def _required_roles_remove(
             self,
             ctx,
             role: discord.Role,
@@ -255,33 +243,32 @@ class PermissionCommand(commands.Cog):
         """
         Remove a role from permissions allowed roles
         """
-        role_id = role.id
-        guild = ctx.guild
-        command_name = command_name.lower()
-
         permission = create_or_retrieve_command(
             self.bot,
-            guild.id,
+            ctx.guild.id,
             command_name
         )
 
         if not permission:
             return await ctx.reply(f"No command **{command_name}** has been found!")
 
-        if role_id not in permission.allowed_role_ids:
+        role_id = role.id
+
+        if role_id not in permission.required_role_ids:
             return await ctx.reply(f"Role {role.mention} is not **present**!")
 
-        permission.allowed_role_ids.remove(role_id)
+        permission.required_role_ids.remove(role_id)
 
         create_or_retrieve_command(
             self.bot,
-            guild.id,
+            ctx.guild.id,
             command_name,
-            allowed_role_ids=permission.allowed_role_ids
+            required_role_ids=permission.required_role_ids
         )
 
-        await ctx.reply(f"Removed {role.mention} from **{permission.command_name}** command allowed roles!")
+        await ctx.reply(
+            f"Updated permission **required_roles** for **{permission.command_name}** command by removing {role.mention}")
 
 
 async def setup(bot):
-    await bot.add_cog(PermissionCommand(bot))
+    await bot.add_cog(PermissionAdminCommand(bot))

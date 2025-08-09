@@ -22,8 +22,13 @@ def has_permission():
             return True
 
         guild_id = ctx.guild.id
+
         create_or_update_guild(ctx.bot, guild_id)
-        permission = create_or_retrieve_command(None, guild_id, str(ctx.command))
+        permission = create_or_retrieve_command(
+            None,
+            guild_id,
+            ctx.command.qualified_name
+        )
 
         if permission is None:
             raise CheckFailure("I couldn't retrieve the command permissions, contact an administrator!")
@@ -34,15 +39,18 @@ def has_permission():
         if ctx.author.guild_permissions.administrator:
             return True
 
-        if (permission.is_admin and not ctx.author.guild_permissions.administrator) and not permission.allowed_role_ids:
+        required_ids = permission.required_role_ids or []
+
+        if permission.is_admin and not ctx.author.guild_permissions.administrator:
             return False
 
-        if permission.allowed_role_ids:
-            user_role_ids = {role.id for role in ctx.author.roles}
-            if not user_role_ids.intersection(permission.allowed_role_ids):
-                raise CheckFailure("You don't have the required role to use this command.")
+        if not required_ids:
+            return False
 
-        return True
+        if guild_id in required_ids:
+            return True
+
+        return any(role.id in required_ids for role in ctx.author.roles)
 
     return commands.check(predicate)
 

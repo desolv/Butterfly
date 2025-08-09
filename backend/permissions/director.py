@@ -30,12 +30,10 @@ def create_or_retrieve_command(
     """
     Retrieve existing or create new Permission entry for the given guild and command.
     """
+    command_name = command_name.lower()
+
     with Session(Engine) as session:
-        permission = (
-            session.query(Permission)
-            .filter_by(guild_id=guild_id, command_name=command_name)
-            .first()
-        )
+        permission = session.query(Permission).filter_by(guild_id=guild_id, command_name=command_name).first()
 
         if permission is not None:
             if bot is not None and not is_valid_command(bot, command_name):

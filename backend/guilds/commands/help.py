@@ -2,7 +2,7 @@ from discord.ext import commands
 
 from backend.core.helper import get_commands_help_messages
 from backend.core.pagination import Pagination
-from backend.permissions.commands.permission import PermissionCommand
+from backend.permissions.commands.permission_admin import PermissionAdminCommand
 from backend.permissions.enforce import has_permission
 from backend.punishments.commands.ban import BanCommand
 from backend.punishments.commands.kick import KickCommand
@@ -64,7 +64,7 @@ class HelpCommand(commands.Cog):
             "ᴍᴀɴᴀɢᴇᴍᴇɴᴛ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
             get_commands_help_messages(
                 self.bot,
-                [PunishmentAdminCommand, PermissionCommand],
+                [PunishmentAdminCommand, PermissionAdminCommand],
                 ctx.author.guild_permissions.administrator
             ),
             3,
