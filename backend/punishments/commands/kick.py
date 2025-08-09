@@ -24,7 +24,7 @@ class KickCommand(commands.Cog):
         try:
             await member.kick(reason=reason)
         except discord.Forbidden:
-            await ctx.send(f"Wasn't able to kick **{member}**. Aborting!")
+            await ctx.reply(f"Wasn't able to kick **{member}**. Aborting!")
             return
 
         punishment = create_punishment(
@@ -35,7 +35,7 @@ class KickCommand(commands.Cog):
             reason
         )
 
-        await ctx.send(f"**@{member}** has been kicked for **{reason}**.")
+        await ctx.reply(f"**@{member}** has been kicked for **{reason}**.")
         sent_dm = await send_private_dm(member, f"You have been kicked from **{ctx.guild.name}** for **{reason}**.",
                                         ctx)
 

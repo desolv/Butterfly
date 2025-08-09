@@ -28,7 +28,7 @@ class PermissionCommand(commands.Cog):
             ctx.author.id
         )
 
-        await ctx.send(embed=view.create_embed(), view=view)
+        await ctx.reply(embed=view.create_embed(), view=view)
 
     @has_permission()
     @_permission.command(name="view")
@@ -47,7 +47,7 @@ class PermissionCommand(commands.Cog):
         permission = create_or_retrieve_command(self.bot, guild.id, command_name)
 
         if not permission:
-            return await ctx.send(f"No command **{command_name}** has been found!")
+            return await ctx.reply(f"No command **{command_name}** has been found!")
 
         allowed_roles = " ".join(
             [
@@ -75,7 +75,7 @@ class PermissionCommand(commands.Cog):
                         value=f"{format_time_in_zone(permission.added_at, format="%d/%m/%y %H:%M %Z")}", inline=True)
         embed.add_field(name="**ɢᴜɪʟᴅ ɪᴅ**", value=f"{guild.id}", inline=True)
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @has_permission()
     @_permission.command(name="manifest")
@@ -110,7 +110,7 @@ class PermissionCommand(commands.Cog):
             ctx.author.id
         )
 
-        await ctx.send(embed=view.create_embed(), view=view)
+        await ctx.reply(embed=view.create_embed(), view=view)
 
     @has_permission()
     @_permission.command(name="is_admin")
@@ -135,9 +135,9 @@ class PermissionCommand(commands.Cog):
         )
 
         if not permission:
-            return await ctx.send(f"No command **{command_name}** has been found!")
+            return await ctx.reply(f"No command **{command_name}** has been found!")
 
-        await ctx.send(
+        await ctx.reply(
             f"Updated permission **is admin** for **{permission.command_name}** command to **{permission.is_admin}**")
 
     @has_permission()
@@ -163,9 +163,9 @@ class PermissionCommand(commands.Cog):
         )
 
         if not permission:
-            return await ctx.send(f"No command **{command_name}** has been found!")
+            return await ctx.reply(f"No command **{command_name}** has been found!")
 
-        await ctx.send(
+        await ctx.reply(
             f"Updated permission **is enabled** for **{permission.command_name}** command to **{permission.is_enabled}**")
 
     @has_permission()
@@ -181,7 +181,7 @@ class PermissionCommand(commands.Cog):
         Set the cooldown for commands
         """
         if seconds > 600 or seconds < 0:
-            return await ctx.send(f"Seconds must be between 0-600!")
+            return await ctx.reply(f"Seconds must be between 0-600!")
 
         guild = ctx.guild
         command_name = command_name.lower()
@@ -194,9 +194,9 @@ class PermissionCommand(commands.Cog):
         )
 
         if not permission:
-            return await ctx.send(f"No command **{command_name}** has been found!")
+            return await ctx.reply(f"No command **{command_name}** has been found!")
 
-        await ctx.send(
+        await ctx.reply(
             f"Updated permission **cooldown** for **{permission.command_name}** command to **{f"{seconds}s" if seconds > 0 else "None"}**")
 
     @has_permission()
@@ -227,10 +227,10 @@ class PermissionCommand(commands.Cog):
         )
 
         if not permission:
-            return await ctx.send(f"No command **{command_name}** has been found!")
+            return await ctx.reply(f"No command **{command_name}** has been found!")
 
         if role_id in permission.allowed_roles:
-            return await ctx.send(f"Role {role.mention} is **present**!")
+            return await ctx.reply(f"Role {role.mention} is **present**!")
 
         permission.allowed_roles.append(role_id)
 
@@ -241,7 +241,7 @@ class PermissionCommand(commands.Cog):
             allowed_roles=permission.allowed_roles
         )
 
-        await ctx.send(f"Added {role.mention} to **{permission.command_name}** command allowed roles!")
+        await ctx.reply(f"Added {role.mention} to **{permission.command_name}** command allowed roles!")
 
     @has_permission()
     @_allowed_roles.command(name="remove")
@@ -266,10 +266,10 @@ class PermissionCommand(commands.Cog):
         )
 
         if not permission:
-            return await ctx.send(f"No command **{command_name}** has been found!")
+            return await ctx.reply(f"No command **{command_name}** has been found!")
 
         if role_id not in permission.allowed_roles:
-            return await ctx.send(f"Role {role.mention} is not **present**!")
+            return await ctx.reply(f"Role {role.mention} is not **present**!")
 
         permission.allowed_roles.remove(role_id)
 
@@ -280,7 +280,7 @@ class PermissionCommand(commands.Cog):
             allowed_roles=permission.allowed_roles
         )
 
-        await ctx.send(f"Removed {role.mention} from **{permission.command_name}** command allowed roles!")
+        await ctx.reply(f"Removed {role.mention} from **{permission.command_name}** command allowed roles!")
 
 
 async def setup(bot):

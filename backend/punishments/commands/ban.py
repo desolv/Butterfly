@@ -23,7 +23,7 @@ class BanCommand(commands.Cog):
             return
 
         if get_user_active_punishment(ctx.guild.id, member.id, PunishmentType.BAN):
-            await ctx.send(f"**@{member}** is already banned!")
+            await ctx.reply(f"**@{member}** is already banned!")
             return
 
         permanent = True if duration.lower() in ("permanent", "perm") else False
@@ -34,7 +34,7 @@ class BanCommand(commands.Cog):
         try:
             await member.ban(reason=reason)
         except discord.Forbidden:
-            await ctx.send(f"Wasn't able to ban **{member}**. Aborting!")
+            await ctx.reply(f"Wasn't able to ban **{member}**. Aborting!")
             return
 
         punishment = create_punishment(
@@ -47,7 +47,7 @@ class BanCommand(commands.Cog):
         )
 
         duration_msg = "permanently" if permanent else "temporarily"
-        await ctx.send(f"**@{member}** has been {duration_msg} banned for **{reason}**.")
+        await ctx.reply(f"**@{member}** has been {duration_msg} banned for **{reason}**.")
 
         expiring = "**never** expiring!" if permanent else f"expiring in **{duration}**."
         sent_dm = await send_private_dm(member,

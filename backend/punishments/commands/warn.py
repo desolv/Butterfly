@@ -29,7 +29,7 @@ class WarnCommand(commands.Cog):
             reason
         )
 
-        await ctx.send(f"**@{member}** has been warned for **{reason}**.")
+        await ctx.reply(f"**@{member}** has been warned for **{reason}**.")
         sent_dm = await send_private_dm(member, f"You have been warned from **{ctx.guild.name}** for **{reason}**.",
                                         ctx)
 

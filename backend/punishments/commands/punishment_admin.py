@@ -28,7 +28,7 @@ class PunishmentAdminCommand(commands.Cog):
             ctx.author.id
         )
 
-        await ctx.send(embed=view.create_embed(), view=view)
+        await ctx.reply(embed=view.create_embed(), view=view)
 
     @has_permission()
     @_punishment_admin.command(name="manifest")
@@ -82,7 +82,7 @@ class PunishmentAdminCommand(commands.Cog):
         embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**", value=f"{updated_at}", inline=True)
         embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ʙʏ**", value=f"{updated_by}", inline=True)
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @has_permission()
     @_punishment_admin.command(name="muted_role")
@@ -100,7 +100,7 @@ class PunishmentAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.send(f"Updated punishment **muted role** to {role.mention}")
+        await ctx.reply(f"Updated punishment **muted role** to {role.mention}")
 
     @has_permission()
     @_punishment_admin.command(name="logging_channel")
@@ -118,7 +118,7 @@ class PunishmentAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.send(f"Updated punishment **moderation channel** to {channel.mention}")
+        await ctx.reply(f"Updated punishment **moderation channel** to {channel.mention}")
 
     @has_permission()
     @_punishment_admin.group(name="protected_roles")
@@ -140,7 +140,7 @@ class PunishmentAdminCommand(commands.Cog):
         protected_roles = punishment_policies.protected_roles
 
         if role_id in protected_roles:
-            return await ctx.send(f"Role {role.mention} is **present**!")
+            return await ctx.reply(f"Role {role.mention} is **present**!")
 
         protected_roles.append(role_id)
 
@@ -150,7 +150,7 @@ class PunishmentAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.send(f"Added {role.mention} to protected roles!")
+        await ctx.reply(f"Added {role.mention} to protected roles!")
 
     @has_permission()
     @_protected_roles.command(name="remove")
@@ -167,7 +167,7 @@ class PunishmentAdminCommand(commands.Cog):
         protected_roles = punishment_policies.protected_roles
 
         if role_id not in protected_roles:
-            return await ctx.send(f"Role {role.mention} is **not present**!")
+            return await ctx.reply(f"Role {role.mention} is **not present**!")
 
         protected_roles.remove(role_id)
 
@@ -177,7 +177,7 @@ class PunishmentAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.send(f"Removed {role.mention} from protected roles!")
+        await ctx.reply(f"Removed {role.mention} from protected roles!")
 
     @has_permission()
     @_punishment_admin.group(name="protected_users")
@@ -199,7 +199,7 @@ class PunishmentAdminCommand(commands.Cog):
         protected_users = punishment_policies.protected_users
 
         if member_id in protected_users:
-            return await ctx.send(f"User {member.mention} is **present**!")
+            return await ctx.reply(f"User {member.mention} is **present**!")
 
         protected_users.append(member_id)
 
@@ -209,7 +209,7 @@ class PunishmentAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.send(f"Added {member.mention} to protected users!")
+        await ctx.reply(f"Added {member.mention} to protected users!")
 
     @has_permission()
     @_protected_users.command(name="remove")
@@ -226,7 +226,7 @@ class PunishmentAdminCommand(commands.Cog):
         protected_users = punishment_policies.protected_users
 
         if member_id not in protected_users:
-            return await ctx.send(f"User {member.mention} is **not present**!")
+            return await ctx.reply(f"User {member.mention} is **not present**!")
 
         protected_users.remove(member_id)
 
@@ -236,7 +236,7 @@ class PunishmentAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.send(f"Removed {member.mention} from protected users!")
+        await ctx.reply(f"Removed {member.mention} from protected users!")
 
 
 async def setup(bot):

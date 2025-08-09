@@ -33,7 +33,7 @@ class HelpCommand(commands.Cog):
             ctx.author.id
         )
 
-        await ctx.send(embed=view.create_embed(), view=view)
+        await ctx.reply(embed=view.create_embed(), view=view)
 
     @has_permission()
     @_help.command(name="moderation")
@@ -52,7 +52,7 @@ class HelpCommand(commands.Cog):
             ctx.author.id
         )
 
-        await ctx.send(embed=view.create_embed(), view=view)
+        await ctx.reply(embed=view.create_embed(), view=view)
 
     @has_permission()
     @_help.command(name="management")
@@ -71,7 +71,7 @@ class HelpCommand(commands.Cog):
             ctx.author.id
         )
 
-        await ctx.send(embed=view.create_embed(), view=view)
+        await ctx.reply(embed=view.create_embed(), view=view)
 
 
 async def setup(bot):

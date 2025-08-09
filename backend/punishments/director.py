@@ -214,7 +214,7 @@ async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
     Verify the command issuer can punish the specified member
     """
     if member.id == ctx.author.id:
-        await ctx.send(f"You can't punish your self!")
+        await ctx.reply(f"You can't punish your self!")
         return False
 
     if ctx.author.guild_permissions.administrator:
@@ -228,11 +228,11 @@ async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
     member_role_ids = {role.id for role in member.roles}
 
     if member.id in protected_users or member_role_ids & protected_roles:
-        await ctx.send(f"{member.mention} has an exception from punishments!")
+        await ctx.reply(f"{member.mention} has an exception from punishments!")
         return False
 
     if ctx.author.top_role.position <= member.top_role.position:
-        await ctx.send(f"{member.mention} has an higher or equal role to yours.")
+        await ctx.reply(f"{member.mention} has an higher or equal role to yours.")
         return False
 
     return True

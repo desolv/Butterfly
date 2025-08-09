@@ -204,7 +204,7 @@ async def send_private_dm(member: discord.Member, message: str, ctx=None) -> boo
         return True
     except Exception:
         if ctx:
-            await ctx.send(f"Wasn't able to message **{member}**.")
+            await ctx.reply(f"Wasn't able to message **{member}**.")
         return False
 
 

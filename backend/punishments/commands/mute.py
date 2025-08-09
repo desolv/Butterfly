@@ -23,7 +23,7 @@ class MuteCommand(commands.Cog):
             return
 
         if get_user_active_punishment(ctx.guild.id, member.id, PunishmentType.MUTE):
-            await ctx.send(f"**@{member}** is already muted!")
+            await ctx.reply(f"**@{member}** is already muted!")
             return
 
         permanent = True if duration.lower() in ("permanent", "perm") else False
@@ -36,7 +36,7 @@ class MuteCommand(commands.Cog):
             muted_role = ctx.guild.get_role(muted_role_id)
             await member.add_roles(muted_role, reason=reason)
         except discord.Forbidden:
-            await ctx.send(f"Wasn't able to add mute to **{member}**. Aborting!")
+            await ctx.reply(f"Wasn't able to add mute to **{member}**. Aborting!")
             return
 
         punishment = create_punishment(
@@ -49,7 +49,7 @@ class MuteCommand(commands.Cog):
         )
 
         duration_msg = "permanently" if permanent else "temporarily"
-        await ctx.send(f"**@{member}** has been {duration_msg} muted for **{reason}**.")
+        await ctx.reply(f"**@{member}** has been {duration_msg} muted for **{reason}**.")
 
         expiring = "**never** expiring!" if permanent else f"expiring in **{duration}**."
         sent_dm = await send_private_dm(member,

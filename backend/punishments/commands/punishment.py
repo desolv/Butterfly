@@ -30,7 +30,7 @@ class PunishmentCommand(commands.Cog):
             ctx.author.id
         )
 
-        await ctx.send(embed=view.create_embed(), view=view)
+        await ctx.reply(embed=view.create_embed(), view=view)
 
     @has_permission()
     @has_cooldown()
@@ -42,7 +42,7 @@ class PunishmentCommand(commands.Cog):
         punishment = get_punishment_by_id(ctx.guild.id, punishment_id)
 
         if not punishment:
-            await ctx.send(f"No punishment matching **{punishment_id}** found!")
+            await ctx.reply(f"No punishment matching **{punishment_id}** found!")
             return
 
         try:
@@ -93,7 +93,7 @@ class PunishmentCommand(commands.Cog):
         avatar_url = member.avatar.url if member.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"
         embed.set_thumbnail(url=avatar_url)
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @has_permission()
     @has_cooldown()
@@ -111,11 +111,11 @@ class PunishmentCommand(commands.Cog):
         punishment = get_punishment_by_id(ctx.guild.id, punishment_id)
 
         if not punishment:
-            await ctx.send(f"No punishment matching **{punishment_id}** found!")
+            await ctx.reply(f"No punishment matching **{punishment_id}** found!")
             return
 
         if not punishment.is_active:
-            await ctx.send(f"Punishment type is **not active**!")
+            await ctx.reply(f"Punishment type is **not active**!")
             return
 
         guild = ctx.guild
@@ -130,7 +130,7 @@ class PunishmentCommand(commands.Cog):
 
         member = guild.get_member(punishment.user_id)
 
-        await ctx.send(
+        await ctx.reply(
             f"**@{member if member else punishment.user_id}**'s punishment **#{punishment.punishment_id}** has been removed for **{reason}**.")
 
 
