@@ -159,10 +159,13 @@ def get_commands_help_messages(
             params = " ".join(f"<{p}>" for p in sub.clean_params)
             usage = f"{star_sub}{prefix}{sub.name} {params}".strip()
             desc = sub.help or sub.description or "No description"
-            lines.append(f"`{usage}` – {desc}")
 
             if isinstance(sub, commands.Group):
+                if getattr(sub, "invoke_without_command", False):
+                    lines.append(f"`{usage}` – {desc}")
                 recurse(sub, f"{prefix}{sub.name} ")
+            else:
+                lines.append(f"`{usage}` – {desc}")
 
     for cog_cls in cog_classes:
         cog = bot.get_cog(cog_cls.__name__)
@@ -175,7 +178,10 @@ def get_commands_help_messages(
 
             star_cmd = "*" if cmd.hidden else ""
             if isinstance(cmd, commands.Group):
-                recurse(cmd, f"{star_cmd}{cmd.name} ")
+                if getattr(cmd, "invoke_without_command", False):
+                    recurse(cmd, f"{star_cmd}{cmd.name} ")
+                else:
+                    recurse(cmd, f"{star_cmd}{cmd.name} ")
             else:
                 params = " ".join(f"<{p}>" for p in cmd.clean_params)
                 usage = f"{star_cmd}{cmd.name} {params}".strip()
