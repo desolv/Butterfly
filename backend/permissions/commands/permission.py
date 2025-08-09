@@ -104,7 +104,7 @@ class PermissionCommand(commands.Cog):
             )
 
         view = Pagination(
-            f"ᴘᴇʀᴍɪѕѕɪᴏɴ ᴄᴀᴛᴀʟᴏɢ ꜰᴏʀ {ctx.guild.name}",
+            f"ᴘᴇʀᴍɪѕѕɪᴏɴ ᴍᴀɴɪꜰᴇѕᴛ ꜰᴏʀ {ctx.guild.name}",
             lines,
             3,
             ctx.author.id
