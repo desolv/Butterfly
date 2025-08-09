@@ -37,6 +37,9 @@ class Pagination(View):
     def build_buttons(self):
         self.clear_items()
 
+        if len(self.pages) <= 1:
+            return
+
         if self.page > 0:
             self.add_item(Button(label="⏮️", style=ButtonStyle.grey, custom_id="first"))
 
