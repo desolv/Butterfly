@@ -37,14 +37,14 @@ class PunishmentAdminCommand(commands.Cog):
         Display the current punishments config
         """
         guild = ctx.guild
-        punishment_policies = create_or_update_punishment_config(guild.id)
+        punishment_config = create_or_update_punishment_config(guild.id)
 
-        muted_role = guild.get_role(punishment_policies.muted_role_id)
+        muted_role = guild.get_role(punishment_config.muted_role_id)
 
         protected_roles = " ".join(
             [
                 role.mention
-                for role in (guild.get_role(int(role_id)) for role_id in punishment_policies.protected_roles)
+                for role in (guild.get_role(int(role_id)) for role_id in punishment_config.protected_roles)
                 if role
             ]
         ) or "None"
@@ -52,17 +52,17 @@ class PunishmentAdminCommand(commands.Cog):
         protected_users = " ".join(
             [
                 member.mention
-                for member in (guild.get_member(int(member_id)) for member_id in punishment_policies.protected_users)
+                for member in (guild.get_member(int(member_id)) for member_id in punishment_config.protected_users)
                 if member
             ]
         ) or "None"
 
-        logging_channel = guild.get_channel(punishment_policies.logging_channel_id)
+        logging_channel = guild.get_channel(punishment_config.logging_channel_id)
 
-        updated_at = format_time_in_zone(punishment_policies.updated_at,
-                                         format="%d/%m/%y %H:%M %Z") if punishment_policies.updated_at else "None"
+        updated_at = format_time_in_zone(punishment_config.updated_at,
+                                         format="%d/%m/%y %H:%M %Z") if punishment_config.updated_at else "None"
 
-        updated_by = guild.get_member(punishment_policies.updated_by)
+        updated_by = guild.get_member(punishment_config.updated_by)
         updated_by = updated_by.mention if updated_by else "None"
 
         description = (
@@ -136,8 +136,8 @@ class PunishmentAdminCommand(commands.Cog):
         Add a role to punishment config protected roles
         """
         role_id = role.id
-        punishment_policies = create_or_update_punishment_config(ctx.guild.id)
-        protected_roles = punishment_policies.protected_roles
+        punishment_config = create_or_update_punishment_config(ctx.guild.id)
+        protected_roles = punishment_config.protected_roles
 
         if role_id in protected_roles:
             return await ctx.reply(f"Role {role.mention} is **present**!")
@@ -163,8 +163,8 @@ class PunishmentAdminCommand(commands.Cog):
         Remove a role from punishment config protected roles
         """
         role_id = role.id
-        punishment_policies = create_or_update_punishment_config(ctx.guild.id)
-        protected_roles = punishment_policies.protected_roles
+        punishment_config = create_or_update_punishment_config(ctx.guild.id)
+        protected_roles = punishment_config.protected_roles
 
         if role_id not in protected_roles:
             return await ctx.reply(f"Role {role.mention} is **not present**!")
@@ -195,8 +195,8 @@ class PunishmentAdminCommand(commands.Cog):
         Add a member to punishment config protected users
         """
         member_id = member.id
-        punishment_policies = create_or_update_punishment_config(ctx.guild.id)
-        protected_users = punishment_policies.protected_users
+        punishment_config = create_or_update_punishment_config(ctx.guild.id)
+        protected_users = punishment_config.protected_users
 
         if member_id in protected_users:
             return await ctx.reply(f"User {member.mention} is **present**!")
@@ -222,8 +222,8 @@ class PunishmentAdminCommand(commands.Cog):
         Remove a member from punishment config protected users
         """
         member_id = member.id
-        punishment_policies = create_or_update_punishment_config(ctx.guild.id)
-        protected_users = punishment_policies.protected_users
+        punishment_config = create_or_update_punishment_config(ctx.guild.id)
+        protected_users = punishment_config.protected_users
 
         if member_id not in protected_users:
             return await ctx.reply(f"User {member.mention} is **not present**!")

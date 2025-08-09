@@ -220,9 +220,9 @@ async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
     if ctx.author.guild_permissions.administrator:
         return True
 
-    punishment_policies = create_or_update_punishment_config(ctx.guild.id)
-    protected_roles = punishment_policies.protected_roles
-    protected_users = punishment_policies.protected_users
+    punishment_config = create_or_update_punishment_config(ctx.guild.id)
+    protected_roles = punishment_config.protected_roles
+    protected_users = punishment_config.protected_users
 
     protected_roles = set(protected_roles)
     member_role_ids = {role.id for role in member.roles}
