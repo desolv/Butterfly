@@ -229,7 +229,7 @@ class PermissionAdminCommand(commands.Cog):
         )
 
         await ctx.reply(
-            f"Updated permission **required_roles** for **{permission.command_name}** command by adding {role.mention}")
+            f"Updated permission **required roles** for **{permission.command_name}** command by adding {role.mention}")
 
     @has_permission()
     @_required_roles.command(name="remove")
@@ -267,7 +267,7 @@ class PermissionAdminCommand(commands.Cog):
         )
 
         await ctx.reply(
-            f"Updated permission **required_roles** for **{permission.command_name}** command by removing {role.mention}")
+            f"Updated permission **required roles** for **{permission.command_name}** command by removing {role.mention}")
 
 
 async def setup(bot):

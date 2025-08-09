@@ -42,7 +42,7 @@ class PunishmentCommand(commands.Cog):
         punishment = get_punishment_by_id(ctx.guild.id, punishment_id)
 
         if not punishment:
-            await ctx.reply(f"No punishment matching **{punishment_id}** found!")
+            await ctx.reply(f"No punishment matching **#{punishment_id}** found!")
             return
 
         try:
@@ -111,11 +111,11 @@ class PunishmentCommand(commands.Cog):
         punishment = get_punishment_by_id(ctx.guild.id, punishment_id)
 
         if not punishment:
-            await ctx.reply(f"No punishment matching **{punishment_id}** found!")
+            await ctx.reply(f"No punishment matching **#{punishment_id}** found!")
             return
 
         if not punishment.is_active:
-            await ctx.reply(f"Punishment type is **not active**!")
+            await ctx.reply(f"Punishment is currently not active!")
             return
 
         guild = ctx.guild
