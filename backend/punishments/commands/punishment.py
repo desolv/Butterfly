@@ -111,17 +111,14 @@ class PunishmentCommand(commands.Cog):
             await ctx.reply(f"Punishment is currently not active!")
             return
 
-        guild = ctx.guild
-
         await process_punishment_removal(
             self.bot,
-            guild,
             punishment,
             ctx.author,
             reason
         )
 
-        member = guild.get_member(punishment.user_id)
+        member = ctx.guild.get_member(punishment.user_id)
 
         await ctx.reply(
             f"**@{member if member else punishment.user_id}**'s punishment **#{punishment.punishment_id}** has been removed for **{reason}**.")

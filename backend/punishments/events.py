@@ -22,11 +22,8 @@ class PunishmentEvents(commands.Cog):
             if not punishment.has_expired:
                 continue
 
-            guild = self.bot.get_guild(punishment.guild_id)
-
             await process_punishment_removal(
                 self.bot,
-                guild,
                 punishment,
                 self.bot.user,
                 "Automatic"
@@ -60,12 +57,10 @@ class PunishmentEvents(commands.Cog):
                 reason = None
 
             punishment = get_user_active_punishment(after.guild.id, after.id, PunishmentType.MUTE)
-            guild = self.bot.get_guild(punishment.guild_id)
             reason = reason if reason else "No reason"
 
             await process_punishment_removal(
                 self.bot,
-                guild,
                 punishment,
                 actioner,
                 reason

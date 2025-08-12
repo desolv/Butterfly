@@ -238,11 +238,13 @@ async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
     return True
 
 
-async def process_punishment_removal(bot: commands.Bot, guild: discord.Guild, punishment: Punishment,
+async def process_punishment_removal(bot: commands.Bot, punishment: Punishment,
                                      moderator: discord.Member, reason: str):
     """
     Remove roles/unban and mark punishment as revoked
     """
+    guild = bot.get_guild(punishment.guild_id)
+
     match punishment.type:
         case PunishmentType.MUTE:
             try:
