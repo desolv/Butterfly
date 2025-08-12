@@ -121,7 +121,7 @@ class PunishmentCommand(commands.Cog):
         member = ctx.guild.get_member(punishment.user_id)
 
         await ctx.reply(
-            f"**@{member if member else punishment.user_id}**'s punishment **#{punishment.punishment_id}** has been removed for **{reason}**.")
+            f"**@{member if member else punishment.user_id}**'s punishment **#{punishment.punishment_id}** has been removed for **{reason}**")
 
 
 async def setup(bot):

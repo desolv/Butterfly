@@ -232,7 +232,7 @@ async def has_permission_to_punish(ctx, member: discord.Member) -> bool:
         return False
 
     if ctx.author.top_role.position <= member.top_role.position:
-        await ctx.reply(f"{member.mention} has an higher or equal role to yours.")
+        await ctx.reply(f"{member.mention} has an higher or equal role to yours")
         return False
 
     return True
@@ -257,7 +257,7 @@ async def process_punishment_removal(bot: commands.Bot, punishment: Punishment,
                 return
 
             sent_dm = await send_private_dm(member,
-                                            f"Hey! **You're able to chat now at {guild.name}!** Please refrain from breaking rules again.")
+                                            f"Hey! **You're able to chat now at {guild.name}!** Please refrain from breaking rules again")
         case PunishmentType.BAN:
             try:
                 await guild.unban(discord.Object(id=punishment.user_id), reason=reason)

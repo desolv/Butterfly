@@ -19,7 +19,7 @@ class Pagination(View):
             lines_per_page: int,
             author_id: int
     ):
-        super().__init__(timeout=60)
+        super().__init__(timeout=180)
         self.title = title
         self.pages = chunk_lines(lines, lines_per_page)
         self.page = 0
@@ -30,7 +30,7 @@ class Pagination(View):
         return Embed(
             title=self.title,
             description=self.pages[self.page],
-            color=0x2F3136,
+            color=0x393A41,
             timestamp=get_utc_now()
         ).set_footer(text=f"{self.page + 1}/{len(self.pages)}")
 

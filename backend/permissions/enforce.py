@@ -34,16 +34,15 @@ def has_permission():
             raise CheckFailure("I couldn't retrieve the command permissions, contact an administrator!")
 
         if not permission.is_enabled:
-            raise CheckFailure("That command is currently disabled in this guild.")
+            raise CheckFailure("That command is currently disabled in this guild")
 
         if ctx.author.guild_permissions.administrator:
             return True
 
-        required_ids = permission.required_role_ids or []
-
         if permission.is_admin and not ctx.author.guild_permissions.administrator:
             return False
 
+        required_ids = permission.required_role_ids or []
         if not required_ids:
             return False
 
