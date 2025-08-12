@@ -14,18 +14,11 @@ class PunishmentCommand(commands.Cog):
         self.bot = bot
 
     @has_permission()
-    @commands.group(
-        name="punishment",
-        invoke_without_command=True
-    )
+    @commands.group(name="punishment", invoke_without_command=True)
     async def _punishment(self, ctx):
         view = Pagination(
             "ᴘᴜɴɪѕʜᴍᴇɴᴛ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
-            get_commands_help_messages(
-                self.bot,
-                [PunishmentCommand],
-                ctx.author.guild_permissions.administrator
-            ),
+            get_commands_help_messages(self.bot, [PunishmentCommand], ctx.author.guild_permissions.administrator),
             3,
             ctx.author.id
         )

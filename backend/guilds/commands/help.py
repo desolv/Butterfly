@@ -17,18 +17,11 @@ class HelpCommand(commands.Cog):
         self.bot = bot
 
     @has_permission()
-    @commands.group(
-        name="help",
-        invoke_without_command=True
-    )
+    @commands.group(name="help", invoke_without_command=True)
     async def _help(self, ctx):
         view = Pagination(
             "ʜᴇʟᴘ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
-            get_commands_help_messages(
-                self.bot,
-                [HelpCommand],
-                ctx.author.guild_permissions.administrator
-            ),
+            get_commands_help_messages(self.bot, [HelpCommand], ctx.author.guild_permissions.administrator),
             3,
             ctx.author.id
         )

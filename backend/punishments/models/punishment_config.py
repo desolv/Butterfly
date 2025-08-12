@@ -6,7 +6,7 @@ from backend.core.helper import get_utc_now
 
 
 class PunishmentConfig(Base):
-    __tablename__ = "punishment_config"
+    __tablename__ = "punishment_configs"
 
     guild_id = Column(BigInteger, ForeignKey("guilds.guild_id", ondelete="CASCADE"), unique=True, primary_key=True)
     muted_role_id = Column(BigInteger)

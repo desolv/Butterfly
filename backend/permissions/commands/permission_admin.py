@@ -12,18 +12,11 @@ class PermissionAdminCommand(commands.Cog):
         self.bot = bot
 
     @has_permission()
-    @commands.group(
-        name="permission-admin",
-        invoke_without_command=True
-    )
+    @commands.group(name="permission-admin", invoke_without_command=True)
     async def _permission_admin(self, ctx):
         view = Pagination(
             "ᴘᴇʀᴍɪѕѕɪᴏɴ ᴀᴅᴍɪɴ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
-            get_commands_help_messages(
-                self.bot,
-                [PermissionAdminCommand],
-                ctx.author.guild_permissions.administrator
-            ),
+            get_commands_help_messages(self.bot, [PermissionAdminCommand], ctx.author.guild_permissions.administrator),
             3,
             ctx.author.id
         )
