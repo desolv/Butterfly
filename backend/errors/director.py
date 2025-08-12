@@ -14,7 +14,7 @@ class ErrorDirector(commands.Cog):
 
         if isinstance(error, commands.MissingPermissions):
             await ctx.reply(
-                "❌ You don’t have permission to do that.",
+                "❌ You don’t have permission to do that",
                 delete_after=10,
                 mention_author=False
             )
@@ -22,7 +22,7 @@ class ErrorDirector(commands.Cog):
 
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.reply(
-                "❌ I’m missing permissions for that action.",
+                "❌ I’m missing permissions for that action",
                 delete_after=10,
                 mention_author=False
             )
@@ -38,7 +38,7 @@ class ErrorDirector(commands.Cog):
 
         if isinstance(error, commands.BadArgument):
             await ctx.reply(
-                "⚠️ Invalid argument. Check your input and try again.",
+                "⚠️ Invalid argument. Check your input and try again",
                 delete_after=10,
                 mention_author=False
             )
@@ -54,7 +54,7 @@ class ErrorDirector(commands.Cog):
 
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.reply(
-                f"⌛ This command is on cooldown. Try again in {error.retry_after:.1f}s.",
+                f"⌛ This command is on cooldown. Try again in {error.retry_after:.1f}s",
                 delete_after=10,
                 mention_author=False
             )
@@ -75,9 +75,10 @@ class ErrorDirector(commands.Cog):
                 mention_author=False
             )
             return
+
         print(f"Unhandled exception while '{ctx.command}' -> {error}")
         await ctx.reply(
-            "❌ Something went wrong. Contact an administrator if error persists.",
+            f"❌ Something went wrong. Contact an administrator if error persists! -> {error}",
             mention_author=False
         )
 
