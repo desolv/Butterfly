@@ -10,11 +10,23 @@ class TicketPanel(Base):
 
     panel_id = Column(String(64), primary_key=True)
     guild_id = Column(BigInteger, ForeignKey("guilds.guild_id", ondelete="CASCADE"), index=True, nullable=False)
-    panel_name = Column(String(64), nullable=True)
+    panel_embed = Column(JSONB,
+                         default=lambda: {
+                             "name": None,
+                             "description": "No description",
+                             "emoji": "💬",
+                             "author_url": False
+                         },
+                         nullable=True)
     category_channel_id = Column(BigInteger, nullable=True)
     staff_role_ids = Column(ARRAY(BigInteger), default=list)
     mention_role_ids = Column(ARRAY(BigInteger), default=list)
-    panel_embed = Column(JSONB, default=lambda: {"title": None, "description": None}, nullable=True)
+    ticket_embed = Column(JSONB,
+                          default=lambda: {
+                              "title": "Ticket support",
+                              "description": "Support will be with you shortly"
+                          },
+                          nullable=True)
     logging_channel_id = Column(BigInteger, nullable=True)
     created_at = Column(DateTime, default=get_utc_now())
     updated_at = Column(DateTime, default=get_utc_now(), onupdate=get_utc_now())

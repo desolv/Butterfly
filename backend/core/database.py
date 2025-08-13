@@ -37,4 +37,7 @@ def init_tables():
     # noinspection PyUnresolvedReferences
     from backend.tickets.models.ticket_panel import TicketPanel
 
+    # noinspection PyUnresolvedReferences
+    from backend.tickets.models.ticket_config import TicketConfig
+
     Base.metadata.create_all(Engine)

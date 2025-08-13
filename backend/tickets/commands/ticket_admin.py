@@ -1,4 +1,3 @@
-# ticket_admin.py
 import discord
 from discord.ext import commands
 
@@ -37,6 +36,9 @@ class TicketAdminCommand(commands.Cog):
         """
         Create a new ticket category
         """
+        if len(panel_id) > 15:
+            return await ctx.reply("Name id is characters is too long!")
+
         panel = create_ticket_panel(ctx.guild.id, panel_id)
 
         if not panel:
@@ -62,7 +64,7 @@ class TicketAdminCommand(commands.Cog):
 
         deleted = delete_ticket_panel(ctx.guild.id, panel_id)
         if not deleted:
-            return await ctx.reply("Panel not found, or not owned by this guild.")
+            return await ctx.reply("Panel not found, or not owned by this guild!")
 
         await ctx.reply(f"Panel **{panel_id}** has been deleted!")
 
@@ -110,15 +112,20 @@ class TicketAdminCommand(commands.Cog):
         updated_by = guild.get_member(panel.updated_by)
         updated_by = updated_by.mention if updated_by else "None"
 
-        description = (
-            f"**ᴘᴀɴᴇʟ ɴᴀᴍᴇ**: {panel.panel_name if panel.panel_name else "None"}\n"
-            f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {category_channel.name if category_channel else panel.category_channel_id}\n\n"
+        panel_embed = panel.panel_embed
 
+        description = (
+            f"**ᴘᴀɴᴇʟ ɴᴀᴍᴇ**: {panel_embed.get("name") or panel_id}\n"
+            f"**ᴘᴀɴᴇʟ ᴅᴇѕᴄʀɪᴘᴛɪᴏɴ**: {panel_embed.get("description")}\n"
+            f"**ᴘᴀɴᴇʟ ᴇᴍᴏᴊɪ**: {panel_embed.get("emoji")}\n"
+            f"**ᴀᴜᴛʜᴏʀ ᴜʀʟ**: {'✅' if panel_embed.get("author_url") else '❎'}\n\n"
+
+            f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {category_channel.name if category_channel else panel.category_channel_id}\n"
             f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {staff_roles}\n"
             f"**ᴍᴇɴᴛɪᴏɴ ʀᴏʟᴇѕ**: {mention_roles}\n\n"
 
-            f"**ᴇᴍʙᴇᴅ ᴛɪᴛʟᴇ**: {panel.panel_embed.get("title", "None")}\n"
-            f"**ᴇᴍʙᴇᴅ ᴅᴇѕᴄʀɪᴘᴛɪᴏɴ**: {panel.panel_embed.get("description", "None")}\n\n"
+            f"**ᴇᴍʙᴇᴅ ᴛɪᴛʟᴇ**: {panel.ticket_embed.get("title")}\n"
+            f"**ᴇᴍʙᴇᴅ ᴅᴇѕᴄʀɪᴘᴛɪᴏɴ**: {panel.ticket_embed.get("description")}\n\n"
 
             f"**ʟᴏɢɢɪɴɢ ᴄʜᴀɴɴᴇʟ**: {logging_channel.mention if logging_channel else panel.logging_channel_id}\n"
             f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {created_at}\n"
@@ -154,7 +161,7 @@ class TicketAdminCommand(commands.Cog):
 
             lines.append(
                 f"**{panel.panel_id}**\n"
-                f"**ᴘᴀɴᴇʟ ɴᴀᴍᴇ**: {panel.panel_name if panel.panel_name else "None"}\n"
+                f"**ᴘᴀɴᴇʟ ɴᴀᴍᴇ**: {panel.panel_embed.get("name") or panel.panel_id}\n"
                 f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: **{created_at}**\n"
                 f"**ᴇɴᴀʙʟᴇᴅ**: {'✅' if panel.is_enabled else '❎'}\n"
             )
@@ -169,31 +176,103 @@ class TicketAdminCommand(commands.Cog):
         await ctx.reply(embed=view.create_embed(), view=view)
 
     @has_permission()
-    @_ticket_admin.command(name="panel_name")
+    @_ticket_admin.group(name="panel")
+    async def _panel(self, ctx):
+        pass
+
+    @has_permission()
+    @_panel.command(name="name")
     async def _panel_name(
             self,
             ctx,
             panel_id: str,
             *,
-            panel_name: str
+            name: str
     ):
         """
         Set the panel name for ticket panel
         """
-        if panel_name is None or panel_name.strip() == "":
-            return await ctx.reply("Please provide a non-empty name")
-
         panel = update_or_retrieve_ticket_panel(
             ctx.guild.id,
             panel_id,
-            panel_name=panel_name,
+            panel_name=name,
             updated_by=ctx.author.id
         )
 
         if not panel:
             return await ctx.reply(f"No panel **{panel_id}** has been found!")
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'panel name' to **{panel_name}**!")
+        await ctx.reply(f"Updated panel **{panel_id}** 'panel name' to **{name}**!")
+
+    @has_permission()
+    @_panel.command(name="description")
+    async def _panel_description(
+            self,
+            ctx,
+            panel_id: str,
+            *,
+            description: str
+    ):
+        """
+        Set the panel description for ticket panel
+        """
+        panel = update_or_retrieve_ticket_panel(
+            ctx.guild.id,
+            panel_id,
+            panel_description=description,
+            updated_by=ctx.author.id
+        )
+
+        if not panel:
+            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+
+        await ctx.reply(f"Updated panel **{panel_id}** 'pane description' to **{description}**!")
+
+    @has_permission()
+    @_panel.command(name="emoji")
+    async def _panel_emoji(
+            self,
+            ctx,
+            panel_id: str,
+            emoji: str
+    ):
+        """
+        Set the panel emoji for ticket panel
+        """
+        panel = update_or_retrieve_ticket_panel(
+            ctx.guild.id,
+            panel_id,
+            panel_emoji=emoji,
+            updated_by=ctx.author.id
+        )
+
+        if not panel:
+            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+
+        await ctx.reply(f"Updated panel **{panel_id}** 'panel emoji' to **{emoji}**!")
+
+    @has_permission()
+    @_panel.command(name="author_url")
+    async def _panel_author_url(
+            self,
+            ctx,
+            panel_id: str,
+            enabled: bool
+    ):
+        """
+        Set the enabled for ticket panel
+        """
+        panel = update_or_retrieve_ticket_panel(
+            ctx.guild.id,
+            panel_id,
+            panel_author_url=enabled,
+            updated_by=ctx.author.id
+        )
+
+        if not panel:
+            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+
+        await ctx.reply(f"Updated panel **{panel_id}** 'author url' to **{enabled}**!")
 
     @has_permission()
     @_ticket_admin.command(name="category_channel")
@@ -235,13 +314,10 @@ class TicketAdminCommand(commands.Cog):
         """
         Set the embed title for ticket panel
         """
-        if title is None or title.strip() == "":
-            return await ctx.reply("Please provide a non-empty title")
-
         panel = update_or_retrieve_ticket_panel(
             ctx.guild.id,
             panel_id,
-            embed_title=title,
+            ticket_title=title,
             updated_by=ctx.author.id
         )
 
@@ -262,13 +338,10 @@ class TicketAdminCommand(commands.Cog):
         """
         Set the embed description for ticket panel
         """
-        if description is None or description.strip() == "":
-            return await ctx.reply("Please provide a non-empty description")
-
         panel = update_or_retrieve_ticket_panel(
             ctx.guild.id,
             panel_id,
-            embed_description=description,
+            ticket_description=description,
             updated_by=ctx.author.id
         )
 
