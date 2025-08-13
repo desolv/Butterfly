@@ -43,6 +43,7 @@ def has_permission():
             return False
 
         required_ids = permission.required_role_ids or []
+
         if not required_ids:
             return False
 

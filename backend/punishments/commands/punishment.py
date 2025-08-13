@@ -77,7 +77,7 @@ class PunishmentCommand(commands.Cog):
                 )
 
         embed = discord.Embed(
-            title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ ꜰᴏʀ @{punishment.user_id if not member else member}",
+            title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ ꜰᴏʀ @{member if member else punishment.user_id}",
             description=description,
             color=punishment_color,
             timestamp=get_utc_now()

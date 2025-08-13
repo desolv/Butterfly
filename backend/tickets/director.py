@@ -152,13 +152,13 @@ def delete_ticket_panel(guild_id: int, panel_id: str) -> bool:
         return True
 
 
-def get_user_open_ticket(guild_id: int, user_id: int, *, guild: Optional[discord.Guild] = None) -> type[Ticket] | None:
+def get_user_open_ticket(guild: discord.Guild, user_id: int):
     """
     Check if the user has an open ticket. If a channel is missing, auto-close the ticket and return None.
     """
     with Session(Engine) as session:
         ticket = session.query(Ticket).filter_by(
-            guild_id=guild_id,
+            guild_id=guild.id,
             user_id=user_id,
             is_closed=False
         ).first()
@@ -184,6 +184,17 @@ def get_ticket_by_channel(guild_id: int, channel_id: int) -> Ticket | None:
         return session.query(Ticket).filter_by(
             guild_id=guild_id,
             channel_id=channel_id
+        ).first()
+
+
+def get_ticket_by_id(guild_id: int, ticket_id: int) -> Ticket | None:
+    """
+    Retrieve a ticket for a given ID.
+    """
+    with Session(Engine) as session:
+        return session.query(Ticket).filter_by(
+            guild_id=guild_id,
+            ticket_id=ticket_id
         ).first()
 
 
@@ -298,7 +309,7 @@ async def handle_ticket_panel_selection(interaction: Interaction, values: Sequen
     if not panel or not panel.is_enabled:
         return await interaction.followup.send("That panel is not available!", ephemeral=True)
 
-    has_ticket = get_user_open_ticket(interaction.guild.id, interaction.user.id)
+    has_ticket = get_user_open_ticket(interaction.guild, interaction.user.id)
 
     if has_ticket:
         has_channel = interaction.guild.get_channel(has_ticket.channel_id)
@@ -422,7 +433,7 @@ async def send_ticket_close_logging(guild: discord.Guild, ticket: Ticket):
     closed_by = guild.get_member(ticket.closed_by)
 
     description = (
-        f"**ᴛɪᴄᴋᴇᴛ ɪᴅ**: **#{ticket.ticket_id}**\n"
+        f"**ᴛɪᴄᴋᴇᴛ ɪᴅ**: **{ticket.ticket_id}**\n"
         f"**ᴘᴀɴᴇʟ ɪᴅ**: **{panel.panel_id}**\n"
         f"**ᴄʜᴀɴɴᴇʟ ɪᴅ**: {ticket.channel_id}\n"
         f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.created_at, "%d/%m/%y %H:%M %Z")}\n\n"
@@ -432,15 +443,11 @@ async def send_ticket_close_logging(guild: discord.Guild, ticket: Ticket):
     )
 
     embed = discord.Embed(
-        title=f"ᴛɪᴄᴋᴇᴛ ᴄʟᴏѕᴇᴅ ꜰᴏʀ @{member}",
+        title=f"ᴛɪᴄᴋᴇᴛ ᴄʟᴏѕᴇᴅ ꜰᴏʀ @{member if member else ticket.user_id}",
         description=description,
         color=0x393A41,
         timestamp=get_utc_now(),
     )
-
-    embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**",
-                    value=f"{format_time_in_zone(ticket.updated_at, "%d/%m/%y %H:%M %Z")}", inline=True)
-    embed.add_field(name="**ɢᴜɪʟᴅ ɪᴅ**", value=f"{guild.id}", inline=True)
 
     avatar_url = member.avatar.url if member.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"
     embed.set_thumbnail(url=avatar_url)
