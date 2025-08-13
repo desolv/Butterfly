@@ -1,11 +1,11 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import get_commands_help_messages
+from backend.core.helper import get_commands_help_messages, get_utc_now, format_time_in_zone
 from backend.core.pagination import Pagination
-from backend.permissions.enforce import has_permission
+from backend.permissions.enforce import has_permission, has_cooldown
 from backend.tickets.director import get_panels_for_guild, build_panel_list_view, \
-    mark_ticket_closed, get_ticket_by_channel, send_ticket_close_logging
+    mark_ticket_closed, get_ticket_by_channel, send_ticket_close_logging, get_ticket_by_id
 
 
 class TicketCommand(commands.Cog):
@@ -35,6 +35,7 @@ class TicketCommand(commands.Cog):
         await ctx.send(embed=view.create_embed(), view=view)
 
     @has_permission()
+    @has_cooldown()
     @commands.command(name="close")
     async def _close(self, ctx):
         """
@@ -61,6 +62,53 @@ class TicketCommand(commands.Cog):
             await ctx.channel.delete(reason="Ticket closed")
         except Exception as e:
             await ctx.reply(f"Ticket closed in database. I couldn't perform last closing checks.. -> {e}")
+
+    @has_permission()
+    @has_cooldown()
+    @_ticket.command(name="view")
+    async def _ticket_view(self, ctx, ticket_id: int):
+        """
+        Display detailed information about a specific ticket by ID
+        """
+        ticket = get_ticket_by_id(ctx.guild.id, ticket_id)
+
+        if not ticket:
+            await ctx.reply(f"No ticket matching **#{ticket_id}** found!")
+            return
+
+        guild = ctx.guild
+
+        member = guild.get_member(ticket.user_id)
+        closed_by = guild.get_member(ticket.closed_by)
+
+        description = (
+            f"**ᴛɪᴄᴋᴇᴛ ɪᴅ**: **{ticket.ticket_id}**\n"
+            f"**ᴘᴀɴᴇʟ ɪᴅ**: **{ticket.panel_id}**\n"
+            f"**ᴄʜᴀɴɴᴇʟ ɴᴀᴍᴇ {ticket.channel_id}\n"
+            f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.created_at, "%d/%m/%y %H:%M %Z")}\n"
+        )
+
+        if ticket.is_closed:
+            description += (
+                f"\n**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at, "%d/%m/%y %H:%M %Z")}\n"
+                f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by.mention if closed_by else ticket.closed_by}\n"
+            )
+
+        embed = discord.Embed(
+            title=f"ᴛɪᴄᴋᴇᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ ꜰᴏʀ @{member if member else ticket.user_id}",
+            description=description,
+            color=0x393A41,
+            timestamp=get_utc_now(),
+        )
+
+        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**",
+                        value=f"{format_time_in_zone(ticket.updated_at, "%d/%m/%y %H:%M %Z")}", inline=True)
+        embed.add_field(name="**ɢᴜɪʟᴅ ɪᴅ**", value=f"{guild.id}", inline=True)
+
+        avatar_url = member.avatar.url if member.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"
+        embed.set_thumbnail(url=avatar_url)
+
+        await ctx.reply(embed=embed)
 
 
 async def setup(bot):
