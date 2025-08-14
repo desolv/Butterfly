@@ -109,7 +109,11 @@ class TicketAdminCommand(commands.Cog):
         updated_at = format_time_in_zone(panel.updated_at,
                                          format="%d/%m/%y %H:%M %Z") if panel.updated_at else "None"
 
-        updated_by = guild.get_member(panel.updated_by)
+        try:
+            updated_by = await self.bot.fetch_user(panel.updated_by)
+        except Exception:
+            updated_by = None
+
         updated_by = updated_by.mention if updated_by else "None"
 
         panel_embed = panel.panel_embed

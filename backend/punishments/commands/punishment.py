@@ -50,7 +50,7 @@ class PunishmentCommand(commands.Cog):
         added_by = added_by.mention if added_by else "None"
 
         punishment_name, punishment_fancy, punishment_color = get_punishment_metadata(punishment.type)
-        added_at_time = format_time_in_zone(punishment.added_at, format="%d/%m/%y %H:%M %Z")
+        added_at_time = format_time_in_zone(punishment.added_at)
 
         description = (
             f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ɪᴅ**: **{punishment_id}**\n"
@@ -74,7 +74,7 @@ class PunishmentCommand(commands.Cog):
 
                 description += (
                     f"\n**ʀᴇᴍᴏᴠᴇᴅ ʙʏ**: {self.bot.user.mention if removed_by is None else removed_by.mention}\n"
-                    f"**ʀᴇᴍᴏᴠᴇᴅ ᴀᴛ**: **{format_time_in_zone(punishment.removed_at, format="%d/%m/%y %H:%M %Z")}**\n"
+                    f"**ʀᴇᴍᴏᴠᴇᴅ ᴀᴛ**: **{format_time_in_zone(punishment.removed_at)}**\n"
                     f"**ʀᴇᴍᴏᴠᴇᴅ ʀᴇᴀѕᴏɴ**: {punishment.removed_reason}"
                 )
 
@@ -157,7 +157,7 @@ class PunishmentCommand(commands.Cog):
             member = member if member else "None"
             added_by = added_by.mention if added_by else "None"
 
-            added_at_time = format_time_in_zone(punishment.added_at, format="%d/%m/%y %H:%M %Z")
+            added_at_time = format_time_in_zone(punishment.added_at)
 
             punishment_name, _, _ = get_punishment_metadata(punishment.type)
 
@@ -184,7 +184,7 @@ class PunishmentCommand(commands.Cog):
 
                     description += (
                         f"**ʀᴇᴍᴏᴠᴇᴅ ʙʏ**: {self.bot.user.mention if removed_by is None else removed_by.mention}\n"
-                        f"**ʀᴇᴍᴏᴠᴇᴅ ᴀᴛ**: **{format_time_in_zone(punishment.removed_at, format="%d/%m/%y %H:%M %Z")}**\n"
+                        f"**ʀᴇᴍᴏᴠᴇᴅ ᴀᴛ**: **{format_time_in_zone(punishment.removed_at)}**\n"
                         f"**ʀᴇᴍᴏᴠᴇᴅ ʀᴇᴀѕᴏɴ**: {punishment.removed_reason}"
                     )
 

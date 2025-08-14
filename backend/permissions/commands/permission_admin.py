@@ -63,7 +63,7 @@ class PermissionAdminCommand(commands.Cog):
         )
 
         embed.add_field(name="**ᴀᴅᴅᴇᴅ ᴀᴛ**",
-                        value=f"{format_time_in_zone(permission.added_at, format="%d/%m/%y %H:%M %Z")}", inline=True)
+                        value=f"{format_time_in_zone(permission.added_at)}", inline=True)
         embed.add_field(name="**ɢᴜɪʟᴅ ɪᴅ**", value=f"{guild.id}", inline=True)
 
         await ctx.reply(embed=embed)

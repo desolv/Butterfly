@@ -78,8 +78,15 @@ class TicketCommand(commands.Cog):
 
         guild = ctx.guild
 
-        member = guild.get_member(ticket.user_id)
-        closed_by = guild.get_member(ticket.closed_by)
+        try:
+            member = await self.bot.fetch_user(ticket.user_id)
+            closed_by = await self.bot.fetch_user(ticket.closed_by)
+        except Exception:
+            closed_by = None
+            member = None
+
+        member = member if member else "None"
+        closed_by = closed_by.mention if closed_by else "None"
 
         description = (
             f"**ᴛɪᴄᴋᴇᴛ ɪᴅ**: **{ticket.ticket_id}**\n"
@@ -91,11 +98,11 @@ class TicketCommand(commands.Cog):
         if ticket.is_closed:
             description += (
                 f"\n**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at)}\n"
-                f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by.mention if closed_by else "None"}\n"
+                f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by}\n"
             )
 
         embed = discord.Embed(
-            title=f"ᴛɪᴄᴋᴇᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ ꜰᴏʀ @{member if member else ticket.user_id}",
+            title=f"ᴛɪᴄᴋᴇᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ ꜰᴏʀ @{member}",
             description=description,
             color=0x393A41,
             timestamp=get_time_now(),
@@ -125,7 +132,12 @@ class TicketCommand(commands.Cog):
 
         lines: list[str] = []
         for ticket in tickets:
-            closed_by = guild.get_member(ticket.closed_by)
+            try:
+                closed_by = await self.bot.fetch_user(ticket.closed_by)
+            except Exception:
+                closed_by = None
+
+            closed_by = closed_by.mention if closed_by else "None"
 
             description = (
                 f"**#{ticket.ticket_id}**\n"
@@ -136,7 +148,7 @@ class TicketCommand(commands.Cog):
             if ticket.is_closed:
                 description += (
                     f"**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at)}\n"
-                    f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by.mention if closed_by else "None"}\n"
+                    f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by}\n"
                 )
 
             lines.append(description)
