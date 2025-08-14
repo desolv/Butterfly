@@ -42,8 +42,8 @@ class MuteCommand(commands.Cog):
             muted_role_id = create_or_update_punishment_config(ctx.guild.id).muted_role_id
             muted_role = ctx.guild.get_role(muted_role_id)
             await member.add_roles(muted_role, reason=reason)
-        except discord.Forbidden:
-            await ctx.reply(f"Wasn't able to add mute to **{member}**. Aborting!")
+        except Exception as e:
+            await ctx.reply(f"Wasn't able to add mute to **{member}**. -> {e}")
             return
 
         punishment = create_punishment(
