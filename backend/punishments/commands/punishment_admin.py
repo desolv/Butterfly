@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import get_utc_now, format_time_in_zone, get_commands_help_messages
+from backend.core.helper import get_time_now, format_time_in_zone, get_commands_help_messages
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission
 from backend.punishments.director import create_or_update_punishment_config
@@ -69,7 +69,7 @@ class PunishmentAdminCommand(commands.Cog):
             title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴍᴀɴɪꜰᴇѕᴛ ꜰᴏʀ {guild.name}",
             description=description,
             color=0x393A41,
-            timestamp=get_utc_now()
+            timestamp=get_time_now()
         )
 
         embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**", value=f"{updated_at}", inline=True)

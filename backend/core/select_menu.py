@@ -5,7 +5,7 @@ from typing import Iterable, Callable, Awaitable, Sequence
 from discord import Embed, Interaction, SelectOption
 from discord.ui import View, Select
 
-from backend.core.helper import get_utc_now
+from backend.core.helper import get_time_now
 
 
 class SelectActionList(View):
@@ -52,7 +52,7 @@ class SelectActionList(View):
             title=self.embed_title,
             description=self.embed_description,
             color=0x393A41,
-            timestamp=get_utc_now(),
+            timestamp=get_time_now(),
         )
 
     async def interaction_check(self, interaction: Interaction) -> bool:

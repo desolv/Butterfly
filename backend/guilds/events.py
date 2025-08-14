@@ -1,6 +1,6 @@
 from discord.ext import commands
 
-from backend.core.helper import get_utc_now, get_current_time
+from backend.core.helper import get_time_now, get_current_time
 from backend.guilds.director import create_or_update_guild
 
 
@@ -19,7 +19,7 @@ class GuildEvents(commands.Cog):
         create_or_update_guild(
             self.bot,
             guild.id,
-            added_at=get_utc_now(),
+            added_at=get_time_now(),
             is_active=True
         )
 
@@ -30,7 +30,7 @@ class GuildEvents(commands.Cog):
         create_or_update_guild(
             self.bot,
             guild.id,
-            removed_at=get_utc_now(),
+            removed_at=get_time_now(),
             is_active=False
         )
 

@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import get_commands_help_messages, get_utc_now, format_time_in_zone
+from backend.core.helper import get_commands_help_messages, get_time_now, format_time_in_zone
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission, has_cooldown
 from backend.tickets.director import get_panels_for_guild, build_panel_list_view, \
@@ -98,7 +98,7 @@ class TicketCommand(commands.Cog):
             title=f"ᴛɪᴄᴋᴇᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ ꜰᴏʀ @{member if member else ticket.user_id}",
             description=description,
             color=0x393A41,
-            timestamp=get_utc_now(),
+            timestamp=get_time_now(),
         )
 
         embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**",

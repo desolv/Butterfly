@@ -2,7 +2,7 @@ from sqlalchemy import Column, BigInteger, ForeignKey, ARRAY, DateTime
 from sqlalchemy.orm import relationship
 
 from backend.core.database import Base
-from backend.core.helper import get_utc_now
+from backend.core.helper import get_time_now
 
 
 class PunishmentConfig(Base):
@@ -13,7 +13,7 @@ class PunishmentConfig(Base):
     logging_channel_id = Column(BigInteger)
     protected_roles = Column(ARRAY(BigInteger), default=list)
     protected_users = Column(ARRAY(BigInteger), default=list)
-    updated_at = Column(DateTime, default=get_utc_now(), onupdate=get_utc_now())
+    updated_at = Column(DateTime, default=get_time_now(), onupdate=get_time_now())
     updated_by = Column(BigInteger, nullable=True)
 
     guild = relationship("Guild", back_populates="punishment_configs")

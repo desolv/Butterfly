@@ -1,7 +1,7 @@
 from discord import Embed, Interaction, ButtonStyle
 from discord.ui import View, Button
 
-from backend.core.helper import get_utc_now
+from backend.core.helper import get_time_now
 
 
 def chunk_lines(lines: list[str], size: int) -> list[str]:
@@ -50,7 +50,7 @@ class Pagination(View):
         embed = Embed(
             title=self.title,
             color=0x393A41,
-            timestamp=get_utc_now()
+            timestamp=get_time_now()
         ).set_footer(text=f"{self.page + 1}/{len(self.pages)}")
 
         if not self.is_field:

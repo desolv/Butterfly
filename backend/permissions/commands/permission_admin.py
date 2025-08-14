@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import get_utc_now, format_time_in_zone, get_commands_help_messages
+from backend.core.helper import get_time_now, format_time_in_zone, get_commands_help_messages
 from backend.core.pagination import Pagination
 from backend.permissions.director import create_or_retrieve_command, get_permissions_for_guild
 from backend.permissions.enforce import has_permission
@@ -59,7 +59,7 @@ class PermissionAdminCommand(commands.Cog):
             title=f"**{permission.command_name}** ᴄᴏᴍᴍᴀɴᴅ",
             description=description,
             color=0x393A41,
-            timestamp=get_utc_now()
+            timestamp=get_time_now()
         )
 
         embed.add_field(name="**ᴀᴅᴅᴇᴅ ᴀᴛ**",

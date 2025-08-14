@@ -7,7 +7,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from backend.core.database import Engine
-from backend.core.helper import get_utc_now, send_private_dm
+from backend.core.helper import get_time_now, send_private_dm
 from backend.punishments.models.punishment import Punishment, PunishmentType
 from backend.punishments.models.punishment_config import PunishmentConfig
 
@@ -30,7 +30,7 @@ def create_punishment(
             added_by=added_by,
             type=punishment_type,
             reason=reason,
-            added_at=get_utc_now(),
+            added_at=get_time_now(),
             expires_at=duration,
             is_active=True if punishment_type in (PunishmentType.MUTE, PunishmentType.BAN) else False
         )
@@ -46,7 +46,7 @@ def get_global_active_expiring_punishments_within(within_seconds: int = 120):
     """
     Fetch active mutes/bans expiring within a given timespan
     """
-    threshold = get_utc_now() + timedelta(seconds=within_seconds)
+    threshold = get_time_now() + timedelta(seconds=within_seconds)
     with Session(Engine) as session:
         return session.query(Punishment).filter(
             and_(
@@ -125,7 +125,7 @@ def remove_user_active_punishment(
         if not punishment:
             return False
 
-        punishment.removed_at = get_utc_now()
+        punishment.removed_at = get_time_now()
         punishment.removed_by = removed_by  # can be None
         punishment.removed_reason = reason
         punishment.is_active = False

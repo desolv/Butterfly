@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import format_time_in_zone, get_utc_now, format_duration, \
+from backend.core.helper import format_time_in_zone, get_time_now, format_duration, \
     get_commands_help_messages
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission, has_cooldown
@@ -80,7 +80,7 @@ class PunishmentCommand(commands.Cog):
             title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ ꜰᴏʀ @{member if member else punishment.user_id}",
             description=description,
             color=punishment_color,
-            timestamp=get_utc_now()
+            timestamp=get_time_now()
         )
 
         avatar_url = member.avatar.url if member.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"

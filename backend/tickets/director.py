@@ -5,7 +5,7 @@ from discord import Interaction, PermissionOverwrite, SelectOption, TextChannel
 from sqlalchemy.orm import Session
 
 from backend.core.database import Engine
-from backend.core.helper import get_utc_now, format_time_in_zone
+from backend.core.helper import get_time_now, format_time_in_zone
 from backend.core.select_menu import SelectActionList
 from backend.tickets.models.ticket import Ticket
 from backend.tickets.models.ticket_config import TicketConfig
@@ -168,7 +168,7 @@ def get_user_open_ticket(guild: discord.Guild, user_id: int):
 
         if guild is not None and guild.get_channel(ticket.channel_id) is None:
             ticket.is_closed = True
-            ticket.closed_at = get_utc_now()
+            ticket.closed_at = get_time_now()
             session.add(ticket)
             session.commit()
             return None
@@ -224,7 +224,7 @@ def mark_ticket_closed(guild_id: int, channel_id: int, closed_by: int):
 
         if not ticket.is_closed:
             ticket.is_closed = True
-            ticket.closed_at = get_utc_now()
+            ticket.closed_at = get_time_now()
             ticket.closed_by = closed_by
             session.add(ticket)
             session.commit()
@@ -402,7 +402,7 @@ async def send_ticket_embed(interaction: Interaction, channel: discord.TextChann
         title=embed_title if not author_url else "",
         description=panel.ticket_embed.get("description"),
         color=0x393A41,
-        timestamp=get_utc_now(),
+        timestamp=get_time_now(),
     )
 
     if author_url:
@@ -457,7 +457,7 @@ async def send_ticket_close_logging(guild: discord.Guild, ticket: Ticket):
         title=f"ᴛɪᴄᴋᴇᴛ ᴄʟᴏѕᴇᴅ ꜰᴏʀ @{member if member else ticket.user_id}",
         description=description,
         color=0x393A41,
-        timestamp=get_utc_now(),
+        timestamp=get_time_now(),
     )
 
     avatar_url = member.avatar.url if member.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"

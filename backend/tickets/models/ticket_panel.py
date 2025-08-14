@@ -2,7 +2,7 @@ from sqlalchemy import Column, BigInteger, ForeignKey, DateTime, String, ARRAY, 
 from sqlalchemy.dialects.postgresql import JSONB
 
 from backend.core.database import Base
-from backend.core.helper import get_utc_now
+from backend.core.helper import get_time_now
 
 
 class TicketPanel(Base):
@@ -28,7 +28,7 @@ class TicketPanel(Base):
                           },
                           nullable=True)
     logging_channel_id = Column(BigInteger, nullable=True)
-    created_at = Column(DateTime, default=get_utc_now())
-    updated_at = Column(DateTime, default=get_utc_now(), onupdate=get_utc_now())
+    created_at = Column(DateTime, default=get_time_now())
+    updated_at = Column(DateTime, default=get_time_now(), onupdate=get_time_now())
     updated_by = Column(BigInteger, nullable=True)
     is_enabled = Column(Boolean, default=True)
