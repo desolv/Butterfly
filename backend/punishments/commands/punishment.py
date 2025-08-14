@@ -5,7 +5,8 @@ from backend.core.helper import format_time_in_zone, get_time_now, format_durati
     get_commands_help_messages
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission, has_cooldown
-from backend.punishments.director import get_punishment_by_id, get_punishment_metadata, process_punishment_removal
+from backend.punishments.director import get_punishment_by_id, get_punishment_metadata, process_punishment_removal, \
+    get_user_punishments
 from backend.punishments.models.punishment import PunishmentType
 
 
@@ -45,25 +46,26 @@ class PunishmentCommand(commands.Cog):
             member = None
             added_by = None
 
+        member = member.mention if member else "None"
+        added_by = added_by.mention if added_by else "None"
+
         punishment_name, punishment_fancy, punishment_color = get_punishment_metadata(punishment.type)
         added_at_time = format_time_in_zone(punishment.added_at, format="%d/%m/%y %H:%M %Z")
 
         description = (
             f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ɪᴅ**: **{punishment_id}**\n"
             f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴛʏᴘᴇ**: **{punishment_name}**\n\n"
-            f"**ᴀᴅᴅᴇᴅ ʙʏ**: {punishment.added_by if not added_by else added_by.mention}\n"
+            f"**ᴀᴅᴅᴇᴅ ʙʏ**: {added_by}\n"
             f"**ᴀᴅᴅᴇᴅ ᴀᴛ**: **{added_at_time}**\n"
             f"**ᴀᴅᴅᴇᴅ ʀᴇᴀѕᴏɴ**: {punishment.reason}\n"
         )
 
         if punishment.type is PunishmentType.MUTE or punishment.type is PunishmentType.BAN:
-            try:
-                expires_at_time = format_duration(punishment.added_at, punishment.expires_at)
-                description += (
-                    f"**ᴅᴜʀᴀᴛɪᴏɴ**: **{expires_at_time}**\n"
-                )
-            except Exception as e:
-                print(e)
+            expires_at_time = format_duration(punishment.added_at, punishment.expires_at)
+            description += (
+                f"**ᴅᴜʀᴀᴛɪᴏɴ**: **{expires_at_time}**\n"
+            )
+
             if not punishment.is_active:
                 try:
                     removed_by = await self.bot.fetch_user(punishment.removed_by)
@@ -77,7 +79,7 @@ class PunishmentCommand(commands.Cog):
                 )
 
         embed = discord.Embed(
-            title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ ꜰᴏʀ @{member if member else punishment.user_id}",
+            title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ ꜰᴏʀ @{member}",
             description=description,
             color=punishment_color,
             timestamp=get_time_now()
@@ -122,6 +124,81 @@ class PunishmentCommand(commands.Cog):
 
         await ctx.reply(
             f"**@{member if member else punishment.user_id}**'s punishment **#{punishment.punishment_id}** has been removed for **{reason}**")
+
+    @has_permission()
+    @has_cooldown()
+    @_punishment.command(name="modlog")
+    async def _modlog(
+            self,
+            ctx,
+            member: discord.Member,
+            punishment_type: PunishmentType = None
+    ):
+        """
+        Display all punishments of member
+        """
+        guild = ctx.guild
+        punishments = get_user_punishments(guild.id, member.id, punishment_type)
+        punishment_name, punishment_fancy, _ = get_punishment_metadata(punishment_type)
+
+        if len(punishments) <= 0:
+            return await ctx.reply(
+                f"No {punishment_name.lower() if punishment_type else ""} punishments to display yet!")
+
+        lines: list[str] = []
+        for punishment in punishments:
+            try:
+                member = await self.bot.fetch_user(punishment.user_id)
+                added_by = await self.bot.fetch_user(punishment.added_by)
+            except Exception:
+                member = None
+                added_by = None
+
+            member = member if member else "None"
+            added_by = added_by.mention if added_by else "None"
+
+            added_at_time = format_time_in_zone(punishment.added_at, format="%d/%m/%y %H:%M %Z")
+
+            punishment_name, _, _ = get_punishment_metadata(punishment.type)
+
+            description = (
+                f"**#{punishment.punishment_id}**\n"
+                f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴛʏᴘᴇ**: **{punishment_name}**\n"
+                f"**ᴀᴅᴅᴇᴅ ʙʏ**: {added_by}\n"
+                f"**ᴀᴅᴅᴇᴅ ᴀᴛ**: **{added_at_time}**\n"
+                f"**ᴀᴅᴅᴇᴅ ʀᴇᴀѕᴏɴ**: {punishment.reason}\n"
+            )
+
+            if punishment.type is PunishmentType.MUTE or punishment.type is PunishmentType.BAN:
+
+                expires_at_time = format_duration(punishment.added_at, punishment.expires_at)
+                description += (
+                    f"**ᴅᴜʀᴀᴛɪᴏɴ**: **{expires_at_time}**\n"
+                )
+
+                if not punishment.is_active:
+                    try:
+                        removed_by = await self.bot.fetch_user(punishment.removed_by)
+                    except Exception:
+                        removed_by = None
+
+                    description += (
+                        f"**ʀᴇᴍᴏᴠᴇᴅ ʙʏ**: {self.bot.user.mention if removed_by is None else removed_by.mention}\n"
+                        f"**ʀᴇᴍᴏᴠᴇᴅ ᴀᴛ**: **{format_time_in_zone(punishment.removed_at, format="%d/%m/%y %H:%M %Z")}**\n"
+                        f"**ʀᴇᴍᴏᴠᴇᴅ ʀᴇᴀѕᴏɴ**: {punishment.removed_reason}"
+                    )
+
+            lines.append(description)
+
+        view = Pagination(
+            f"ᴘᴜɴɪѕʜᴍᴇɴᴛ {punishment_fancy if punishment_type else ""} ᴍᴏᴅʟᴏɢ ꜰᴏʀ @{member}",
+            lines,
+            3,
+            ctx.author.id,
+            True
+        )
+
+        await ctx.reply(embed=view.create_embed(), view=view)
 
 
 async def setup(bot):
