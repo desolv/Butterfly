@@ -13,7 +13,7 @@ from dateutil.parser import isoparse
 from discord.ext import commands
 
 
-def get_current_time(format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London") -> str:
+def get_current_time(format: str = "%d %B %Y %H:%M", timezone: str = "Europe/London") -> str:
     """
     Return the current time formatted according to the given format and timezone
     """
@@ -22,13 +22,24 @@ def get_current_time(format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/
     return now.strftime(format)
 
 
-def format_time_in_zone(time: datetime, format: str = "%d %B %Y %H:%M %Z", timezone: str = "Europe/London") -> str:
+def format_time_in_zone(time: datetime, format: str = "%d/%m/%y %H:%M", timezone: str = "Europe/London") -> str:
     """
-    Localize a datetime object to the specified timezone and format it
+    Render a datetime in the given timezone. Naive inputs are treated as UTC.
+    """
+    target_tz = pytz.timezone(timezone)
+    if time.tzinfo is None:
+        aware = pytz.utc.localize(time)
+    else:
+        aware = time.astimezone(pytz.utc)
+    return aware.astimezone(target_tz).strftime(format)
+
+
+def get_time_now(timezone: str = "Europe/London") -> datetime:
+    """
+    Return the current datetime in the specified timezone
     """
     tz = pytz.timezone(timezone)
-    localized = tz.localize(time)
-    return localized.strftime(format)
+    return datetime.now(tz)
 
 
 def load_json_data(path: str) -> dict:
@@ -52,7 +63,7 @@ def parse_time_window(input_str: str) -> datetime:
 
     value, unit = match.groups()
     value = int(value)
-    now = get_utc_now()
+    now = get_time_now()
 
     if unit == "d":
         return now + timedelta(days=value)
@@ -74,7 +85,7 @@ def format_time_window(target: datetime) -> str:
     else:
         target = target.astimezone(timezone.utc)
 
-    now = get_utc_now()
+    now = get_time_now()
 
     delta: timedelta = target - now
     total_seconds = int(delta.total_seconds())
@@ -223,13 +234,6 @@ def is_valid_url(url: str) -> bool:
         return parsed.scheme in ("http", "https") and bool(parsed.netloc)
     except Exception:
         return False
-
-
-def get_utc_now() -> datetime:
-    """
-    Return the current UTC datetime.
-    """
-    return datetime.now(timezone.utc)
 
 
 def parse_iso(iso_str: str) -> datetime:
