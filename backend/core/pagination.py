@@ -11,28 +11,56 @@ def chunk_lines(lines: list[str], size: int) -> list[str]:
     ]
 
 
+def chunk_as_fields(lines: list[str], size: int) -> list[list[str]]:
+    """
+    Return pages where each page is a list of lines
+    """
+    return [
+        lines[i:i + size]
+        for i in range(0, len(lines), size)
+    ]
+
+
 class Pagination(View):
     def __init__(
             self,
             title: str,
             lines: list[str],
             lines_per_page: int,
-            author_id: int
+            author_id: int,
+            is_field: bool = False
     ):
         super().__init__(timeout=180)
         self.title = title
-        self.pages = chunk_lines(lines, lines_per_page)
+        self.is_field = is_field
+
+        if self.is_field:
+            lines_per_page = min(lines_per_page, 25)
+
+        self.pages = (
+            chunk_as_fields(lines, lines_per_page)
+            if self.is_field else
+            chunk_lines(lines, lines_per_page)
+        )
         self.page = 0
         self.author_id = author_id
         self.build_buttons()
 
     def create_embed(self) -> Embed:
-        return Embed(
+        embed = Embed(
             title=self.title,
-            description=self.pages[self.page],
             color=0x393A41,
             timestamp=get_utc_now()
         ).set_footer(text=f"{self.page + 1}/{len(self.pages)}")
+
+        if not self.is_field:
+            embed.description = self.pages[self.page] if self.pages else ""
+            return embed
+
+        current = self.pages[self.page] if self.pages else []
+        for line in current:
+            embed.add_field(name="", value=line, inline=True)
+        return embed
 
     def build_buttons(self):
         self.clear_items()

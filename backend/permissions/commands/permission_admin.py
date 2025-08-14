@@ -98,7 +98,8 @@ class PermissionAdminCommand(commands.Cog):
             f"ᴘᴇʀᴍɪѕѕɪᴏɴ ᴍᴀɴɪꜰᴇѕᴛ ꜰᴏʀ {ctx.guild.name}",
             lines,
             3,
-            ctx.author.id
+            ctx.author.id,
+            True
         )
 
         await ctx.reply(embed=view.create_embed(), view=view)
