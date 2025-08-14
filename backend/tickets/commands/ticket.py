@@ -84,14 +84,14 @@ class TicketCommand(commands.Cog):
         description = (
             f"**ᴛɪᴄᴋᴇᴛ ɪᴅ**: **{ticket.ticket_id}**\n"
             f"**ᴘᴀɴᴇʟ ɪᴅ**: **{ticket.panel_id}**\n"
-            f"**ᴄʜᴀɴɴᴇʟ ɴᴀᴍᴇ {ticket.channel_id}\n"
+            f"**ᴄʜᴀɴɴᴇʟ ɪᴅ:** {ticket.channel_id}\n"
             f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.created_at, "%d/%m/%y %H:%M %Z")}\n"
         )
 
         if ticket.is_closed:
             description += (
                 f"\n**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at, "%d/%m/%y %H:%M %Z")}\n"
-                f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by.mention if closed_by else ticket.closed_by}\n"
+                f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by.mention if closed_by else "None"}\n"
             )
 
         embed = discord.Embed(
