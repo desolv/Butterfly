@@ -176,6 +176,17 @@ def get_user_open_ticket(guild: discord.Guild, user_id: int):
         return ticket
 
 
+def get_user_tickets(guild_id: int, user_id: int):
+    """
+    Retrieve a tickets for a user.
+    """
+    with Session(Engine) as session:
+        return session.query(Ticket).filter_by(
+            guild_id=guild_id,
+            user_id=user_id
+        ).all()
+
+
 def get_ticket_by_channel(guild_id: int, channel_id: int) -> Ticket | None:
     """
     Retrieve a ticket for a given channel.
@@ -436,9 +447,9 @@ async def send_ticket_close_logging(guild: discord.Guild, ticket: Ticket):
         f"**ᴛɪᴄᴋᴇᴛ ɪᴅ**: **{ticket.ticket_id}**\n"
         f"**ᴘᴀɴᴇʟ ɪᴅ**: **{panel.panel_id}**\n"
         f"**ᴄʜᴀɴɴᴇʟ ɪᴅ**: {ticket.channel_id}\n"
-        f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.created_at, "%d/%m/%y %H:%M %Z")}\n\n"
+        f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.created_at)}\n\n"
 
-        f"**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at, "%d/%m/%y %H:%M %Z")}\n"
+        f"**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at)}\n"
         f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by.mention if closed_by else "None"}\n"
     )
 
