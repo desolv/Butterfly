@@ -5,7 +5,7 @@ from backend.core.helper import get_commands_help_messages, get_utc_now, format_
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission, has_cooldown
 from backend.tickets.director import get_panels_for_guild, build_panel_list_view, \
-    mark_ticket_closed, get_ticket_by_channel, send_ticket_close_logging, get_ticket_by_id
+    mark_ticket_closed, get_ticket_by_channel, send_ticket_close_logging, get_ticket_by_id, get_user_tickets
 
 
 class TicketCommand(commands.Cog):
@@ -85,12 +85,12 @@ class TicketCommand(commands.Cog):
             f"**ᴛɪᴄᴋᴇᴛ ɪᴅ**: **{ticket.ticket_id}**\n"
             f"**ᴘᴀɴᴇʟ ɪᴅ**: **{ticket.panel_id}**\n"
             f"**ᴄʜᴀɴɴᴇʟ ɪᴅ:** {ticket.channel_id}\n"
-            f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.created_at, "%d/%m/%y %H:%M %Z")}\n"
+            f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.created_at)}\n"
         )
 
         if ticket.is_closed:
             description += (
-                f"\n**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at, "%d/%m/%y %H:%M %Z")}\n"
+                f"\n**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at)}\n"
                 f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by.mention if closed_by else "None"}\n"
             )
 
@@ -102,7 +102,7 @@ class TicketCommand(commands.Cog):
         )
 
         embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**",
-                        value=f"{format_time_in_zone(ticket.updated_at, "%d/%m/%y %H:%M %Z")}", inline=True)
+                        value=f"{format_time_in_zone(ticket.updated_at)}", inline=True)
         embed.add_field(name="**ɢᴜɪʟᴅ ɪᴅ**", value=f"{guild.id}", inline=True)
 
         avatar_url = member.avatar.url if member.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"
@@ -117,31 +117,32 @@ class TicketCommand(commands.Cog):
         """
         Display all tickets of member
         """
-        panels = get_panels_for_guild(ctx.guild.id)
+        guild = ctx.guild
+        tickets = get_user_tickets(guild.id, member.id)
 
-        if len(panels) <= 0:
-            return await ctx.reply("No ticket panels to display yet!")
+        if len(tickets) <= 0:
+            return await ctx.reply("No ticket to display yet!")
 
         lines: list[str] = []
-        for panel in panels:
-            staff_roles = " ".join(
-                [
-                    role.mention
-                    for role in (ctx.guild.get_role(int(role_id)) for role_id in panel.staff_role_ids)
-                    if role
-                ]
-            ) or "None"
+        for ticket in tickets:
+            closed_by = guild.get_member(ticket.closed_by)
 
-            lines.append(
-                f"**{panel.panel_id}**\n"
-                f"**ᴘᴀɴᴇʟ ɴᴀᴍᴇ**: {panel.panel_embed.get("name") or panel.panel_id}\n"
-                f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {staff_roles}\n"
-                f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: **{format_time_in_zone(panel.created_at, format="%d/%m/%y %H:%M %Z")}**\n"
-                f"**ᴇɴᴀʙʟᴇᴅ**: {'✅' if panel.is_enabled else '❎'}\n"
+            description = (
+                f"**#{ticket.ticket_id}**\n"
+                f"**ᴘᴀɴᴇʟ ɪᴅ**: **{ticket.panel_id}**\n"
+                f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.created_at)}\n"
             )
 
+            if ticket.is_closed:
+                description += (
+                    f"**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at)}\n"
+                    f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by.mention if closed_by else "None"}\n"
+                )
+
+            lines.append(description)
+
         view = Pagination(
-            f"ᴛɪᴄᴋᴇᴛ ᴘᴀɴᴇʟ ᴍᴀɴɪꜰᴇѕᴛ ꜰᴏʀ {ctx.guild.name}",
+            f"ᴛɪᴄᴋᴇᴛ ᴍᴏᴅʟᴏɢ ꜰᴏʀ @{member}",
             lines,
             3,
             ctx.author.id,
