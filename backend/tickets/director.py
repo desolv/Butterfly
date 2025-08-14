@@ -424,7 +424,7 @@ async def send_ticket_close_logging(guild: discord.Guild, ticket: Ticket):
     if not panel or not panel.logging_channel_id:
         return
 
-    logging_channel = await guild.fetch_channel(panel.logging_channel_id)
+    logging_channel = guild.get_channel(panel.logging_channel_id)
 
     if logging_channel is None:
         return
@@ -439,7 +439,7 @@ async def send_ticket_close_logging(guild: discord.Guild, ticket: Ticket):
         f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.created_at, "%d/%m/%y %H:%M %Z")}\n\n"
 
         f"**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at, "%d/%m/%y %H:%M %Z")}\n"
-        f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by.mention if closed_by else ticket.closed_by}\n"
+        f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by.mention if closed_by else "None"}\n"
     )
 
     embed = discord.Embed(

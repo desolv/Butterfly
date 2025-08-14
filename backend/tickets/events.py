@@ -58,9 +58,8 @@ class TicketEvents(commands.Cog):
                     limit=5,
                     action=AuditLogAction.channel_delete
             ):
-                if entry.target.channel.id == channel.id:
-                    actioner_id = None if entry.user.id == self.bot.user.id else entry.user.id
-                    break
+                actioner_id = None if entry.user.id == self.bot.user.id else entry.user.id
+                break
         except Exception:
             pass
 
