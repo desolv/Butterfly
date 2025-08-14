@@ -14,7 +14,13 @@ class WarnCommand(commands.Cog):
     @has_permission()
     @has_cooldown()
     @commands.command(name="warn")
-    async def _warn(self, ctx, member: discord.Member, *, reason: str = "No reason"):
+    async def _warn(
+            self,
+            ctx,
+            member: discord.Member,
+            *,
+            reason: str = "No reason"
+    ):
         """
         Warn a member via sending a private message
         """

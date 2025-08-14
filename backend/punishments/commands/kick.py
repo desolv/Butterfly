@@ -14,7 +14,13 @@ class KickCommand(commands.Cog):
     @has_permission()
     @has_cooldown()
     @commands.command(name="kick")
-    async def _kick(self, ctx, member: discord.Member, *, reason: str = "No reason"):
+    async def _kick(
+            self,
+            ctx,
+            member: discord.Member,
+            *,
+            reason: str = "No reason"
+    ):
         """
         Kick a member from the server
         """

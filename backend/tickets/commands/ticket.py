@@ -110,6 +110,46 @@ class TicketCommand(commands.Cog):
 
         await ctx.reply(embed=embed)
 
+    @has_permission()
+    @has_cooldown()
+    @_ticket.command(name="modlog")
+    async def _modlog(self, ctx, member: discord.Member):
+        """
+        Display all tickets of member
+        """
+        panels = get_panels_for_guild(ctx.guild.id)
+
+        if len(panels) <= 0:
+            return await ctx.reply("No ticket panels to display yet!")
+
+        lines: list[str] = []
+        for panel in panels:
+            staff_roles = " ".join(
+                [
+                    role.mention
+                    for role in (ctx.guild.get_role(int(role_id)) for role_id in panel.staff_role_ids)
+                    if role
+                ]
+            ) or "None"
+
+            lines.append(
+                f"**{panel.panel_id}**\n"
+                f"**ᴘᴀɴᴇʟ ɴᴀᴍᴇ**: {panel.panel_embed.get("name") or panel.panel_id}\n"
+                f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {staff_roles}\n"
+                f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: **{format_time_in_zone(panel.created_at, format="%d/%m/%y %H:%M %Z")}**\n"
+                f"**ᴇɴᴀʙʟᴇᴅ**: {'✅' if panel.is_enabled else '❎'}\n"
+            )
+
+        view = Pagination(
+            f"ᴛɪᴄᴋᴇᴛ ᴘᴀɴᴇʟ ᴍᴀɴɪꜰᴇѕᴛ ꜰᴏʀ {ctx.guild.name}",
+            lines,
+            3,
+            ctx.author.id,
+            True
+        )
+
+        await ctx.reply(embed=view.create_embed(), view=view)
+
 
 async def setup(bot):
     await bot.add_cog(TicketCommand(bot))

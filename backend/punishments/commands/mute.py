@@ -15,7 +15,14 @@ class MuteCommand(commands.Cog):
     @has_permission()
     @has_cooldown()
     @commands.command(name="mute")
-    async def _mute(self, ctx, member: discord.Member, duration: str = "1h", *, reason: str = "No reason"):
+    async def _mute(
+            self,
+            ctx,
+            member: discord.Member,
+            duration: str = "1h",
+            *,
+            reason: str = "No reason"
+    ):
         """
         Mute a member by giving them a role
         """
