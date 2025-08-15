@@ -103,9 +103,17 @@ class TicketAdminCommand(commands.Cog):
             ]
         ) or "None"
 
+        required_roles = " ".join(
+            [
+                role.mention
+                for role in (guild.get_role(int(role_id)) for role_id in panel.required_role_ids)
+                if role
+            ]
+        ) or "None"
+
         logging_channel = guild.get_channel(panel.logging_channel_id)
 
-        created_at = format_time_in_zone(panel.created_at, format="%d/%m/%y %H:%M %Z")
+        created_at = format_time_in_zone(panel.created_at)
         updated_at = format_time_in_zone(panel.updated_at,
                                          format="%d/%m/%y %H:%M %Z") if panel.updated_at else "None"
 
@@ -126,7 +134,8 @@ class TicketAdminCommand(commands.Cog):
 
             f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {category_channel.name if category_channel else panel.category_channel_id}\n"
             f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {staff_roles}\n"
-            f"**ᴍᴇɴᴛɪᴏɴ ʀᴏʟᴇѕ**: {mention_roles}\n\n"
+            f"**ᴍᴇɴᴛɪᴏɴ ʀᴏʟᴇѕ**: {mention_roles}\n"
+            f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {required_roles}\n\n"
 
             f"**ᴇᴍʙᴇᴅ ᴛɪᴛʟᴇ**: {panel.ticket_embed.get("title")}\n"
             f"**ᴇᴍʙᴇᴅ ᴅᴇѕᴄʀɪᴘᴛɪᴏɴ**: {panel.ticket_embed.get("description")}\n\n"
@@ -169,11 +178,20 @@ class TicketAdminCommand(commands.Cog):
                 ]
             ) or "None"
 
+            required_roles = " ".join(
+                [
+                    role.mention
+                    for role in (ctx.guild.get_role(int(role_id)) for role_id in panel.required_role_ids)
+                    if role
+                ]
+            ) or "None"
+
             lines.append(
                 f"**{panel.panel_id}**\n"
                 f"**ᴘᴀɴᴇʟ ɴᴀᴍᴇ**: {panel.panel_embed.get("name") or panel.panel_id}\n"
                 f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {staff_roles}\n"
-                f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: **{format_time_in_zone(panel.created_at, format="%d/%m/%y %H:%M %Z")}**\n"
+                f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {required_roles}\n"
+                f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: **{format_time_in_zone(panel.created_at)}**\n"
                 f"**ᴇɴᴀʙʟᴇᴅ**: {'✅' if panel.is_enabled else '❎'}\n"
             )
 
@@ -407,6 +425,78 @@ class TicketAdminCommand(commands.Cog):
             return await ctx.reply(f"No panel **{panel_id}** has been found!")
 
         await ctx.reply(f"Updated panel **{panel_id}** 'is enabled' to **{enabled}**!")
+
+    @has_permission()
+    @_ticket_admin.group(name="required_roles")
+    async def _required_roles(self, ctx):
+        pass
+
+    @has_permission()
+    @_required_roles.command(name="add")
+    async def _required_roles_add(
+            self,
+            ctx,
+            panel_id: str,
+            role: discord.Role
+    ):
+        """
+        Add a role to ticket panel required roles
+        """
+        role_id = role.id
+        panel = update_or_retrieve_ticket_panel(ctx.guild.id, panel_id)
+
+        if not panel:
+            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+
+        required_roles = panel.required_role_ids
+
+        if role_id in required_roles:
+            return await ctx.reply(f"Role {role.mention} is present!")
+
+        required_roles.append(role_id)
+
+        update_or_retrieve_ticket_panel(
+            ctx.guild.id,
+            panel_id,
+            required_role_ids=required_roles,
+            updated_by=ctx.author.id
+        )
+
+        await ctx.reply(f"Updated panel **{panel_id}** 'required roles' by adding {role.mention}")
+
+    @has_permission()
+    @_required_roles.command(name="remove")
+    async def _required_roles_remove(
+            self,
+            ctx,
+            panel_id: str,
+            role: discord.Role
+    ):
+        """
+        Remove a role from ticket panel required roles
+        """
+        role_id = role.id
+        panel_id = panel_id.lower()
+        panel = update_or_retrieve_ticket_panel(ctx.guild.id, panel_id)
+
+        if not panel:
+            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+
+        required_roles = panel.required_role_ids
+
+        if role_id not in required_roles:
+            return await ctx.reply(f"Role {role.mention} is not present!")
+
+        required_roles.remove(role_id)
+
+        update_or_retrieve_ticket_panel(
+            ctx.guild.id,
+            panel_id,
+            required_role_ids=required_roles,
+            updated_by=ctx.author.id
+        )
+
+        await ctx.reply(f"Updated panel **{panel_id}** 'required roles' by removing {role.mention}")
 
     @has_permission()
     @_ticket_admin.group(name="staff_roles")

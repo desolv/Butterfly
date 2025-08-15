@@ -320,8 +320,13 @@ async def handle_ticket_panel_selection(interaction: Interaction, values: Sequen
     if not panel or not panel.is_enabled:
         return await interaction.followup.send("That panel is not available!", ephemeral=True)
 
-    has_ticket = get_user_open_ticket(interaction.guild, interaction.user.id)
+    if any(role.id in panel.staff_role_ids for role in interaction.user.roles):
+        return await interaction.followup.send("Staff is not allowed to open own ticket!", ephemeral=True)
 
+    if not any(role.id in panel.required_role_ids for role in interaction.user.roles):
+        return await interaction.followup.send("You are not allowed to open this ticket!", ephemeral=True)
+
+    has_ticket = get_user_open_ticket(interaction.guild, interaction.user.id)
     if has_ticket:
         has_channel = interaction.guild.get_channel(has_ticket.channel_id)
         has_channel = has_channel.mention if has_channel else has_ticket.channel_id
