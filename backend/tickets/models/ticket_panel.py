@@ -8,7 +8,7 @@ from backend.core.helper import get_time_now
 class TicketPanel(Base):
     __tablename__ = "ticket_panel"
 
-    panel_id = Column(String(64), primary_key=True)
+    panel_id = Column(String, primary_key=True)
     guild_id = Column(BigInteger, ForeignKey("guilds.guild_id", ondelete="CASCADE"), index=True, nullable=False)
     panel_embed = Column(JSONB,
                          default=lambda: {

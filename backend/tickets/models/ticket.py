@@ -9,7 +9,7 @@ class Ticket(Base):
 
     ticket_id = Column(BigInteger, primary_key=True)
     guild_id = Column(BigInteger, ForeignKey("guilds.guild_id"), index=True)
-    panel_id = Column(String(64), nullable=True)
+    panel_id = Column(String, nullable=True)
     user_id = Column(BigInteger, nullable=False, index=True)
     channel_id = Column(BigInteger, nullable=False, unique=True)
     created_at = Column(DateTime, default=get_time_now())
