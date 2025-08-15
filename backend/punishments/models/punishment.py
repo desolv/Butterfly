@@ -13,12 +13,13 @@ class Punishment(Base):
     user_id = Column(BigInteger, nullable=False, index=True)
     added_by = Column(BigInteger, nullable=False, index=True)
     type = Column(Enum(PunishmentType), nullable=False, index=True)
-    reason = Column(String(255), nullable=True)
+    evidence = Column(String, nullable=True)
+    reason = Column(String, nullable=True)
     added_at = Column(DateTime, default=get_time_now())
     expires_at = Column(DateTime, nullable=True)
     removed_by = Column(BigInteger, nullable=True, index=True)
     removed_at = Column(DateTime, nullable=True)
-    removed_reason = Column(String(255), nullable=True)
+    removed_reason = Column(String, nullable=True)
     is_active = Column(Boolean, nullable=True, index=True)
 
     def has_expired(self) -> bool:

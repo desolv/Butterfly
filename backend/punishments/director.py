@@ -17,6 +17,7 @@ def create_punishment(
         user_id: int,
         added_by: int,
         punishment_type: PunishmentType,
+        evidence: str,
         reason: str = "No reason",
         duration: datetime = None
 ):
@@ -29,6 +30,7 @@ def create_punishment(
             user_id=user_id,
             added_by=added_by,
             type=punishment_type,
+            evidence=evidence,
             reason=reason,
             added_at=get_time_now(),
             expires_at=duration,
@@ -183,6 +185,7 @@ async def send_punishment_moderation_log(guild: discord.Guild, member: discord.M
     description = (
         f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ɪᴅ**: **{punishment.punishment_id}**\n"
         f"**ᴍᴏᴅᴇʀᴀᴛᴏʀ**: {'?' if moderator is None else moderator.mention}\n"
+        f"**ᴇᴠɪᴅᴇɴᴄᴇ**: {punishment.evidence}\n"
         f"**ʀᴇᴀѕᴏɴ**: {punishment.removed_reason if removed else punishment.reason}\n"
     )
 

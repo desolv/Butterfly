@@ -57,6 +57,7 @@ class PunishmentCommand(commands.Cog):
             f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴛʏᴘᴇ**: **{punishment_name}**\n\n"
             f"**ᴀᴅᴅᴇᴅ ʙʏ**: {added_by}\n"
             f"**ᴀᴅᴅᴇᴅ ᴀᴛ**: **{added_at_time}**\n"
+            f"**ᴇᴠɪᴅᴇɴᴄᴇ**: {punishment.evidence}\n"
             f"**ᴀᴅᴅᴇᴅ ʀᴇᴀѕᴏɴ**: {punishment.reason}\n"
         )
 
@@ -166,6 +167,7 @@ class PunishmentCommand(commands.Cog):
                 f"**ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴛʏᴘᴇ**: **{punishment_name}**\n"
                 f"**ᴀᴅᴅᴇᴅ ʙʏ**: {added_by}\n"
                 f"**ᴀᴅᴅᴇᴅ ᴀᴛ**: **{added_at_time}**\n"
+                f"**ᴇᴠɪᴅᴇɴᴄᴇ**: {punishment.evidence}\n"
                 f"**ᴀᴅᴅᴇᴅ ʀᴇᴀѕᴏɴ**: {punishment.reason}\n"
             )
 

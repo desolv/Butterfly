@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import send_private_dm
+from backend.core.helper import send_private_dm, is_valid_url
 from backend.permissions.enforce import has_permission, has_cooldown
 from backend.punishments.director import has_permission_to_punish, create_punishment, send_punishment_moderation_log
 from backend.punishments.models.punishment import PunishmentType
@@ -18,6 +18,7 @@ class WarnCommand(commands.Cog):
             self,
             ctx,
             member: discord.Member,
+            evidence_url: str,
             *,
             reason: str = "No reason"
     ):
@@ -27,11 +28,15 @@ class WarnCommand(commands.Cog):
         if not await has_permission_to_punish(ctx, member):
             return
 
+        if not is_valid_url(evidence_url):
+            return await ctx.reply(f"Invalid url entered. Please make sure it includes **http/https**!")
+
         punishment = create_punishment(
             ctx.guild.id,
             member.id,
             ctx.author.id,
             PunishmentType.WARN,
+            evidence_url,
             reason
         )
 

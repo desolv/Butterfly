@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import parse_time_window, send_private_dm
+from backend.core.helper import parse_time_window, send_private_dm, is_valid_url
 from backend.permissions.enforce import has_permission, has_cooldown
 from backend.punishments.director import has_permission_to_punish, get_user_active_punishment, create_punishment, \
     send_punishment_moderation_log
@@ -19,7 +19,8 @@ class BanCommand(commands.Cog):
             self,
             ctx,
             member: discord.Member,
-            duration: str = "1h",
+            duration: str,
+            evidence_url: str,
             *,
             reason: str = "No reason"
     ):
@@ -30,8 +31,10 @@ class BanCommand(commands.Cog):
             return
 
         if get_user_active_punishment(ctx.guild.id, member.id, PunishmentType.BAN):
-            await ctx.reply(f"**@{member}** is already banned!")
-            return
+            return await ctx.reply(f"**@{member}** is already banned!")
+
+        if not is_valid_url(evidence_url):
+            return await ctx.reply(f"Invalid url entered. Please make sure it includes **http/https**!")
 
         permanent = True if duration.lower() in ("permanent", "perm") else False
 
@@ -41,14 +44,14 @@ class BanCommand(commands.Cog):
         try:
             await member.ban(reason=reason)
         except discord.Forbidden:
-            await ctx.reply(f"Wasn't able to ban **{member}**. Aborting!")
-            return
+            return await ctx.reply(f"Wasn't able to ban **{member}**. Aborting!")
 
         punishment = create_punishment(
             ctx.guild.id,
             member.id,
             ctx.author.id,
             PunishmentType.BAN,
+            evidence_url,
             reason,
             None if permanent else parse_duration
         )
