@@ -188,16 +188,18 @@ class PermissionAdminCommand(commands.Cog):
         if not permission:
             raise CommandNotFound(command_name)
 
-        if role.id in permission.required_role_ids:
+        required_roles = permission.required_role_ids
+
+        if role.id in required_roles:
             return await ctx.reply(f"Role {role.mention} is present!")
 
-        permission.required_role_ids.append(role.id)
+        required_roles.append(role.id)
 
         create_or_retrieve_command(
             self.bot,
             ctx.guild.id,
             command_name,
-            required_role_ids=permission.required_role_ids
+            required_role_ids=required_roles
         )
 
         await ctx.reply(
@@ -223,20 +225,69 @@ class PermissionAdminCommand(commands.Cog):
         if not permission:
             raise CommandNotFound(command_name)
 
-        if role.id not in permission.required_role_ids:
+        required_roles = permission.required_role_ids
+
+        if role.id not in required_roles:
             return await ctx.reply(f"Role {role.mention} is not present!")
 
-        permission.required_role_ids.remove(role.id)
+        required_roles.remove(role.id)
 
         create_or_retrieve_command(
             self.bot,
             ctx.guild.id,
             command_name,
-            required_role_ids=permission.required_role_ids
+            required_role_ids=required_roles
         )
 
         await ctx.reply(
             f"Updated **{permission.command_name}** command **required_roles** permission by removing {role.mention}.")
+
+    @has_permission()
+    @_required_roles.command(name="everyone")
+    async def _required_roles_everyone(
+            self,
+            ctx,
+            command_name: str,
+            allow: bool
+    ):
+        """
+        Allow everyone in this guild to run the command
+        """
+        permission = create_or_retrieve_command(
+            self.bot,
+            ctx.guild.id,
+            command_name
+        )
+
+        if not permission:
+            raise CommandNotFound(command_name)
+
+        if permission.is_admin:
+            return await ctx.reply("This command is admin-only. Disable admin-only first.")
+
+        required_roles = permission.required_role_ids
+        guild_id = ctx.guild.id
+
+        if allow:
+            if guild_id in required_roles:
+                return await ctx.reply(f"Role **everyone** is present!")
+
+            required_roles.append(guild_id)
+        else:
+            if guild_id not in required_roles:
+                return await ctx.reply(f"Role **everyone** is not present!")
+
+            required_roles.remove(guild_id)
+
+        create_or_retrieve_command(
+            self.bot,
+            guild_id,
+            command_name,
+            required_role_ids=required_roles
+        )
+
+        await ctx.reply(
+            f"Updated **{permission.command_name}** command **required_roles** permission by {"allowing" if allow else "restricting"} everyone.")
 
 
 async def setup(bot):

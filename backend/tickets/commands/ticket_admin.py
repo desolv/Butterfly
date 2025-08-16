@@ -442,6 +442,46 @@ class TicketAdminCommand(commands.Cog):
         await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **required roles** by removing {role.mention}.")
 
     @has_permission()
+    @_required_roles.command(name="everyone")
+    async def _required_roles_everyone(
+            self,
+            ctx,
+            panel_id: str,
+            allow: bool
+    ):
+        """
+        Allow everyone in this guild to run the command
+        """
+        panel = update_or_retrieve_ticket_panel(ctx.guild.id, panel_id)
+
+        if not panel:
+            raise TicketPanelNotFound(panel_id)
+
+        required_roles = panel.required_role_ids
+
+        guild_id = ctx.guild.id
+        if allow:
+            if guild_id in required_roles:
+                return await ctx.reply(f"Role **everyone** is present!")
+
+            required_roles.append(guild_id)
+        else:
+            if guild_id not in required_roles:
+                return await ctx.reply(f"Role **everyone** is not present!")
+
+            required_roles.remove(guild_id)
+
+        update_or_retrieve_ticket_panel(
+            ctx.guild.id,
+            panel_id,
+            required_role_ids=required_roles,
+            updated_by=ctx.author.id
+        )
+
+        await ctx.reply(
+            f"Updated ticket **{panel.panel_id}** panel **required roles** by {"allowing" if allow else "restricting"} everyone.")
+
+    @has_permission()
     @_ticket_admin.group(name="staff_roles")
     async def _staff_roles(self, ctx):
         pass
