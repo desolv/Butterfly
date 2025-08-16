@@ -40,4 +40,10 @@ def init_tables():
     # noinspection PyUnresolvedReferences
     from backend.tickets.models.ticket_config import TicketConfig
 
+    # noinspection PyUnresolvedReferences
+    from backend.voice.models.voice_config import VoiceConfig
+
+    # noinspection PyUnresolvedReferences
+    from backend.voice.models.voice import Voice
+
     Base.metadata.create_all(Engine)
