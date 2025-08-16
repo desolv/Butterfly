@@ -5,7 +5,7 @@ from discord import Interaction, PermissionOverwrite, SelectOption, TextChannel
 from sqlalchemy.orm import Session
 
 from backend.core.database import Engine
-from backend.core.helper import get_time_now, format_time_in_zone
+from backend.core.helper import get_time_now, format_time_in_zone, fmt_user, fmt_roles
 from backend.core.select_menu import SelectActionList
 from backend.tickets.models.ticket import Ticket
 from backend.tickets.models.ticket_config import TicketConfig
@@ -32,6 +32,8 @@ def create_ticket(
         session.add(ticket)
         session.commit()
         session.refresh(ticket)
+
+        return ticket
 
 
 def create_ticket_panel(guild_id: int, panel_id: str) -> bool:
@@ -82,7 +84,6 @@ def update_or_retrieve_ticket_panel(
         if panel is None:
             return None
 
-        # --- panel_embed merge ---
         pe_current = dict(panel.panel_embed or {})
         pe_updates = {}
 
@@ -90,7 +91,7 @@ def update_or_retrieve_ticket_panel(
             try:
                 pe_updates.update(dict(kwargs["panel_embed"]))
             except Exception:
-                pass  # ignore bad payloads silently
+                pass
 
         for k, inner in panel_keys_map.items():
             if k in kwargs and kwargs[k] is not None:
@@ -346,12 +347,14 @@ async def handle_ticket_panel_selection(interaction: Interaction, values: Sequen
             "Something went wrong while creating the ticket. Contact an administrator!",
             ephemeral=True)
 
-    create_ticket(
+    ticket = create_ticket(
         guild_id=interaction.guild.id,
         user_id=interaction.user.id,
         channel_id=channel.id,
         panel_id=panel_id
     )
+
+    await send_ticket_logging(interaction.guild, ticket)
 
 
 async def create_ticket_channel(guild: discord.Guild, user: discord.Member | discord.User,
@@ -414,23 +417,16 @@ async def send_ticket_embed(interaction: Interaction, channel: discord.TextChann
         avatar_url = interaction.user.avatar.url if interaction.user.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"
         embed.set_author(name=embed_title or panel.panel_id, icon_url=avatar_url)
 
-    mention_roles = " ".join(
-        [
-            role.mention
-            for role in (interaction.guild.get_role(int(role_id)) for role_id in panel.mention_role_ids)
-            if role
-        ]
-    ) or ""
-
     from backend.tickets.models.ticket_close_button import TicketCloseButton
     await channel.send(embed=embed, view=TicketCloseButton())
-    await channel.send(f"{mention_roles}{interaction.user.mention}", delete_after=1)
+
+    await channel.send(f"{fmt_roles(panel.mention_role_ids)}{interaction.user.mention}", delete_after=1)
     await interaction.followup.send(f"Created a new ticket at {channel.mention}!", ephemeral=True)
 
 
-async def send_ticket_close_logging(guild: discord.Guild, ticket: Ticket):
+async def send_ticket_logging(guild: discord.Guild, ticket: Ticket):
     """
-    Send a ticket closed log embed to the panels logging channel
+    Send a ticket log embed to the panels logging channel
     """
     if ticket is None:
         return
@@ -445,23 +441,27 @@ async def send_ticket_close_logging(guild: discord.Guild, ticket: Ticket):
     if logging_channel is None:
         return
 
-    member = guild.get_member(ticket.user_id)
-    closed_by = guild.get_member(ticket.closed_by)
-
     description = (
         f"**ᴛɪᴄᴋᴇᴛ ɪᴅ**: **{ticket.ticket_id}**\n"
         f"**ᴘᴀɴᴇʟ ɪᴅ**: **{panel.panel_id}**\n"
         f"**ᴄʜᴀɴɴᴇʟ ɪᴅ**: {ticket.channel_id}\n"
         f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.created_at)}\n\n"
-
-        f"**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at)}\n"
-        f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by.mention if closed_by else "None"}\n"
     )
 
+    if ticket.is_closed:
+        description += (
+            f"**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at)}\n"
+            f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {fmt_user(ticket.closed_by)}\n"
+        )
+
+    member = guild.get_member(ticket.user_id)
+    embed_color, embed_status = (discord.Color.red(), "ᴄʟᴏѕᴇᴅ") if ticket.is_closed else (discord.Color.green(),
+                                                                                          "ᴏᴘᴇɴᴇᴅ")
+
     embed = discord.Embed(
-        title=f"ᴛɪᴄᴋᴇᴛ ᴄʟᴏѕᴇᴅ ꜰᴏʀ @{member if member else ticket.user_id}",
+        title=f"ᴛɪᴄᴋᴇᴛ {embed_status} ꜰᴏʀ @{member if member else ticket.user_id}",
         description=description,
-        color=0x393A41,
+        color=embed_color,
         timestamp=get_time_now(),
     )
 
