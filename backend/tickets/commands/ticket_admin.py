@@ -142,7 +142,7 @@ class TicketAdminCommand(commands.Cog):
             )
 
         view = Pagination(
-            f"ᴛɪᴄᴋᴇᴛ ᴘᴀɴᴇʟ ᴍᴀɴɪꜰᴇѕᴛ ꜰᴏʀ {ctx.guild.name}",
+            f"ᴛɪᴄᴋᴇᴛ ᴘᴀɴᴇʟ ᴍᴀɴɪꜰᴇѕᴛ",
             lines,
             3,
             ctx.author.id,

@@ -40,7 +40,7 @@ class PunishmentAdminCommand(commands.Cog):
         )
 
         embed = discord.Embed(
-            title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴍᴀɴɪꜰᴇѕᴛ ꜰᴏʀ {ctx.guild.name}",
+            title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴍᴀɴɪꜰᴇѕᴛ",
             description=description,
             color=0x393A41,
             timestamp=get_time_now()
