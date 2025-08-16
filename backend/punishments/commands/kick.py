@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 from backend.core.helper import send_private_dm, is_valid_url
+from backend.errors.custom_errors import InvalidURL
 from backend.permissions.enforce import has_permission, has_cooldown
 from backend.punishments.director import create_punishment, send_punishment_moderation_log, has_permission_to_punish
 from backend.punishments.models.punishment import PunishmentType
@@ -29,12 +30,12 @@ class KickCommand(commands.Cog):
             return
 
         if not is_valid_url(evidence_url):
-            return await ctx.reply(f"Invalid url entered. Please make sure it includes **http/https**!")
+            raise InvalidURL()
 
         try:
             await member.kick(reason=reason)
         except discord.Forbidden:
-            return await ctx.reply(f"Wasn't able to kick **{member}**. Aborting!")
+            return await ctx.reply(f"Wasn't able to kick {member.mention}. Aborting!")
 
         punishment = create_punishment(
             ctx.guild.id,
@@ -45,8 +46,8 @@ class KickCommand(commands.Cog):
             reason
         )
 
-        await ctx.reply(f"**@{member}** has been kicked for **{reason}**")
-        sent_dm = await send_private_dm(member, f"You have been kicked from **{ctx.guild.name}** for **{reason}**",
+        await ctx.reply(f"{member.mention} has been kicked for **{reason}**!")
+        sent_dm = await send_private_dm(member, f"You have been kicked from **{ctx.guild.name}** for **{reason}**.",
                                         ctx)
 
         await send_punishment_moderation_log(

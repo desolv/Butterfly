@@ -72,4 +72,3 @@ def initialize_permissions_for_guild(bot: commands.Bot, guild_id: int):
     with Session(Engine) as session:
         session.add_all(perms)
         session.commit()
-        print(f"Created permissions for {guild_id}!")

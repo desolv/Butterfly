@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 from backend.core.helper import parse_time_window, send_private_dm, is_valid_url
+from backend.errors.custom_errors import InvalidURL
 from backend.permissions.enforce import has_permission, has_cooldown
 from backend.punishments.director import has_permission_to_punish, get_user_active_punishment, create_punishment, \
     send_punishment_moderation_log
@@ -31,10 +32,10 @@ class BanCommand(commands.Cog):
             return
 
         if get_user_active_punishment(ctx.guild.id, member.id, PunishmentType.BAN):
-            return await ctx.reply(f"**@{member}** is already banned!")
+            return await ctx.reply(f"{member.mention} is already banned!")
 
         if not is_valid_url(evidence_url):
-            return await ctx.reply(f"Invalid url entered. Please make sure it includes **http/https**!")
+            raise InvalidURL()
 
         permanent = True if duration.lower() in ("permanent", "perm") else False
 
@@ -44,7 +45,7 @@ class BanCommand(commands.Cog):
         try:
             await member.ban(reason=reason)
         except discord.Forbidden:
-            return await ctx.reply(f"Wasn't able to ban **{member}**. Aborting!")
+            return await ctx.reply(f"Wasn't able to ban {member.mention}. Aborting!")
 
         punishment = create_punishment(
             ctx.guild.id,
@@ -56,10 +57,10 @@ class BanCommand(commands.Cog):
             None if permanent else parse_duration
         )
 
-        duration_msg = "permanently" if permanent else "temporarily"
-        await ctx.reply(f"**@{member}** has been {duration_msg} banned for **{reason}**")
+        await ctx.reply(
+            f"{member.mention} has been {"permanently" if permanent else "temporarily"} banned for **{reason}**!")
 
-        expiring = "**never** expiring!" if permanent else f"expiring in **{duration}**"
+        expiring = "**never** expiring!" if permanent else f"expiring in **{duration}**."
         sent_dm = await send_private_dm(member,
                                         f"You have been banned from **{ctx.guild.name}** for **{reason}** it's {expiring}",
                                         ctx)

@@ -1,8 +1,10 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import get_commands_help_messages, format_time_in_zone, get_time_now
+from backend.core.helper import get_commands_help_messages, format_time_in_zone, get_time_now, fmt_channel, fmt_roles, \
+    fmt_user
 from backend.core.pagination import Pagination
+from backend.errors.custom_errors import TicketPanelNotFound
 from backend.permissions.enforce import has_permission
 from backend.tickets.director import create_ticket_panel, delete_ticket_panel, update_or_retrieve_ticket_panel, \
     get_panels_for_guild
@@ -37,14 +39,14 @@ class TicketAdminCommand(commands.Cog):
         Create a new ticket category
         """
         if len(panel_id) > 15:
-            return await ctx.reply("Name id is characters is too long!")
+            return await ctx.reply("Id characters length is too long!")
 
         panel = create_ticket_panel(ctx.guild.id, panel_id)
 
         if not panel:
-            return await ctx.reply(f"Panel **{panel_id}** is present!")
+            return await ctx.reply(f"Ticket panel {panel_id} is present!")
 
-        await ctx.reply(f"Created panel **{panel_id}**!")
+        await ctx.reply(f"Created ticket panel **{panel_id}**!")
 
     @has_permission()
     @_ticket_admin.command(name="delete")
@@ -64,9 +66,9 @@ class TicketAdminCommand(commands.Cog):
 
         deleted = delete_ticket_panel(ctx.guild.id, panel_id)
         if not deleted:
-            return await ctx.reply("Panel not found, or not owned by this guild!")
+            raise TicketPanelNotFound(panel_id)
 
-        await ctx.reply(f"Panel **{panel_id}** has been deleted!")
+        await ctx.reply(f"Ticket panel **{panel_id}** has been deleted!")
 
     @has_permission()
     @_ticket_admin.command(name="view")
@@ -79,50 +81,10 @@ class TicketAdminCommand(commands.Cog):
         """
         Display the current command information
         """
-        guild = ctx.guild
-        panel = update_or_retrieve_ticket_panel(guild.id, panel_id)
+        panel = update_or_retrieve_ticket_panel(ctx.guild.id, panel_id)
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
-
-        category_channel = guild.get_channel(panel.category_channel_id)
-
-        staff_roles = " ".join(
-            [
-                role.mention
-                for role in (guild.get_role(int(role_id)) for role_id in panel.staff_role_ids)
-                if role
-            ]
-        ) or "None"
-
-        mention_roles = " ".join(
-            [
-                role.mention
-                for role in (guild.get_role(int(role_id)) for role_id in panel.mention_role_ids)
-                if role
-            ]
-        ) or "None"
-
-        required_roles = " ".join(
-            [
-                role.mention
-                for role in (guild.get_role(int(role_id)) for role_id in panel.required_role_ids)
-                if role
-            ]
-        ) or "None"
-
-        logging_channel = guild.get_channel(panel.logging_channel_id)
-
-        created_at = format_time_in_zone(panel.created_at)
-        updated_at = format_time_in_zone(panel.updated_at,
-                                         format="%d/%m/%y %H:%M %Z") if panel.updated_at else "None"
-
-        try:
-            updated_by = await self.bot.fetch_user(panel.updated_by)
-        except Exception:
-            updated_by = None
-
-        updated_by = updated_by.mention if updated_by else "None"
+            raise TicketPanelNotFound(panel_id)
 
         panel_embed = panel.panel_embed
 
@@ -132,28 +94,28 @@ class TicketAdminCommand(commands.Cog):
             f"**ᴘᴀɴᴇʟ ᴇᴍᴏᴊɪ**: {panel_embed.get("emoji")}\n"
             f"**ᴀᴜᴛʜᴏʀ ᴜʀʟ**: {'✅' if panel_embed.get("author_url") else '❎'}\n\n"
 
-            f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {category_channel.name if category_channel else panel.category_channel_id}\n"
-            f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {staff_roles}\n"
-            f"**ᴍᴇɴᴛɪᴏɴ ʀᴏʟᴇѕ**: {mention_roles}\n"
-            f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {required_roles}\n\n"
+            f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(panel.category_channel_id)}\n"
+            f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {fmt_roles(panel.staff_role_ids)}\n"
+            f"**ᴍᴇɴᴛɪᴏɴ ʀᴏʟᴇѕ**: {fmt_roles(panel.mention_role_ids)}\n"
+            f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {fmt_roles(panel.required_role_ids)}\n\n"
 
             f"**ᴇᴍʙᴇᴅ ᴛɪᴛʟᴇ**: {panel.ticket_embed.get("title")}\n"
             f"**ᴇᴍʙᴇᴅ ᴅᴇѕᴄʀɪᴘᴛɪᴏɴ**: {panel.ticket_embed.get("description")}\n\n"
 
-            f"**ʟᴏɢɢɪɴɢ ᴄʜᴀɴɴᴇʟ**: {logging_channel.mention if logging_channel else panel.logging_channel_id}\n"
-            f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {created_at}\n"
+            f"**ʟᴏɢɢɪɴɢ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(panel.logging_channel_id)}\n"
+            f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: {format_time_in_zone(panel.created_at)}\n"
             f"**ᴇɴᴀʙʟᴇᴅ**: {'✅' if panel.is_enabled else '❎'}\n"
         )
 
         embed = discord.Embed(
-            title=f"**{panel_id}** ᴛɪᴄᴋᴇᴛ ᴄᴀᴛᴇɢᴏʀʏ",
+            title=f"**{panel_id}** ᴛɪᴄᴋᴇᴛ ᴘᴀɴᴇʟ",
             description=description,
             color=0x393A41,
             timestamp=get_time_now()
         )
 
-        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**", value=updated_at, inline=True)
-        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ʙʏ**", value=updated_by, inline=True)
+        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**", value=format_time_in_zone(panel.updated_at), inline=True)
+        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ʙʏ**", value=fmt_user(panel.updated_by), inline=True)
 
         await ctx.reply(embed=embed)
 
@@ -170,27 +132,11 @@ class TicketAdminCommand(commands.Cog):
 
         lines: list[str] = []
         for panel in panels:
-            staff_roles = " ".join(
-                [
-                    role.mention
-                    for role in (ctx.guild.get_role(int(role_id)) for role_id in panel.staff_role_ids)
-                    if role
-                ]
-            ) or "None"
-
-            required_roles = " ".join(
-                [
-                    role.mention
-                    for role in (ctx.guild.get_role(int(role_id)) for role_id in panel.required_role_ids)
-                    if role
-                ]
-            ) or "None"
-
             lines.append(
                 f"**{panel.panel_id}**\n"
                 f"**ᴘᴀɴᴇʟ ɴᴀᴍᴇ**: {panel.panel_embed.get("name") or panel.panel_id}\n"
-                f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {staff_roles}\n"
-                f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {required_roles}\n"
+                f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {fmt_roles(panel.staff_role_ids)}\n"
+                f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {fmt_roles(panel.required_role_ids)}\n"
                 f"**ᴄʀᴇᴀᴛᴇᴅ ᴀᴛ**: **{format_time_in_zone(panel.created_at)}**\n"
                 f"**ᴇɴᴀʙʟᴇᴅ**: {'✅' if panel.is_enabled else '❎'}\n"
             )
@@ -230,9 +176,9 @@ class TicketAdminCommand(commands.Cog):
         )
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'panel name' to **{name}**!")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **panel name** to **{name}**.")
 
     @has_permission()
     @_panel.command(name="description")
@@ -254,9 +200,9 @@ class TicketAdminCommand(commands.Cog):
         )
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'pane description' to **{description}**!")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **panel description** to **{description}**.")
 
     @has_permission()
     @_panel.command(name="emoji")
@@ -277,9 +223,9 @@ class TicketAdminCommand(commands.Cog):
         )
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'panel emoji' to **{emoji}**!")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **panel emoji** to {emoji}.")
 
     @has_permission()
     @_panel.command(name="author_url")
@@ -300,9 +246,9 @@ class TicketAdminCommand(commands.Cog):
         )
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'author url' to **{enabled}**!")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **panel author url** to **{enabled}**.")
 
     @has_permission()
     @_ticket_admin.command(name="category_channel")
@@ -323,9 +269,9 @@ class TicketAdminCommand(commands.Cog):
         )
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'category channel' to **{channel.name}**!")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **category channel** to **{channel.name}**.")
 
     @has_permission()
     @_ticket_admin.group(name="embed")
@@ -352,9 +298,9 @@ class TicketAdminCommand(commands.Cog):
         )
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'embed title' to **{title}**!")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **embed title** to **{title}**.")
 
     @has_permission()
     @_embed.command(name="description")
@@ -376,9 +322,9 @@ class TicketAdminCommand(commands.Cog):
         )
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'embed description' to **{description}**!")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **embed description** to **{description}**.")
 
     @has_permission()
     @_ticket_admin.command(name="logging_channel")
@@ -399,9 +345,9 @@ class TicketAdminCommand(commands.Cog):
         )
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'logging channel' to {channel.mention}!")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **logging channel** to {channel.mention}.")
 
     @has_permission()
     @_ticket_admin.command(name="is_enabled")
@@ -422,9 +368,9 @@ class TicketAdminCommand(commands.Cog):
         )
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'is enabled' to **{enabled}**!")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **is enabled** to **{enabled}**.")
 
     @has_permission()
     @_ticket_admin.group(name="required_roles")
@@ -442,18 +388,17 @@ class TicketAdminCommand(commands.Cog):
         """
         Add a role to ticket panel required roles
         """
-        role_id = role.id
         panel = update_or_retrieve_ticket_panel(ctx.guild.id, panel_id)
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
         required_roles = panel.required_role_ids
 
-        if role_id in required_roles:
+        if role.id in required_roles:
             return await ctx.reply(f"Role {role.mention} is present!")
 
-        required_roles.append(role_id)
+        required_roles.append(role.id)
 
         update_or_retrieve_ticket_panel(
             ctx.guild.id,
@@ -462,7 +407,7 @@ class TicketAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'required roles' by adding {role.mention}")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **required roles** by adding {role.mention}.")
 
     @has_permission()
     @_required_roles.command(name="remove")
@@ -475,19 +420,17 @@ class TicketAdminCommand(commands.Cog):
         """
         Remove a role from ticket panel required roles
         """
-        role_id = role.id
-        panel_id = panel_id.lower()
         panel = update_or_retrieve_ticket_panel(ctx.guild.id, panel_id)
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
         required_roles = panel.required_role_ids
 
-        if role_id not in required_roles:
+        if role.id not in required_roles:
             return await ctx.reply(f"Role {role.mention} is not present!")
 
-        required_roles.remove(role_id)
+        required_roles.remove(role.id)
 
         update_or_retrieve_ticket_panel(
             ctx.guild.id,
@@ -496,7 +439,7 @@ class TicketAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'required roles' by removing {role.mention}")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **required roles** by removing {role.mention}.")
 
     @has_permission()
     @_ticket_admin.group(name="staff_roles")
@@ -514,18 +457,17 @@ class TicketAdminCommand(commands.Cog):
         """
         Add a role to ticket panel staff roles
         """
-        role_id = role.id
         panel = update_or_retrieve_ticket_panel(ctx.guild.id, panel_id)
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
         staff_roles = panel.staff_role_ids
 
-        if role_id in staff_roles:
+        if role.id in staff_roles:
             return await ctx.reply(f"Role {role.mention} is present!")
 
-        staff_roles.append(role_id)
+        staff_roles.append(role.id)
 
         update_or_retrieve_ticket_panel(
             ctx.guild.id,
@@ -534,7 +476,7 @@ class TicketAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'staff roles' by adding {role.mention}")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **staff roles** by adding {role.mention}.")
 
     @has_permission()
     @_staff_roles.command(name="remove")
@@ -547,19 +489,17 @@ class TicketAdminCommand(commands.Cog):
         """
         Remove a role from ticket panel staff roles
         """
-        role_id = role.id
-        panel_id = panel_id.lower()
         panel = update_or_retrieve_ticket_panel(ctx.guild.id, panel_id)
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
         staff_roles = panel.staff_role_ids
 
-        if role_id not in staff_roles:
+        if role.id not in staff_roles:
             return await ctx.reply(f"Role {role.mention} is not present!")
 
-        staff_roles.remove(role_id)
+        staff_roles.remove(role.id)
 
         update_or_retrieve_ticket_panel(
             ctx.guild.id,
@@ -568,7 +508,7 @@ class TicketAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'staff roles' by removing {role.mention}")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **staff roles** by removing {role.mention}.")
 
     @has_permission()
     @_ticket_admin.group(name="mention_roles")
@@ -586,18 +526,17 @@ class TicketAdminCommand(commands.Cog):
         """
         Add a role to ticket panel staff roles
         """
-        role_id = role.id
         panel = update_or_retrieve_ticket_panel(ctx.guild.id, panel_id)
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
         mention_roles = panel.mention_role_ids
 
-        if role_id in mention_roles:
+        if role.id in mention_roles:
             return await ctx.reply(f"Role {role.mention} is present!")
 
-        mention_roles.append(role_id)
+        mention_roles.append(role.id)
 
         update_or_retrieve_ticket_panel(
             ctx.guild.id,
@@ -606,7 +545,7 @@ class TicketAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'mention roles' by adding {role.mention}")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **mention roles** by adding {role.mention}.")
 
     @has_permission()
     @_mention_roles.command(name="remove")
@@ -619,18 +558,17 @@ class TicketAdminCommand(commands.Cog):
         """
         Remove a role from ticket panel staff roles
         """
-        role_id = role.id
         panel = update_or_retrieve_ticket_panel(ctx.guild.id, panel_id)
 
         if not panel:
-            return await ctx.reply(f"No panel **{panel_id}** has been found!")
+            raise TicketPanelNotFound(panel_id)
 
         mention_roles = panel.mention_role_ids
 
-        if role_id not in mention_roles:
+        if role.id not in mention_roles:
             return await ctx.reply(f"Role {role.mention} is not present!")
 
-        mention_roles.remove(role_id)
+        mention_roles.remove(role.id)
 
         update_or_retrieve_ticket_panel(
             ctx.guild.id,
@@ -639,7 +577,7 @@ class TicketAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated panel **{panel_id}** 'mention roles' by removing {role.mention}")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **mention roles** by removing {role.mention}.")
 
 
 async def setup(bot):

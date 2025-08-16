@@ -1,11 +1,11 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import get_commands_help_messages, get_time_now, format_time_in_zone
+from backend.core.helper import get_commands_help_messages, get_time_now, format_time_in_zone, fmt_user, get_user_best
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission, has_cooldown
 from backend.tickets.director import get_panels_for_guild, build_panel_list_view, \
-    mark_ticket_closed, get_ticket_by_channel, send_ticket_close_logging, get_ticket_by_id, get_user_tickets
+    mark_ticket_closed, get_ticket_by_channel, send_ticket_logging, get_ticket_by_id, get_user_tickets
 
 
 class TicketCommand(commands.Cog):
@@ -58,7 +58,7 @@ class TicketCommand(commands.Cog):
         await ctx.reply("Closing ticket...!")
 
         try:
-            await send_ticket_close_logging(ctx.guild, closed_ticket)
+            await send_ticket_logging(ctx.guild, closed_ticket)
             await ctx.channel.delete(reason="Ticket closed")
         except Exception as e:
             await ctx.reply(f"Ticket closed in database. I couldn't perform last closing checks.. -> {e}")
@@ -76,18 +76,6 @@ class TicketCommand(commands.Cog):
             await ctx.reply(f"No ticket matching **#{ticket_id}** found!")
             return
 
-        guild = ctx.guild
-
-        try:
-            member = await self.bot.fetch_user(ticket.user_id)
-            closed_by = await self.bot.fetch_user(ticket.closed_by)
-        except Exception:
-            closed_by = None
-            member = None
-
-        member = member if member else "None"
-        closed_by = closed_by.mention if closed_by else "None"
-
         description = (
             f"**ᴛɪᴄᴋᴇᴛ ɪᴅ**: **{ticket.ticket_id}**\n"
             f"**ᴘᴀɴᴇʟ ɪᴅ**: **{ticket.panel_id}**\n"
@@ -98,11 +86,13 @@ class TicketCommand(commands.Cog):
         if ticket.is_closed:
             description += (
                 f"\n**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at)}\n"
-                f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by}\n"
+                f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {fmt_user(ticket.closed_by)}\n"
             )
 
+        member = await get_user_best(self.bot, ctx.guild, ticket.user_id)
+
         embed = discord.Embed(
-            title=f"ᴛɪᴄᴋᴇᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ ꜰᴏʀ @{member}",
+            title=f"ᴛɪᴄᴋᴇᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ ꜰᴏʀ @{member if member else ticket.user_id}",
             description=description,
             color=0x393A41,
             timestamp=get_time_now(),
@@ -110,7 +100,7 @@ class TicketCommand(commands.Cog):
 
         embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**",
                         value=f"{format_time_in_zone(ticket.updated_at)}", inline=True)
-        embed.add_field(name="**ɢᴜɪʟᴅ ɪᴅ**", value=f"{guild.id}", inline=True)
+        embed.add_field(name="**ɢᴜɪʟᴅ ɪᴅ**", value=f"{ctx.guild.id}", inline=True)
 
         avatar_url = member.avatar.url if member.avatar is not None else "https://cdn.discordapp.com/embed/avatars/0.png"
         embed.set_thumbnail(url=avatar_url)
@@ -124,21 +114,13 @@ class TicketCommand(commands.Cog):
         """
         Display all tickets of member
         """
-        guild = ctx.guild
-        tickets = get_user_tickets(guild.id, member.id)
+        tickets = get_user_tickets(ctx.guild.id, member.id)
 
         if len(tickets) <= 0:
             return await ctx.reply("No ticket to display yet!")
 
         lines: list[str] = []
         for ticket in tickets:
-            try:
-                closed_by = await self.bot.fetch_user(ticket.closed_by)
-            except Exception:
-                closed_by = None
-
-            closed_by = closed_by.mention if closed_by else "None"
-
             description = (
                 f"**#{ticket.ticket_id}**\n"
                 f"**ᴘᴀɴᴇʟ ɪᴅ**: **{ticket.panel_id}**\n"
@@ -148,7 +130,7 @@ class TicketCommand(commands.Cog):
             if ticket.is_closed:
                 description += (
                     f"**ᴄʟᴏѕᴇᴅ ᴀᴛ**: {format_time_in_zone(ticket.closed_at)}\n"
-                    f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {closed_by}\n"
+                    f"**ᴄʟᴏѕᴇᴅ ʙʏ**: {fmt_user(ticket.closed_by)}\n"
                 )
 
             lines.append(description)

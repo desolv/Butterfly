@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Any
 
 import discord
 from discord.ext import commands
@@ -7,7 +6,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from backend.core.database import Engine
-from backend.core.helper import get_time_now, send_private_dm
+from backend.core.helper import get_time_now, send_private_dm, get_user_best
 from backend.punishments.models.punishment import Punishment, PunishmentType
 from backend.punishments.models.punishment_config import PunishmentConfig
 
@@ -59,7 +58,7 @@ def get_global_active_expiring_punishments_within(within_seconds: int = 120):
         ).all()
 
 
-def get_punishment_by_id(guild_id: int, punishment_id: int):
+def get_punishment(guild_id: int, punishment_id: int):
     """
     Retrieve a punishment by its guild and ID
     """
@@ -137,21 +136,6 @@ def remove_user_active_punishment(
         session.refresh(punishment)
 
         return punishment, True
-
-
-def is_valid_punishment_type(value: Any):
-    """
-    Check if a string matches a valid PunishmentType
-    """
-    if not isinstance(value, str):
-        return False, None
-
-    key = value.upper()
-    try:
-        member = PunishmentType[key]
-        return True, member
-    except KeyError:
-        return False, None
 
 
 def get_punishment_metadata(punishment_type: PunishmentType):
@@ -247,31 +231,25 @@ async def process_punishment_removal(bot: commands.Bot, punishment: Punishment,
     Remove roles/unban and mark punishment as revoked
     """
     guild = bot.get_guild(punishment.guild_id)
+    member = await get_user_best(bot, guild, punishment.user_id)
 
     match punishment.type:
         case PunishmentType.MUTE:
             try:
                 muted_role_id = create_or_update_punishment_config(guild.id).muted_role_id
-                member = guild.get_member(punishment.user_id)
                 muted_role = guild.get_role(muted_role_id)
                 await member.remove_roles(muted_role, reason=reason)
             except Exception as e:
                 print(f"Wasn't able remove mute for {punishment.user_id}. Aborting! -> {e}")
                 return
 
-            sent_dm = await send_private_dm(member,
-                                            f"Hey! **You're able to chat now at {guild.name}!** Please refrain from breaking rules again")
+            sent_dm = await send_private_dm(member, f"Hey! You're able to chat now at **{guild.name}**!")
         case PunishmentType.BAN:
             try:
                 await guild.unban(discord.Object(id=punishment.user_id), reason=reason)
             except Exception as e:
                 print(f"Wasn't able remove ban for {punishment.user_id}. Aborting! -> {e}")
                 return
-
-            try:
-                member = await bot.fetch_user(punishment.user_id)
-            except Exception:
-                member = None
 
             sent_dm = False
         case _:

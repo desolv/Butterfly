@@ -1,7 +1,7 @@
 import discord
 from discord import ButtonStyle
 
-from backend.tickets.director import send_ticket_close_logging, get_ticket_by_channel, \
+from backend.tickets.director import send_ticket_logging, get_ticket_by_channel, \
     update_or_retrieve_ticket_panel, mark_ticket_closed
 
 
@@ -46,7 +46,7 @@ class TicketCloseButton(discord.ui.View):
         await interaction.followup.send("Closing ticket...!", ephemeral=True)
 
         try:
-            await send_ticket_close_logging(interaction.guild, closed_ticket)
+            await send_ticket_logging(interaction.guild, closed_ticket)
             await interaction.channel.delete(reason="Ticket closed")
         except Exception as e:
             await interaction.followup.send(

@@ -280,3 +280,54 @@ def get_all_command_names(bot: commands.Bot, include_hidden: bool = False) -> Li
             unique.append(n)
 
     return unique
+
+
+async def get_user_best(bot: discord.Client, guild: discord.Guild, user_id: int):
+    """
+    Resolve a user with minimal API calls.
+    """
+    # Guild cache
+    member = guild.get_member(user_id)
+    if member:
+        return member
+
+    # Guild REST - Member
+    try:
+        member = await guild.fetch_member(user_id)
+        return member
+    except (discord.NotFound, discord.Forbidden):
+        pass
+
+    # Global user cache
+    user = bot.get_user(user_id)
+    if user:
+        return user
+
+    # Global REST - User
+    try:
+        user = await bot.fetch_user(user_id)
+        return user
+    except Exception:
+        return None
+
+
+def fmt_role(role_id: int | None) -> str:
+    return f"<@&{int(role_id)}>" if role_id else "None"
+
+
+def fmt_roles(role_ids: list[int] | None) -> str:
+    ids = [int(role) for role in (role_ids or [])]
+    return " ".join(f"<@&{rid}>" for rid in ids) or "None"
+
+
+def fmt_user(user_id: int | None) -> str:
+    return f"<@{int(user_id)}>" if user_id else "None"
+
+
+def fmt_users(user_ids: list[int] | None) -> str:
+    ids = [int(user) for user in (user_ids or [])]
+    return " ".join(f"<@{uid}>" for uid in ids) or "None"
+
+
+def fmt_channel(channel_id: int | None) -> str:
+    return f"<#{int(channel_id)}>" if channel_id else "None"

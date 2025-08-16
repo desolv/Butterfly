@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import get_time_now, format_time_in_zone, get_commands_help_messages
+from backend.core.helper import get_time_now, format_time_in_zone, get_commands_help_messages, fmt_role, fmt_roles, \
+    fmt_users, fmt_channel, fmt_user
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission
 from backend.punishments.director import create_or_update_punishment_config
@@ -29,55 +30,25 @@ class PunishmentAdminCommand(commands.Cog):
         """
         Display the current punishments config
         """
-        guild = ctx.guild
-        punishment_config = create_or_update_punishment_config(guild.id)
-
-        muted_role = guild.get_role(punishment_config.muted_role_id)
-
-        protected_roles = " ".join(
-            [
-                role.mention
-                for role in (guild.get_role(int(role_id)) for role_id in punishment_config.protected_roles)
-                if role
-            ]
-        ) or "None"
-
-        protected_users = " ".join(
-            [
-                member.mention
-                for member in (guild.get_member(int(member_id)) for member_id in punishment_config.protected_users)
-                if member
-            ]
-        ) or "None"
-
-        logging_channel = guild.get_channel(punishment_config.logging_channel_id)
-
-        updated_at = format_time_in_zone(punishment_config.updated_at,
-                                         format="%d/%m/%y %H:%M %Z") if punishment_config.updated_at else "None"
-
-        try:
-            updated_by = await self.bot.fetch_user(punishment_config.updated_by)
-        except Exception:
-            updated_by = None
-
-        updated_by = updated_by.mention if updated_by else "None"
+        punishment_config = create_or_update_punishment_config(ctx.guild.id)
 
         description = (
-            f"**ᴘʀᴏᴛᴇᴄᴛᴇᴅ ʀᴏʟᴇѕ**: {protected_roles}\n"
-            f"**ᴘʀᴏᴛᴇᴄᴛᴇᴅ ᴜѕᴇʀѕ**: {protected_users}\n\n"
-            f"**ᴍᴜᴛᴇᴅ ʀᴏʟᴇ**: {muted_role.mention if muted_role else "None"}\n"
-            f"**ʟᴏɢɢɪɴɢ ᴄʜᴀɴɴᴇʟ**: {logging_channel.mention if logging_channel else "None"}\n"
+            f"**ᴘʀᴏᴛᴇᴄᴛᴇᴅ ʀᴏʟᴇѕ**: {fmt_roles(punishment_config.protected_roles)}\n"
+            f"**ᴘʀᴏᴛᴇᴄᴛᴇᴅ ᴜѕᴇʀѕ**: {fmt_users(punishment_config.protected_users)}\n\n"
+            f"**ᴍᴜᴛᴇᴅ ʀᴏʟᴇ**: {fmt_role(punishment_config.muted_role_id)}\n"
+            f"**ʟᴏɢɢɪɴɢ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(punishment_config.logging_channel_id)}\n"
         )
 
         embed = discord.Embed(
-            title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴍᴀɴɪꜰᴇѕᴛ ꜰᴏʀ {guild.name}",
+            title=f"ᴘᴜɴɪѕʜᴍᴇɴᴛ ᴍᴀɴɪꜰᴇѕᴛ ꜰᴏʀ {ctx.guild.name}",
             description=description,
             color=0x393A41,
             timestamp=get_time_now()
         )
 
-        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**", value=f"{updated_at}", inline=True)
-        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ʙʏ**", value=f"{updated_by}", inline=True)
+        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**", value=f"{format_time_in_zone(punishment_config.updated_at)}",
+                        inline=True)
+        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ʙʏ**", value=f"{fmt_user(punishment_config.updated_by)}", inline=True)
 
         await ctx.reply(embed=embed)
 
@@ -97,7 +68,7 @@ class PunishmentAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated punishment config **muted role** to {role.mention}")
+        await ctx.reply(f"Updated punishment config **muted role** to {role.mention}.")
 
     @has_permission()
     @_punishment_admin.command(name="logging_channel")
@@ -115,7 +86,7 @@ class PunishmentAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated punishment config **logging channel** to {channel.mention}")
+        await ctx.reply(f"Updated punishment config **logging channel** to {channel.mention}.")
 
     @has_permission()
     @_punishment_admin.group(name="protected_roles")
@@ -132,14 +103,13 @@ class PunishmentAdminCommand(commands.Cog):
         """
         Add a role to punishment config protected roles
         """
-        role_id = role.id
         punishment_config = create_or_update_punishment_config(ctx.guild.id)
         protected_roles = punishment_config.protected_roles
 
-        if role_id in protected_roles:
+        if role.id in protected_roles:
             return await ctx.reply(f"Role {role.mention} is present!")
 
-        protected_roles.append(role_id)
+        protected_roles.append(role.id)
 
         create_or_update_punishment_config(
             ctx.guild.id,
@@ -147,7 +117,7 @@ class PunishmentAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated punishment config **protected roles** by adding {role.mention}")
+        await ctx.reply(f"Updated punishment config **protected roles** by adding {role.mention}.")
 
     @has_permission()
     @_protected_roles.command(name="remove")
@@ -159,14 +129,13 @@ class PunishmentAdminCommand(commands.Cog):
         """
         Remove a role from punishment config protected roles
         """
-        role_id = role.id
         punishment_config = create_or_update_punishment_config(ctx.guild.id)
         protected_roles = punishment_config.protected_roles
 
-        if role_id not in protected_roles:
+        if role.id not in protected_roles:
             return await ctx.reply(f"Role {role.mention} is not present!")
 
-        protected_roles.remove(role_id)
+        protected_roles.remove(role.id)
 
         create_or_update_punishment_config(
             ctx.guild.id,
@@ -174,7 +143,7 @@ class PunishmentAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated punishment config **protected roles** by removing {role.mention}")
+        await ctx.reply(f"Updated punishment config **protected roles** by removing {role.mention}.")
 
     @has_permission()
     @_punishment_admin.group(name="protected_users")
@@ -191,14 +160,13 @@ class PunishmentAdminCommand(commands.Cog):
         """
         Add a member to punishment config protected users
         """
-        member_id = member.id
         punishment_config = create_or_update_punishment_config(ctx.guild.id)
         protected_users = punishment_config.protected_users
 
-        if member_id in protected_users:
+        if member.id in protected_users:
             return await ctx.reply(f"User {member.mention} is present!")
 
-        protected_users.append(member_id)
+        protected_users.append(member.id)
 
         create_or_update_punishment_config(
             ctx.guild.id,
@@ -206,7 +174,7 @@ class PunishmentAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated punishment config **protected users** by adding {member.mention}")
+        await ctx.reply(f"Updated punishment config **protected users** by adding {member.mention}.")
 
     @has_permission()
     @_protected_users.command(name="remove")
@@ -218,14 +186,13 @@ class PunishmentAdminCommand(commands.Cog):
         """
         Remove a member from punishment config protected users
         """
-        member_id = member.id
         punishment_config = create_or_update_punishment_config(ctx.guild.id)
         protected_users = punishment_config.protected_users
 
-        if member_id not in protected_users:
+        if member.id not in protected_users:
             return await ctx.reply(f"User {member.mention} is not present!")
 
-        protected_users.remove(member_id)
+        protected_users.remove(member.id)
 
         create_or_update_punishment_config(
             ctx.guild.id,
@@ -233,7 +200,7 @@ class PunishmentAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated punishment config **protected users** by removing {member.mention}")
+        await ctx.reply(f"Updated punishment config **protected users** by removing {member.mention}.")
 
 
 async def setup(bot):

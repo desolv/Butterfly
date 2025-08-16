@@ -76,9 +76,8 @@ class ErrorDirector(commands.Cog):
             )
             return
 
-        print(f"Unhandled exception while '{ctx.command}' -> {error}")
         await ctx.reply(
-            f"❌ Something went wrong. Contact an administrator if error persists! -> {error}",
+            f"❌ Something went wrong. {error}",
             mention_author=False
         )
 

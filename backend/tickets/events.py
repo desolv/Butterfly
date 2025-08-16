@@ -7,7 +7,7 @@ from discord.ext import commands
 from backend.tickets.director import (
     get_panels_for_guild,
     build_panel_list_view,
-    handle_ticket_panel_selection, get_ticket_by_channel, mark_ticket_closed, send_ticket_close_logging,
+    handle_ticket_panel_selection, get_ticket_by_channel, mark_ticket_closed, send_ticket_logging,
 )
 from backend.tickets.models.ticket_close_button import TicketCloseButton
 
@@ -65,7 +65,7 @@ class TicketEvents(commands.Cog):
 
         try:
             closed_ticket = mark_ticket_closed(guild.id, channel.id, actioner_id)
-            await send_ticket_close_logging(guild, closed_ticket)
+            await send_ticket_logging(guild, closed_ticket)
         except Exception:
             return
 
