@@ -385,8 +385,8 @@ async def create_ticket_channel(guild: discord.Guild, user: discord.Member | dis
             )
 
     parent = None
-    if panel.category_channel_id:
-        category = guild.get_channel(panel.category_channel_id)
+    if panel.category_id:
+        category = guild.get_channel(panel.category_id)
         if category and category.type is discord.ChannelType.category:
             parent = category
 

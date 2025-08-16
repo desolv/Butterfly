@@ -94,7 +94,7 @@ class TicketAdminCommand(commands.Cog):
             f"**ᴘᴀɴᴇʟ ᴇᴍᴏᴊɪ**: {panel_embed.get("emoji")}\n"
             f"**ᴀᴜᴛʜᴏʀ ᴜʀʟ**: {'✅' if panel_embed.get("author_url") else '❎'}\n\n"
 
-            f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(panel.category_channel_id)}\n"
+            f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(panel.category_id)}\n"
             f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {fmt_roles(panel.staff_role_ids)}\n"
             f"**ᴍᴇɴᴛɪᴏɴ ʀᴏʟᴇѕ**: {fmt_roles(panel.mention_role_ids)}\n"
             f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {fmt_roles(panel.required_role_ids)}\n\n"
@@ -251,27 +251,27 @@ class TicketAdminCommand(commands.Cog):
         await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **panel author url** to **{enabled}**.")
 
     @has_permission()
-    @_ticket_admin.command(name="category_channel")
-    async def _category_channel(
+    @_ticket_admin.command(name="category_id")
+    async def _category_id(
             self,
             ctx,
             panel_id: str,
             channel: discord.CategoryChannel
     ):
         """
-        Set the category channel for ticket panel
+        Set the category id for ticket panel
         """
         panel = update_or_retrieve_ticket_panel(
             ctx.guild.id,
             panel_id,
-            category_channel_id=channel.id,
+            category_id=channel.id,
             updated_by=ctx.author.id
         )
 
         if not panel:
             raise TicketPanelNotFound(panel_id)
 
-        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **category channel** to **{channel.name}**.")
+        await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **category id** to **{channel.name}**.")
 
     @has_permission()
     @_ticket_admin.group(name="embed")

@@ -18,7 +18,7 @@ class TicketPanel(Base):
                              "author_url": False
                          },
                          nullable=True)
-    category_channel_id = Column(BigInteger, nullable=True)
+    category_id = Column(BigInteger, nullable=True)
     staff_role_ids = Column(ARRAY(BigInteger), default=list)
     mention_role_ids = Column(ARRAY(BigInteger), default=list)
     required_role_ids = Column(ARRAY(BigInteger), default=list)
