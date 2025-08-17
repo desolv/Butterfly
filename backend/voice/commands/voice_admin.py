@@ -2,10 +2,11 @@ import discord
 from discord.ext import commands
 
 from backend.core.helper import get_commands_help_messages, fmt_channel, fmt_roles, format_time_in_zone, fmt_user, \
-    get_time_now
+    get_time_now, fmt_users
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission
-from backend.voice.director import update_or_retrieve_voice_config
+from backend.voice.director import create_or_update_voice_config
+from backend.voice.ui.voice_views import GlobalVoiceControls
 
 
 class VoiceAdminCommand(commands.Cog):
@@ -30,19 +31,20 @@ class VoiceAdminCommand(commands.Cog):
         """
         Display the voice config
         """
-        config = update_or_retrieve_voice_config(ctx.guild.id)
+        config = create_or_update_voice_config(ctx.guild.id)
 
         description = (
-            f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.category_id)}\n"
+            f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.category_id).replace("#", "")}\n"
             f"**ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.join_channel_id)}\n"
-            f"**ᴄᴏᴍᴍᴀɴᴅ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.command_channel_id)}\n"
+            f"**ʟᴏɢɢɪɴɢ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.logging_channel_id)}\n\n"
+
             f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {fmt_roles(config.staff_role_ids)}\n\n"
 
             f"**ᴇᴍʙᴇᴅ ᴛɪᴛʟᴇ**: {config.embed.get("title")}\n"
             f"**ᴇᴍʙᴇᴅ ᴅᴇѕᴄʀɪᴘᴛɪᴏɴ**: {config.embed.get("description")}\n\n"
 
-            f"**ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀꜰᴛᴇʀ**: {config.auto_delete_after}\n"
-            f"**ʟᴏɢɢɪɴɢ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.logging_channel_id)}\n"
+            f"**ʙᴀɴɴᴇᴅ ᴜѕᴇʀѕ**: {fmt_users(config.banned_user_ids)}\n"
+            f"**ʙᴀɴɴᴇᴅ ʀᴏʟᴇѕ**: {fmt_roles(config.banned_role_ids)}\n"
         )
 
         embed = discord.Embed(
@@ -67,7 +69,7 @@ class VoiceAdminCommand(commands.Cog):
         """
         Set the category id for voice config
         """
-        update_or_retrieve_voice_config(
+        create_or_update_voice_config(
             ctx.guild.id,
             category_id=channel.id,
             updated_by=ctx.author.id
@@ -85,31 +87,13 @@ class VoiceAdminCommand(commands.Cog):
         """
         Set the join channel for voice config
         """
-        update_or_retrieve_voice_config(
+        create_or_update_voice_config(
             ctx.guild.id,
             join_channel_id=channel.id,
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated voice config **join channel** to **{channel.name}**.")
-
-    @has_permission()
-    @_voice_admin.command(name="command_channel")
-    async def _command_channel(
-            self,
-            ctx,
-            channel: discord.TextChannel
-    ):
-        """
-        Set the command channel for voice config
-        """
-        update_or_retrieve_voice_config(
-            ctx.guild.id,
-            command_channel_id=channel.id,
-            updated_by=ctx.author.id
-        )
-
-        await ctx.reply(f"Updated voice config **command channel** to **{channel.name}**.")
+        await ctx.reply(f"Updated voice config **join channel** to {channel.mention}.")
 
     @has_permission()
     @_voice_admin.group(name="staff_roles")
@@ -126,7 +110,7 @@ class VoiceAdminCommand(commands.Cog):
         """
         Add a role to voice config staff roles
         """
-        config = update_or_retrieve_voice_config(ctx.guild.id)
+        config = create_or_update_voice_config(ctx.guild.id)
         staff_roles = config.staff_role_ids
 
         if role.id in staff_roles:
@@ -134,7 +118,7 @@ class VoiceAdminCommand(commands.Cog):
 
         staff_roles.append(role.id)
 
-        update_or_retrieve_voice_config(
+        create_or_update_voice_config(
             ctx.guild.id,
             staff_role_ids=staff_roles,
             updated_by=ctx.author.id
@@ -152,7 +136,7 @@ class VoiceAdminCommand(commands.Cog):
         """
         Remove a role from voice config staff roles
         """
-        config = update_or_retrieve_voice_config(ctx.guild.id)
+        config = create_or_update_voice_config(ctx.guild.id)
         staff_roles = config.staff_role_ids
 
         if role.id not in staff_roles:
@@ -160,7 +144,7 @@ class VoiceAdminCommand(commands.Cog):
 
         staff_roles.remove(role.id)
 
-        update_or_retrieve_voice_config(
+        create_or_update_voice_config(
             ctx.guild.id,
             staff_role_ids=staff_roles,
             updated_by=ctx.author.id
@@ -184,7 +168,7 @@ class VoiceAdminCommand(commands.Cog):
         """
         Set the embed title for voice config
         """
-        update_or_retrieve_voice_config(
+        create_or_update_voice_config(
             ctx.guild.id,
             embed_title=title,
             updated_by=ctx.author.id
@@ -203,7 +187,7 @@ class VoiceAdminCommand(commands.Cog):
         """
         Set the embed description for voice config
         """
-        update_or_retrieve_voice_config(
+        create_or_update_voice_config(
             ctx.guild.id,
             embed_description=description,
             updated_by=ctx.author.id
@@ -221,34 +205,166 @@ class VoiceAdminCommand(commands.Cog):
         """
         Set the logging channel for voice config
         """
-        update_or_retrieve_voice_config(
+        create_or_update_voice_config(
             ctx.guild.id,
             logging_channel_id=channel.id,
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated voice config **logging channel** to **{channel.name}**.")
+        await ctx.reply(f"Updated voice config **logging channel** to {channel.mention}.")
 
     @has_permission()
-    @_voice_admin.command(name="auto_delete_after")
-    async def _auto_delete_after(
+    @_voice_admin.command(name="is_enabled")
+    async def _is_enabled(
             self,
             ctx,
-            seconds: int
+            enabled: bool
     ):
         """
-        Set the auto delete for voice config
+        Set the enabled for voice config
         """
-        if seconds > 1800 or seconds < 120:
-            return await ctx.reply(f"Seconds must be between 120-1800!")
-
-        update_or_retrieve_voice_config(
+        create_or_update_voice_config(
             ctx.guild.id,
-            auto_delete_after=seconds,
+            is_enabled=enabled,
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated voice config **auto delete after** to **{seconds}s**.")
+        await ctx.reply(f"Updated voice config **is enabled** to **{enabled}**.")
+
+    @has_permission()
+    @_voice_admin.group(name="banned_roles")
+    async def _banned_roles(self, ctx):
+        pass
+
+    @has_permission()
+    @_banned_roles.command(name="add")
+    async def _banned_roles_add(
+            self,
+            ctx,
+            role: discord.Role
+    ):
+        """
+        Add a role to voice config banned roles
+        """
+        config = create_or_update_voice_config(ctx.guild.id)
+
+        banned_roles = config.banned_role_ids
+
+        if role.id in banned_roles:
+            return await ctx.reply(f"Role {role.mention} is present!")
+
+        banned_roles.append(role.id)
+
+        create_or_update_voice_config(
+            ctx.guild.id,
+            banned_role_ids=banned_roles,
+            updated_by=ctx.author.id
+        )
+
+        await ctx.reply(f"Updated voice config **banned roles** by adding {role.mention}.")
+
+    @has_permission()
+    @_banned_roles.command(name="remove")
+    async def _banned_roles_remove(
+            self,
+            ctx,
+            role: discord.Role
+    ):
+        """
+        Remove a role from voice config banned roles
+        """
+        config = create_or_update_voice_config(ctx.guild.id)
+
+        banned_roles = config.banned_role_ids
+
+        if role.id not in banned_roles:
+            return await ctx.reply(f"Role {role.mention} is not present!")
+
+        banned_roles.remove(role.id)
+
+        create_or_update_voice_config(
+            ctx.guild.id,
+            banned_role_ids=banned_roles,
+            updated_by=ctx.author.id
+        )
+
+        await ctx.reply(f"Updated voice config **banned roles** by removing {role.mention}.")
+
+    @has_permission()
+    @_voice_admin.group(name="banned_users")
+    async def _banned_users(self, ctx):
+        pass
+
+    @has_permission()
+    @_banned_users.command(name="add")
+    async def _banned_users_add(
+            self,
+            ctx,
+            member: discord.Member
+    ):
+        """
+        Add a role to voice config banned users
+        """
+        config = create_or_update_voice_config(ctx.guild.id)
+
+        banned_users = config.banned_user_ids
+
+        if member.id in banned_users:
+            return await ctx.reply(f"User {member.mention} is present!")
+
+        banned_users.append(member.id)
+
+        create_or_update_voice_config(
+            ctx.guild.id,
+            banned_user_ids=banned_users,
+            updated_by=ctx.author.id
+        )
+
+        await ctx.reply(f"Updated voice config **banned users** by adding {role.mention}.")
+
+    @has_permission()
+    @_banned_users.command(name="remove")
+    async def _banned_users_remove(
+            self,
+            ctx,
+            member: discord.Member
+    ):
+        """
+        Remove a role from voice config banned users
+        """
+        config = create_or_update_voice_config(ctx.guild.id)
+
+        banned_users = config.banned_user_ids
+
+        if member.id not in banned_users:
+            return await ctx.reply(f"User {member.mention} is not present!")
+
+        banned_users.remove(member.id)
+
+        create_or_update_voice_config(
+            ctx.guild.id,
+            banned_user_ids=banned_users,
+            updated_by=ctx.author.id
+        )
+
+        await ctx.reply(f"Updated voice config **banned users** by removing {role.mention}.")
+
+    @has_permission()
+    @_voice_admin.command(name="send-embed")
+    async def _send_embed(self, ctx):
+        """
+        Post the voice control panel
+        """
+        config_embed = create_or_update_voice_config(ctx.guild.id).embed
+
+        embed = discord.Embed(
+            title=config_embed.get("title"),
+            description=config_embed.get("description"),
+            color=0x393A41,
+            timestamp=get_time_now(),
+        )
+
+        await ctx.send(embed=embed, view=GlobalVoiceControls())
 
 
 async def setup(bot):
