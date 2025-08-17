@@ -13,5 +13,7 @@ class Permission(Base):
     command_cooldown = Column(BigInteger, default=5)
     required_role_ids = Column(ARRAY(BigInteger), default=list)
     added_at = Column(DateTime, default=get_time_now())
+    updated_at = Column(DateTime, default=get_time_now(), onupdate=get_time_now())
+    updated_by = Column(BigInteger, nullable=True)
     is_admin = Column(Boolean, default=False)
     is_enabled = Column(Boolean, default=True)

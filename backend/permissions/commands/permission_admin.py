@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from backend.core.helper import get_time_now, format_time_in_zone, get_commands_help_messages, fmt_roles
+from backend.core.helper import get_time_now, format_time_in_zone, get_commands_help_messages, fmt_roles, fmt_user
 from backend.core.pagination import Pagination
 from backend.errors.custom_errors import CommandNotFound
 from backend.permissions.director import create_or_retrieve_command, get_permissions_for_guild
@@ -43,7 +43,8 @@ class PermissionAdminCommand(commands.Cog):
         description = (
             f"**ᴀᴅᴍɪɴ**: {'✅' if permission.is_admin else '❎'}\n"
             f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {fmt_roles(permission.required_role_ids)}\n"
-            f"**ᴄᴏᴏʟᴅᴏᴡɴ**: **{permission.command_cooldown}s**\n\n"
+            f"**ᴄᴏᴏʟᴅᴏᴡɴ**: **{permission.command_cooldown}s**\n"
+            f"**ᴀᴅᴅᴇᴅ ᴀᴛ**: {format_time_in_zone(permission.added_at)}\n"
             f"**ᴇɴᴀʙʟᴇᴅ**: {'✅' if permission.is_enabled else '❎'}\n"
         )
 
@@ -54,9 +55,9 @@ class PermissionAdminCommand(commands.Cog):
             timestamp=get_time_now()
         )
 
-        embed.add_field(name="**ᴀᴅᴅᴇᴅ ᴀᴛ**",
-                        value=f"{format_time_in_zone(permission.added_at)}", inline=True)
-        embed.add_field(name="**ɢᴜɪʟᴅ ɪᴅ**", value=f"{ctx.guild.id}", inline=True)
+        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**", value=f"{format_time_in_zone(permission.updated_at)}",
+                        inline=True)
+        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ʙʏ**", value=f"{fmt_user(permission.updated_by)}", inline=True)
 
         await ctx.reply(embed=embed)
 
@@ -103,7 +104,8 @@ class PermissionAdminCommand(commands.Cog):
             self.bot,
             ctx.guild.id,
             command_name,
-            is_admin=is_admin
+            is_admin=is_admin,
+            updated_by=ctx.author.id
         )
 
         if not permission:
@@ -127,7 +129,8 @@ class PermissionAdminCommand(commands.Cog):
             self.bot,
             ctx.guild.id,
             command_name,
-            is_enabled=is_enabled
+            is_enabled=is_enabled,
+            updated_by=ctx.author.id
         )
 
         if not permission:
@@ -154,7 +157,8 @@ class PermissionAdminCommand(commands.Cog):
             self.bot,
             ctx.guild.id,
             command_name,
-            command_cooldown=seconds
+            command_cooldown=seconds,
+            updated_by=ctx.author.id
         )
 
         if not permission:
@@ -199,7 +203,8 @@ class PermissionAdminCommand(commands.Cog):
             self.bot,
             ctx.guild.id,
             command_name,
-            required_role_ids=required_roles
+            required_role_ids=required_roles,
+            updated_by=ctx.author.id
         )
 
         await ctx.reply(
@@ -236,7 +241,8 @@ class PermissionAdminCommand(commands.Cog):
             self.bot,
             ctx.guild.id,
             command_name,
-            required_role_ids=required_roles
+            required_role_ids=required_roles,
+            updated_by=ctx.author.id
         )
 
         await ctx.reply(
@@ -283,7 +289,8 @@ class PermissionAdminCommand(commands.Cog):
             self.bot,
             guild_id,
             command_name,
-            required_role_ids=required_roles
+            required_role_ids=required_roles,
+            updated_by=ctx.author.id
         )
 
         await ctx.reply(
