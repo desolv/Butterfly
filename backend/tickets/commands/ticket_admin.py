@@ -7,7 +7,7 @@ from backend.core.pagination import Pagination
 from backend.errors.custom_errors import TicketPanelNotFound
 from backend.permissions.enforce import has_permission
 from backend.tickets.director import create_ticket_panel, delete_ticket_panel, update_or_retrieve_ticket_panel, \
-    get_panels_for_guild
+    get_panels_for_guild, build_panel_list_view
 
 
 class TicketAdminCommand(commands.Cog):
@@ -94,7 +94,7 @@ class TicketAdminCommand(commands.Cog):
             f"**ᴘᴀɴᴇʟ ᴇᴍᴏᴊɪ**: {panel_embed.get("emoji")}\n"
             f"**ᴀᴜᴛʜᴏʀ ᴜʀʟ**: {'✅' if panel_embed.get("author_url") else '❎'}\n\n"
 
-            f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(panel.category_id)}\n"
+            f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(panel.category_id).replace("#", "")}\n"
             f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {fmt_roles(panel.staff_role_ids)}\n"
             f"**ᴍᴇɴᴛɪᴏɴ ʀᴏʟᴇѕ**: {fmt_roles(panel.mention_role_ids)}\n"
             f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {fmt_roles(panel.required_role_ids)}\n\n"
@@ -618,6 +618,17 @@ class TicketAdminCommand(commands.Cog):
         )
 
         await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **mention roles** by removing {role.mention}.")
+
+    @has_permission()
+    @_ticket_admin.command(name="send-embed", hidden=True)
+    async def _send_embed(self, ctx):
+        panels = get_panels_for_guild(ctx.guild.id)
+        if not panels:
+            return await ctx.reply("No panels configured for this guild!")
+
+        view = build_panel_list_view(ctx.guild.id, panels)
+
+        await ctx.send(embed=view.create_embed(), view=view)
 
 
 async def setup(bot):

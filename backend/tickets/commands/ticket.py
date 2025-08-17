@@ -4,8 +4,8 @@ from discord.ext import commands
 from backend.core.helper import get_commands_help_messages, get_time_now, format_time_in_zone, fmt_user, get_user_best
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission, has_cooldown
-from backend.tickets.director import get_panels_for_guild, build_panel_list_view, \
-    mark_ticket_closed, get_ticket_by_channel, send_ticket_logging, get_ticket_by_id, get_user_tickets, \
+from backend.tickets.director import mark_ticket_closed, get_ticket_by_channel, send_ticket_logging, get_ticket_by_id, \
+    get_user_tickets, \
     update_or_retrieve_ticket_panel
 
 
@@ -23,17 +23,6 @@ class TicketCommand(commands.Cog):
             ctx.author.id
         )
         await ctx.reply(embed=view.create_embed(), view=view)
-
-    @has_permission()
-    @_ticket.command(name="send-embed", hidden=True)
-    async def _send_embed(self, ctx):
-        panels = get_panels_for_guild(ctx.guild.id)
-        if not panels:
-            return await ctx.reply("No panels configured for this guild!")
-
-        view = build_panel_list_view(ctx.guild.id, panels)
-
-        await ctx.send(embed=view.create_embed(), view=view)
 
     @has_cooldown()
     @commands.command(name="close")
