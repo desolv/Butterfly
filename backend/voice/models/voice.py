@@ -9,7 +9,7 @@ class Voice(Base):
 
     channel_id = Column(BigInteger, primary_key=True)
     guild_id = Column(BigInteger, ForeignKey("guilds.guild_id"), index=True)
-    owner_id = Column(BigInteger, nullable=False, index=True)
+    user_id = Column(BigInteger, nullable=False, index=True)
     is_temporary = Column(Boolean, default=True, index=True)
     created_at = Column(DateTime, default=get_time_now())
     is_deleted = Column(Boolean, default=False, index=True)
