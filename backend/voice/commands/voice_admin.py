@@ -6,7 +6,7 @@ from backend.core.helper import get_commands_help_messages, fmt_channel, fmt_rol
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission
 from backend.voice.director import create_or_update_voice_config
-from backend.voice.ui.voice_views import GlobalVoiceControls
+from backend.voice.ui.voice_views import VoiceViews
 
 
 class VoiceAdminCommand(commands.Cog):
@@ -364,7 +364,7 @@ class VoiceAdminCommand(commands.Cog):
             timestamp=get_time_now(),
         )
 
-        await ctx.send(embed=embed, view=GlobalVoiceControls())
+        await ctx.send(embed=embed, view=VoiceViews())
 
 
 async def setup(bot):
