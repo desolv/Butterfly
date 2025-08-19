@@ -2,6 +2,7 @@ import discord
 from sqlalchemy.orm import Session
 
 from backend.core.database import Engine
+from backend.core.helper import get_time_now
 from backend.voice.models.voice import Voice
 from backend.voice.models.voice_config import VoiceConfig
 
@@ -32,9 +33,15 @@ def delete_voice(channel_id: int):
     with Session(Engine) as session:
         voice = session.query(Voice).filter_by(channel_id=channel_id).first()
 
-        if voice:
-            session.delete(voice)
+        if not voice.is_deleted:
+            voice.is_deleted = True
+            voice.deleted_at = get_time_now()
+            session.add(voice)
             session.commit()
+
+        session.refresh(voice)
+        session.expunge(voice)
+        return voice
 
 
 def create_or_update_voice_config(guild_id: int, **kwargs):
