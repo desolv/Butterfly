@@ -12,4 +12,5 @@ class Voice(Base):
     user_id = Column(BigInteger, nullable=False, index=True)
     is_temporary = Column(Boolean, default=True, index=True)
     created_at = Column(DateTime, default=get_time_now())
+    deleted_at = Column(DateTime, nullable=True)
     is_deleted = Column(Boolean, default=False, index=True)
