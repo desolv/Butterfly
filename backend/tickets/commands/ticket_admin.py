@@ -94,7 +94,7 @@ class TicketAdminCommand(commands.Cog):
             f"**ᴘᴀɴᴇʟ ᴇᴍᴏᴊɪ**: {panel_embed.get("emoji")}\n"
             f"**ᴀᴜᴛʜᴏʀ ᴜʀʟ**: {'✅' if panel_embed.get("author_url") else '❎'}\n\n"
 
-            f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(panel.category_id).replace("#", "")}\n"
+            f"**ᴄᴀᴛᴇɢᴏʀʏ ɪᴅ**: {panel.category_id}\n"
             f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {fmt_roles(panel.staff_role_ids)}\n"
             f"**ᴍᴇɴᴛɪᴏɴ ʀᴏʟᴇѕ**: {fmt_roles(panel.mention_role_ids)}\n"
             f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {fmt_roles(panel.required_role_ids)}\n\n"
@@ -251,7 +251,7 @@ class TicketAdminCommand(commands.Cog):
         await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **panel author url** to **{enabled}**.")
 
     @has_permission()
-    @_ticket_admin.command(name="category_id")
+    @_ticket_admin.command(name="category")
     async def _category_id(
             self,
             ctx,

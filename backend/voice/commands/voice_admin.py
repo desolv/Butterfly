@@ -34,7 +34,7 @@ class VoiceAdminCommand(commands.Cog):
         config = create_or_update_voice_config(ctx.guild.id)
 
         description = (
-            f"**ᴄᴀᴛᴇɢᴏʀʏ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.category_id).replace("#", "")}\n"
+            f"**ᴄᴀᴛᴇɢᴏʀʏ ɪᴅ**: {config.category_id}\n"
             f"**ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.join_channel_id)}\n"
             f"**ʟᴏɢɢɪɴɢ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.logging_channel_id)}\n\n"
 
@@ -60,7 +60,7 @@ class VoiceAdminCommand(commands.Cog):
         await ctx.reply(embed=embed)
 
     @has_permission()
-    @_voice_admin.command(name="category_id")
+    @_voice_admin.command(name="category")
     async def _category_id(
             self,
             ctx,
