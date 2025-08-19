@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 from backend.voice.director import create_or_update_voice_config, create_voice, get_voice_by_channel, delete_voice, \
-    is_banned
+    is_banned, get_user_active_voice
 from backend.voice.ui.voice_views import VoiceViews
 
 
@@ -16,17 +16,27 @@ class VoiceEvents(commands.Cog):
                                     after: discord.VoiceState):
         if after.channel and after.channel != before.channel:
             config = create_or_update_voice_config(member.guild.id)
-            if not config.is_enabled:
+            if not config.is_enabled or is_banned(member, config):
                 return
 
-            if is_banned(member, config):
-                return
+            if config.join_channel_id and after.channel.id == config.join_channel_id:
+                owned = get_user_active_voice(member.guild.id, member.id)
+                if owned:
+                    existing_channel = member.guild.get_channel(owned.channel_id)
+                    if existing_channel:
+                        try:
+                            await member.move_to(existing_channel)
+                        except discord.HTTPException:
+                            pass
+                        return
+                    delete_voice(owned.channel_id)
+                    return
 
-            if after.channel.id == config.join_channel_id:
                 try:
                     category = member.guild.get_channel(config.category_id)
                     created_channel = await member.guild.create_voice_channel(
-                        name=f"{member.display_name}'s", category=category
+                        name=f"{member.display_name}'s",
+                        category=category
                     )
                     await member.move_to(created_channel)
                     create_voice(member.guild.id, member.id, created_channel.id)
