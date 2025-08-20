@@ -1,4 +1,5 @@
 import discord
+from discord import VoiceChannel
 from sqlalchemy.orm import Session
 
 from backend.core.database import Engine
@@ -10,7 +11,8 @@ from backend.voice.models.voice_config import VoiceConfig
 def create_voice(
         guild_id: int,
         user_id: int,
-        channel_id: int
+        channel_id: int,
+        is_temporary: bool
 ):
     """
     Create and save a new voice record
@@ -19,7 +21,8 @@ def create_voice(
         voice = Voice(
             guild_id=guild_id,
             user_id=user_id,
-            channel_id=channel_id
+            channel_id=channel_id,
+            is_temporary=is_temporary
         )
 
         session.add(voice)
@@ -139,3 +142,29 @@ async def handle_voice_channel_selection(interaction: discord.Interaction):
         return None, None
 
     return voice_channel, voice
+
+
+def has_user_existing_voice_channel(member: discord.Member) -> VoiceChannel | None:
+    owned = get_user_active_voice(member.guild.id, member.id)
+    if owned:
+        existing_channel = member.guild.get_channel(owned.channel_id)
+        if existing_channel:
+            return existing_channel
+        mark_voice_closed(owned.channel_id)
+    return None
+
+
+async def create_voice_channel(member: discord.Member, category_id: int, is_temporary: bool):
+    category = member.guild.get_channel(category_id)
+    if category:
+        created_channel = await member.guild.create_voice_channel(
+            name=f"{member.display_name}'s",
+            category=category
+        )
+
+        if is_temporary:
+            await member.move_to(created_channel)
+
+        create_voice(member.guild.id, member.id, created_channel.id, is_temporary)
+
+    return created_channel

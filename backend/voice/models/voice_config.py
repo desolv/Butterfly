@@ -9,7 +9,8 @@ class VoiceConfig(Base):
     __tablename__ = "voice_config"
 
     guild_id = Column(BigInteger, ForeignKey("guilds.guild_id", ondelete="CASCADE"), primary_key=True)
-    category_id = Column(BigInteger, nullable=True)
+    default_category_id = Column(BigInteger, nullable=True)
+    custom_category_id = Column(BigInteger, nullable=True)
     join_channel_id = Column(BigInteger, nullable=True)
     embed = Column(JSONB,
                    default=lambda: {

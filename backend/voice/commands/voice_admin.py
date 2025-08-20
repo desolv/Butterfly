@@ -34,10 +34,11 @@ class VoiceAdminCommand(commands.Cog):
         config = create_or_update_voice_config(ctx.guild.id)
 
         description = (
-            f"**ᴄᴀᴛᴇɢᴏʀʏ ɪᴅ**: {config.category_id}\n"
-            f"**ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.join_channel_id)}\n"
-            f"**ʟᴏɢɢɪɴɢ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.logging_channel_id)}\n\n"
+            f"**ᴅᴇꜰᴀᴜʟᴛ ᴄᴀᴛᴇɢᴏʀʏ ɪᴅ**: {config.default_category_id}\n"
+            f"**ᴄᴜѕᴛᴏᴍ ᴄᴀᴛᴇɢᴏʀʏ ɪᴅ**: {config.custom_category_id}\n\n"
 
+            f"**ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.join_channel_id)}\n"
+            f"**ʟᴏɢɢɪɴɢ ᴄʜᴀɴɴᴇʟ**: {fmt_channel(config.logging_channel_id)}\n"
             f"**ѕᴛᴀꜰꜰ ʀᴏʟᴇѕ**: {fmt_roles(config.staff_role_ids)}\n\n"
 
             f"**ᴇᴍʙᴇᴅ ᴛɪᴛʟᴇ**: {config.embed.get("title")}\n"
@@ -60,22 +61,40 @@ class VoiceAdminCommand(commands.Cog):
         await ctx.reply(embed=embed)
 
     @has_permission()
-    @_voice_admin.command(name="category")
-    async def _category_id(
+    @_voice_admin.command(name="default_category")
+    async def _default_category(
             self,
             ctx,
             channel: discord.CategoryChannel
     ):
         """
-        Set the category id for voice config
+        Set the default category id for voice config
         """
         create_or_update_voice_config(
             ctx.guild.id,
-            category_id=channel.id,
+            default_category_id=channel.id,
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated voice config **category id** to **{channel.name}**.")
+        await ctx.reply(f"Updated voice config **default category** to **{channel.name}**.")
+
+    @has_permission()
+    @_voice_admin.command(name="custom_category")
+    async def _custom_category(
+            self,
+            ctx,
+            channel: discord.CategoryChannel
+    ):
+        """
+        Set the custom category id for voice config
+        """
+        create_or_update_voice_config(
+            ctx.guild.id,
+            custom_category_id=channel.id,
+            updated_by=ctx.author.id
+        )
+
+        await ctx.reply(f"Updated voice config **custom category** to **{channel.name}**.")
 
     @has_permission()
     @_voice_admin.command(name="join_channel")

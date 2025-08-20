@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
 
-from backend.voice.director import create_or_update_voice_config, create_voice, get_voice_by_channel, mark_voice_closed, \
-    is_banned, get_user_active_voice
+from backend.voice.director import create_or_update_voice_config, get_voice_by_channel, mark_voice_closed, \
+    is_banned, create_voice_channel, has_user_existing_voice_channel
 from backend.voice.ui.voice_views import VoiceViews
 
 
@@ -20,33 +20,23 @@ class VoiceEvents(commands.Cog):
                 return
 
             if config.join_channel_id and after.channel.id == config.join_channel_id:
-                owned = get_user_active_voice(member.guild.id, member.id)
-                if owned:
-                    existing_channel = member.guild.get_channel(owned.channel_id)
-                    if existing_channel:
-                        try:
-                            await member.move_to(existing_channel)
-                        except discord.HTTPException:
-                            pass
-                        return
-                    mark_voice_closed(owned.channel_id)
+                owned_channel = has_user_existing_voice_channel(member)
+                if owned_channel is not None:
+                    try:
+                        await member.move_to(owned_channel)
+                    except Exception:
+                        pass
                     return
 
                 try:
-                    category = member.guild.get_channel(config.category_id)
-                    created_channel = await member.guild.create_voice_channel(
-                        name=f"{member.display_name}'s",
-                        category=category
-                    )
-                    await member.move_to(created_channel)
-                    create_voice(member.guild.id, member.id, created_channel.id)
+                    await create_voice_channel(member, config.default_category_id, True)
                 except Exception:
-                    return
+                    pass
 
         if before.channel and before.channel != after.channel:
             try:
                 voice = get_voice_by_channel(member.guild.id, before.channel.id)
-                if voice and not before.channel.members:
+                if voice and not before.channel.members and voice.is_temporary:
                     await before.channel.delete()
                     mark_voice_closed(before.channel.id)
             except Exception:
