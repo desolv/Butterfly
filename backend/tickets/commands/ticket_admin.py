@@ -2,12 +2,12 @@ import discord
 from discord.ext import commands
 
 from backend.core.helper import get_commands_help_messages, format_time_in_zone, get_time_now, fmt_channel, fmt_roles, \
-    fmt_user
+    fmt_user, fmt_users
 from backend.core.pagination import Pagination
 from backend.errors.custom_errors import TicketPanelNotFound
 from backend.permissions.enforce import has_permission
 from backend.tickets.director import create_ticket_panel, delete_ticket_panel, update_or_retrieve_ticket_panel, \
-    get_panels_for_guild, build_panel_list_view
+    get_panels_for_guild, build_panel_list_view, update_or_retrieve_ticket_config
 
 
 class TicketAdminCommand(commands.Cog):
@@ -150,6 +150,31 @@ class TicketAdminCommand(commands.Cog):
         )
 
         await ctx.reply(embed=view.create_embed(), view=view)
+
+    @has_permission()
+    @_ticket_admin.command(name="config")
+    async def _manifest(self, ctx):
+        """
+        Display the current ticket config
+        """
+        config = update_or_retrieve_ticket_config(ctx.guild.id)
+
+        description = (
+            f"**ʙᴀɴɴᴇᴅ ᴜѕᴇʀѕ**: {fmt_users(config.banned_user_ids)}\n"
+            f"**ʙᴀɴɴᴇᴅ ʀᴏʟᴇѕ**: {fmt_roles(config.banned_role_ids)}\n"
+        )
+
+        embed = discord.Embed(
+            title=f"**ᴛɪᴄᴋᴇᴛ ᴄᴏɴꜰɪɢ**",
+            description=description,
+            color=0x393A41,
+            timestamp=get_time_now()
+        )
+
+        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ᴀᴛ**", value=format_time_in_zone(config.updated_at), inline=True)
+        embed.add_field(name="**ᴜᴘᴅᴀᴛᴇᴅ ʙʏ**", value=fmt_user(config.updated_by), inline=True)
+
+        await ctx.reply(embed=embed)
 
     @has_permission()
     @_ticket_admin.group(name="panel")
@@ -618,6 +643,124 @@ class TicketAdminCommand(commands.Cog):
         )
 
         await ctx.reply(f"Updated ticket **{panel.panel_id}** panel **mention roles** by removing {role.mention}.")
+
+    @has_permission()
+    @_ticket_admin.group(name="banned_roles")
+    async def _banned_roles(self, ctx):
+        pass
+
+    @has_permission()
+    @_banned_roles.command(name="add")
+    async def _banned_roles_add(
+            self,
+            ctx,
+            role: discord.Role
+    ):
+        """
+        Add a role to ticket config banned roles
+        """
+        config = update_or_retrieve_ticket_config(ctx.guild.id)
+
+        banned_roles = config.banned_role_ids
+
+        if role.id in banned_roles:
+            return await ctx.reply(f"Role {role.mention} is present!")
+
+        banned_roles.append(role.id)
+
+        update_or_retrieve_ticket_config(
+            ctx.guild.id,
+            banned_role_ids=banned_roles,
+            updated_by=ctx.author.id
+        )
+
+        await ctx.reply(f"Updated ticket config **banned roles** by adding {role.mention}.")
+
+    @has_permission()
+    @_banned_roles.command(name="remove")
+    async def _banned_roles_remove(
+            self,
+            ctx,
+            role: discord.Role
+    ):
+        """
+        Remove a role from ticket config banned roles
+        """
+        config = update_or_retrieve_ticket_config(ctx.guild.id)
+
+        banned_roles = config.banned_role_ids
+
+        if role.id not in banned_roles:
+            return await ctx.reply(f"Role {role.mention} is not present!")
+
+        banned_roles.remove(role.id)
+
+        update_or_retrieve_ticket_config(
+            ctx.guild.id,
+            banned_role_ids=banned_roles,
+            updated_by=ctx.author.id
+        )
+
+        await ctx.reply(f"Updated ticket config **banned roles** by removing {role.mention}.")
+
+    @has_permission()
+    @_ticket_admin.group(name="banned_users")
+    async def _banned_users(self, ctx):
+        pass
+
+    @has_permission()
+    @_banned_users.command(name="add")
+    async def _banned_users_add(
+            self,
+            ctx,
+            member: discord.Member
+    ):
+        """
+        Add a role to ticket config banned users
+        """
+        config = update_or_retrieve_ticket_config(ctx.guild.id)
+
+        banned_users = config.banned_user_ids
+
+        if member.id in banned_users:
+            return await ctx.reply(f"User {member.mention} is present!")
+
+        banned_users.append(member.id)
+
+        update_or_retrieve_ticket_config(
+            ctx.guild.id,
+            banned_user_ids=banned_users,
+            updated_by=ctx.author.id
+        )
+
+        await ctx.reply(f"Updated ticket config **banned users** by adding {member.mention}.")
+
+    @has_permission()
+    @_banned_users.command(name="remove")
+    async def _banned_users_remove(
+            self,
+            ctx,
+            member: discord.Member
+    ):
+        """
+        Remove a role from ticket config banned users
+        """
+        config = update_or_retrieve_ticket_config(ctx.guild.id)
+
+        banned_users = config.banned_user_ids
+
+        if member.id not in banned_users:
+            return await ctx.reply(f"User {member.mention} is not present!")
+
+        banned_users.remove(member.id)
+
+        update_or_retrieve_ticket_config(
+            ctx.guild.id,
+            banned_user_ids=banned_users,
+            updated_by=ctx.author.id
+        )
+
+        await ctx.reply(f"Updated ticket config **banned users** by removing {member.mention}.")
 
     @has_permission()
     @_ticket_admin.command(name="send-embed", hidden=True)

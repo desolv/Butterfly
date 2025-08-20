@@ -321,8 +321,13 @@ async def handle_ticket_panel_selection(interaction: Interaction, values: Sequen
     if not panel or not panel.is_enabled:
         return await interaction.followup.send("That panel is not available!", ephemeral=True)
 
+    config = update_or_retrieve_ticket_config(interaction.guild.id)
+    if (any(role.id in config.banned_role_ids for role in interaction.user.roles)
+            or interaction.user.id in config.banned_user_ids):
+        return await interaction.followup.send("You are not allowed to open tickets!", ephemeral=True)
+
     if any(role.id in panel.staff_role_ids for role in interaction.user.roles):
-        return await interaction.followup.send("Staff is not allowed to open own ticket!", ephemeral=True)
+        return await interaction.followup.send("Staff is not allowed to open this ticket!", ephemeral=True)
 
     if not any(role.id in panel.required_role_ids for role in interaction.user.roles):
         return await interaction.followup.send("You are not allowed to open this ticket!", ephemeral=True)
