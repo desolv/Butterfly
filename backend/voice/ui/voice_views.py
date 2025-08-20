@@ -1,7 +1,7 @@
 import discord
 
 from backend.voice.director import (
-    mark_voice_closed, handle_voice_channel_selection,
+    mark_voice_closed, handle_voice_channel_selection, get_voice_by_channel,
 )
 from backend.voice.ui.voice_modals import RenameModal, LimitModal, MemberPicker
 
@@ -15,6 +15,7 @@ class VoiceViews(discord.ui.View):
         voice_channel, _ = await handle_voice_channel_selection(interaction)
         if not voice_channel:
             return
+
         await interaction.response.send_modal(RenameModal(voice_channel.id))
 
     @discord.ui.button(label="Limit", style=discord.ButtonStyle.secondary, custom_id="voice.button:limit")
@@ -22,6 +23,7 @@ class VoiceViews(discord.ui.View):
         voice_channel, _ = await handle_voice_channel_selection(interaction)
         if not voice_channel:
             return
+
         await interaction.response.send_modal(LimitModal(voice_channel.id))
 
     @discord.ui.button(label="Lock", style=discord.ButtonStyle.primary, custom_id="voice.button:lock")
@@ -29,10 +31,15 @@ class VoiceViews(discord.ui.View):
         voice_channel, voice = await handle_voice_channel_selection(interaction)
         if not voice_channel:
             return
-        await voice_channel.set_permissions(interaction.guild.default_role, connect=False)
-        owner_member = interaction.guild.get_member(voice.user_id)
-        if owner_member:
-            await voice_channel.set_permissions(owner_member, connect=True)
+
+        try:
+            await voice_channel.set_permissions(interaction.guild.default_role, connect=False)
+            owner_member = interaction.guild.get_member(voice.user_id)
+            if owner_member:
+                await voice_channel.set_permissions(owner_member, connect=True)
+        except Exception as e:
+            return await interaction.response.send_message(f"Something went wrong while locking the channel -> {e}")
+
         await interaction.response.send_message("Locked.", ephemeral=True)
 
     @discord.ui.button(label="Unlock", style=discord.ButtonStyle.success, custom_id="voice.button:unlock")
@@ -40,7 +47,12 @@ class VoiceViews(discord.ui.View):
         voice_channel, _ = await handle_voice_channel_selection(interaction)
         if not voice_channel:
             return
-        await voice_channel.set_permissions(interaction.guild.default_role, overwrite=None)
+
+        try:
+            await voice_channel.set_permissions(interaction.guild.default_role, overwrite=None)
+        except Exception as e:
+            return await interaction.response.send_message(f"Something went wrong while unlocking the channel -> {e}")
+
         await interaction.response.send_message("Unlocked.", ephemeral=True)
 
     @discord.ui.button(label="Add", style=discord.ButtonStyle.secondary, custom_id="voice.button:add")
@@ -48,6 +60,7 @@ class VoiceViews(discord.ui.View):
         voice_channel, _ = await handle_voice_channel_selection(interaction)
         if not voice_channel:
             return
+
         await interaction.response.send_message(
             "Pick a member to add.",
             view=MemberPicker(voice_channel.id, "add"),
@@ -59,6 +72,7 @@ class VoiceViews(discord.ui.View):
         voice_channel, _ = await handle_voice_channel_selection(interaction)
         if not voice_channel:
             return
+
         await interaction.response.send_message(
             "Pick a member to remove.",
             view=MemberPicker(voice_channel.id, "remove"),
@@ -70,6 +84,7 @@ class VoiceViews(discord.ui.View):
         voice_channel, _ = await handle_voice_channel_selection(interaction)
         if not voice_channel:
             return
+
         await interaction.response.send_message(
             "Pick a member to kick.",
             view=MemberPicker(voice_channel.id, "kick"),
@@ -81,6 +96,15 @@ class VoiceViews(discord.ui.View):
         voice_channel, _ = await handle_voice_channel_selection(interaction)
         if not voice_channel:
             return
-        await voice_channel.delete()
-        mark_voice_closed(voice_channel.id)
+
+        voice = get_voice_by_channel(interaction.guild.id, voice_channel.id)
+        if not voice.is_temporary:
+            return await interaction.response.send_message("You need to use the command to delete this channel!",
+                                                           ephemeral=True)
+        try:
+            await voice_channel.delete()
+            mark_voice_closed(voice_channel.id)
+        except Exception as e:
+            return await interaction.response.send_message(f"Something went wrong while deleting the channel -> {e}")
+
         await interaction.response.send_message("Channel deleted.", ephemeral=True)
