@@ -362,18 +362,18 @@ async def handle_ticket_panel_selection(interaction: Interaction, values: Sequen
     await send_ticket_logging(interaction.guild, ticket)
 
 
-async def create_ticket_channel(guild: discord.Guild, user: discord.Member | discord.User,
+async def create_ticket_channel(guild: discord.Guild, member: discord.Member,
                                 panel: Optional[TicketPanel]) -> TextChannel | None:
     overwrites: dict[discord.Role | discord.Member, discord.PermissionOverwrite] = {
         guild.default_role: discord.PermissionOverwrite(view_channel=False),
-        user: discord.PermissionOverwrite(
+        member: discord.PermissionOverwrite(
             view_channel=True,
             send_messages=True,
             read_message_history=True
         )
     }
 
-    member = guild.get_member(user.id) or user
+    member = guild.get_member(member.id) or member
     overwrites[member] = PermissionOverwrite(
         view_channel=True,
         send_messages=True,
@@ -395,7 +395,7 @@ async def create_ticket_channel(guild: discord.Guild, user: discord.Member | dis
         if category and category.type is discord.ChannelType.category:
             parent = category
 
-    channel_name = f"ticket-{user.name}".lower().replace(" ", "-")
+    channel_name = f"ticket-{member.name}".lower().replace(" ", "-")
 
     if parent:
         return await parent.create_text_channel(

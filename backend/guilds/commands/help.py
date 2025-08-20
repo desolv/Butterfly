@@ -12,6 +12,8 @@ from backend.punishments.commands.punishment_admin import PunishmentAdminCommand
 from backend.punishments.commands.warn import WarnCommand
 from backend.tickets.commands.ticket import TicketCommand
 from backend.tickets.commands.ticket_admin import TicketAdminCommand
+from backend.voice.commands.voice import VoiceCommand
+from backend.voice.commands.voice_admin import VoiceAdminCommand
 
 
 class HelpCommand(commands.Cog):
@@ -42,7 +44,7 @@ class HelpCommand(commands.Cog):
             "ᴍᴏᴅᴇʀᴀᴛɪᴏɴ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
             get_commands_help_messages(
                 self.bot,
-                [BanCommand, KickCommand, MuteCommand, WarnCommand, PunishmentCommand, TicketCommand],
+                [BanCommand, KickCommand, MuteCommand, WarnCommand, PunishmentCommand, TicketCommand, VoiceCommand],
                 ctx.author.guild_permissions.administrator
             ),
             5,
@@ -62,7 +64,7 @@ class HelpCommand(commands.Cog):
             "ᴍᴀɴᴀɢᴇᴍᴇɴᴛ ѕᴜʙᴄᴏᴍᴍᴀɴᴅѕ",
             get_commands_help_messages(
                 self.bot,
-                [PunishmentAdminCommand, PermissionAdminCommand, TicketAdminCommand],
+                [PunishmentAdminCommand, PermissionAdminCommand, TicketAdminCommand, VoiceAdminCommand],
                 ctx.author.guild_permissions.administrator
             ),
             5,
