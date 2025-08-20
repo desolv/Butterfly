@@ -320,7 +320,7 @@ class VoiceAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated voice config **banned users** by adding {role.mention}.")
+        await ctx.reply(f"Updated voice config **banned users** by adding {member.mention}.")
 
     @has_permission()
     @_banned_users.command(name="remove")
@@ -347,7 +347,7 @@ class VoiceAdminCommand(commands.Cog):
             updated_by=ctx.author.id
         )
 
-        await ctx.reply(f"Updated voice config **banned users** by removing {role.mention}.")
+        await ctx.reply(f"Updated voice config **banned users** by removing {member.mention}.")
 
     @has_permission()
     @_voice_admin.command(name="send-embed")

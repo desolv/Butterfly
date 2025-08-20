@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from backend.voice.director import create_or_update_voice_config, create_voice, get_voice_by_channel, delete_voice, \
+from backend.voice.director import create_or_update_voice_config, create_voice, get_voice_by_channel, mark_voice_closed, \
     is_banned, get_user_active_voice
 from backend.voice.ui.voice_views import VoiceViews
 
@@ -29,7 +29,7 @@ class VoiceEvents(commands.Cog):
                         except discord.HTTPException:
                             pass
                         return
-                    delete_voice(owned.channel_id)
+                    mark_voice_closed(owned.channel_id)
                     return
 
                 try:
@@ -48,7 +48,7 @@ class VoiceEvents(commands.Cog):
                 voice = get_voice_by_channel(member.guild.id, before.channel.id)
                 if voice and not before.channel.members:
                     await before.channel.delete()
-                    delete_voice(before.channel.id)
+                    mark_voice_closed(before.channel.id)
             except Exception:
                 return
 

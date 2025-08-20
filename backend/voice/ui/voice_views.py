@@ -1,7 +1,7 @@
 import discord
 
 from backend.voice.director import (
-    delete_voice, handle_voice_channel_selection,
+    mark_voice_closed, handle_voice_channel_selection,
 )
 from backend.voice.ui.voice_modals import RenameModal, LimitModal, MemberPicker
 
@@ -82,5 +82,5 @@ class VoiceViews(discord.ui.View):
         if not voice_channel:
             return
         await voice_channel.delete()
-        delete_voice(voice_channel.id)
+        mark_voice_closed(voice_channel.id)
         await interaction.response.send_message("Channel deleted.", ephemeral=True)

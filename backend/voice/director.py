@@ -29,7 +29,7 @@ def create_voice(
         return voice
 
 
-def delete_voice(channel_id: int):
+def mark_voice_closed(channel_id: int):
     with Session(Engine) as session:
         voice = session.query(Voice).filter_by(channel_id=channel_id).first()
 

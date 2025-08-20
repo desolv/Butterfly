@@ -44,8 +44,8 @@ class PermissionAdminCommand(commands.Cog):
             f"**ᴀᴅᴍɪɴ**: {'✅' if permission.is_admin else '❎'}\n"
             f"**ʀᴇǫᴜɪʀᴇᴅ ʀᴏʟᴇѕ**: {fmt_roles(permission.required_role_ids)}\n"
             f"**ᴄᴏᴏʟᴅᴏᴡɴ**: **{permission.command_cooldown}s**\n"
-            f"**ᴀᴅᴅᴇᴅ ᴀᴛ**: {format_time_in_zone(permission.added_at)}\n"
             f"**ᴇɴᴀʙʟᴇᴅ**: {'✅' if permission.is_enabled else '❎'}\n"
+            f"**ᴀᴅᴅᴇᴅ ᴀᴛ**: {format_time_in_zone(permission.added_at)}\n"
         )
 
         embed = discord.Embed(
