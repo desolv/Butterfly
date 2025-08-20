@@ -5,8 +5,7 @@ from backend.core.helper import get_commands_help_messages, get_time_now, format
 from backend.core.pagination import Pagination
 from backend.permissions.enforce import has_permission, has_cooldown
 from backend.tickets.director import mark_ticket_closed, get_ticket_by_channel, send_ticket_logging, get_ticket_by_id, \
-    get_user_tickets, \
-    update_or_retrieve_ticket_panel
+    get_user_tickets
 
 
 class TicketCommand(commands.Cog):
@@ -24,6 +23,7 @@ class TicketCommand(commands.Cog):
         )
         await ctx.reply(embed=view.create_embed(), view=view)
 
+    @has_permission()
     @has_cooldown()
     @commands.command(name="close")
     async def _close(self, ctx):
@@ -31,13 +31,6 @@ class TicketCommand(commands.Cog):
         Close the current ticket channel
         """
         ticket = get_ticket_by_channel(ctx.guild.id, ctx.channel.id)
-        panel = update_or_retrieve_ticket_panel(ctx.guild.id, ticket.panel_id)
-
-        if any(role.id in panel.staff_role_ids for role in ctx.author.roles):
-            raise commands.MissingPermissions
-
-        if ctx.channel is discord.TextChannel:
-            return await ctx.reply("You may only use this command on a text channel!")
 
         if ticket is None:
             return await ctx.reply("This channel is not a ticket!")
