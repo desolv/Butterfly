@@ -38,7 +38,7 @@ class PermissionAdminCommand(commands.Cog):
         permission = create_or_retrieve_command(self.bot, ctx.guild.id, command_name)
 
         if not permission:
-            raise CommandNotFound(command_name)
+            raise commands.ChannelNotFound
 
         description = (
             f"**ᴀᴅᴍɪɴ**: {'✅' if permission.is_admin else '❎'}\n"
@@ -109,7 +109,7 @@ class PermissionAdminCommand(commands.Cog):
         )
 
         if not permission:
-            raise CommandNotFound(command_name)
+            raise commands.ChannelNotFound
 
         await ctx.reply(
             f"Updated **{permission.command_name}** command **is_admin** permission to **{permission.is_admin}**.")
@@ -134,7 +134,7 @@ class PermissionAdminCommand(commands.Cog):
         )
 
         if not permission:
-            raise CommandNotFound(command_name)
+            raise commands.ChannelNotFound
 
         await ctx.reply(
             f"Updated **{permission.command_name}** command **is_enabled** permission to **{permission.is_enabled}**.")
@@ -162,7 +162,7 @@ class PermissionAdminCommand(commands.Cog):
         )
 
         if not permission:
-            raise CommandNotFound(command_name)
+            raise commands.ChannelNotFound
 
         await ctx.reply(
             f"Updated **{permission.command_name}** command **cooldown** permission to **{seconds}s**.")
@@ -190,7 +190,7 @@ class PermissionAdminCommand(commands.Cog):
         )
 
         if not permission:
-            raise CommandNotFound(command_name)
+            raise commands.ChannelNotFound
 
         required_roles = permission.required_role_ids
 
@@ -228,7 +228,7 @@ class PermissionAdminCommand(commands.Cog):
         )
 
         if not permission:
-            raise CommandNotFound(command_name)
+            raise commands.ChannelNotFound
 
         required_roles = permission.required_role_ids
 
@@ -266,7 +266,7 @@ class PermissionAdminCommand(commands.Cog):
         )
 
         if not permission:
-            raise CommandNotFound(command_name)
+            raise commands.ChannelNotFound
 
         if permission.is_admin:
             return await ctx.reply("This command is admin-only. Disable admin-only first.")
