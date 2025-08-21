@@ -25,7 +25,7 @@ load_dotenv(f"io/.env")
 bot = commands.Bot(command_prefix="?", help_command=None, intents=discord.Intents.all())
 bot.client = OpenAI(api_key=os.getenv("OPENAI"))
 
-print(f"Butterfly Robot")
+print(f"Dorayaki Robot")
 print(f"Running at Python {platform.python_version()}v, "
       f"Discord.py {discord.__version__}v - {platform.system()} {platform.release()} ({os.name})")
 
@@ -51,7 +51,7 @@ except Exception as e:
 
 async def load():
     skip_folders = {".venv", "io", "models"}
-    skip_file_names = {"database.py", "models.py", "butterfly.py"}
+    skip_file_names = {"database.py", "models.py", "dorayaki.py"}
 
     for extension in Path("backend").rglob("*.py"):
         if (

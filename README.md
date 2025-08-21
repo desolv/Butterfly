@@ -1,3 +1,3 @@
-# Butterfly
+# Dorayaki
 
-Discord robot including commands and events
+Discord robot including AI, moderation, punishments and more!
