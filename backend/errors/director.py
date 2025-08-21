@@ -45,7 +45,7 @@ class ErrorDirector(commands.Cog):
             return
 
         await ctx.reply(f"❌ Something went wrong. Contact an administrator!", delete_after=15)
-        print(f"Something went wrong -> {error}")
+        print(f"Something went wrong at {ctx.guild.id} -> {error}")
 
 
 async def setup(bot):
