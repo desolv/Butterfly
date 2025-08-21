@@ -3,7 +3,7 @@ from discord.ext import commands
 from backend.errors.logging import log_error
 
 
-class ErrorDirector(commands.Cog):
+class Errors(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -47,7 +47,6 @@ class ErrorDirector(commands.Cog):
             return
 
         await ctx.reply(f"❌ Something went wrong. Contact an administrator!", delete_after=15)
-        print(f"Something went wrong at {ctx.guild.id} -> {error}")
         log_error(
             ctx.guild.id if ctx.guild else None,
             error,
@@ -56,4 +55,4 @@ class ErrorDirector(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(ErrorDirector(bot))
+    await bot.add_cog(Errors(bot))
