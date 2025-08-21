@@ -1,5 +1,7 @@
 from discord.ext import commands
 
+from backend.errors.logging import log_error
+
 
 class ErrorDirector(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -21,7 +23,7 @@ class ErrorDirector(commands.Cog):
             return
 
         if isinstance(error, commands.ChannelNotFound):
-            await ctx.reply(f"⚠️ Invalid value. {error}", delete_after=10)
+            await ctx.reply(f"⚠️ {error}", delete_after=10)
             return
 
         if isinstance(error, commands.BadArgument):
@@ -46,6 +48,11 @@ class ErrorDirector(commands.Cog):
 
         await ctx.reply(f"❌ Something went wrong. Contact an administrator!", delete_after=15)
         print(f"Something went wrong at {ctx.guild.id} -> {error}")
+        log_error(
+            ctx.guild.id if ctx.guild else None,
+            error,
+            f"Command: {ctx.command}, User: {ctx.author}"
+        )
 
 
 async def setup(bot):
